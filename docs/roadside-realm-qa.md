@@ -4,8 +4,8 @@ Use this checklist for every pushed preview checkpoint. Roadside Realm is not V1
 
 ## Current Preview
 
-- App version: `v0.2.8`
-- Game version: `0.2.8`
+- App version: `v0.3.0`
+- Game version: `0.3.0`
 - Save version: `1`
 - Preview branch: `main`
 - GitHub Pages URL: `https://jtripppiie.github.io/roadside-realmo/`
@@ -15,15 +15,17 @@ Use this checklist for every pushed preview checkpoint. Roadside Realm is not V1
 
 1. Open the Pages URL.
 2. Confirm the Roadside Realm splash screen appears.
-3. Confirm the visible version reads `App v0.2.8 · Roadside Realm 0.2.8`.
+3. Confirm the visible version reads `App v0.3.0 · Roadside Realm 0.3.0`.
 4. Confirm Start New Quest works.
 5. Confirm the canvas renders.
 6. Confirm the D-pad, action buttons, inventory, log, and objective are visible.
-7. Pick up an item and confirm the pickup card appears briefly.
-8. Press Help and confirm the development cheatsheet overlay opens and closes.
-9. Press `Ctrl` three times quickly and confirm the cheatsheet toggles.
-10. Confirm Signpost Ogre and Moonlit Warden sprite art does not show green-screen backing.
-11. Confirm no console errors appear.
+7. Confirm the DOM/CSS first-person viewport shows layered walls, floor, ceiling, far wall, grain, and vignette.
+8. Confirm the party strip, room scanner, gear deck, inventory, log, and status meters update after movement.
+9. Pick up an item and confirm the pickup card appears briefly.
+10. Press Help and confirm the development cheatsheet overlay opens and closes.
+11. Press `Ctrl` three times quickly and confirm the cheatsheet toggles.
+12. Confirm Signpost Ogre and Moonlit Warden sprite art does not show green-screen backing.
+13. Confirm no console errors appear.
 
 ## Main Route Test
 

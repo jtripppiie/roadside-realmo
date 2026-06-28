@@ -389,3 +389,30 @@ Rules kept from the project plan:
 
 - This is an optional scenic detour, not a blocker for normal, secret, mansion, or conservatory endings.
 - The level is inspired by place-feel only and remains original Roadside Realm fantasy.
+
+## Checkpoint: WarClass-Inspired First-Person Visual Overhaul
+
+This checkpoint responds directly to the need for Roadside Realm to feel much closer in ambition to `haasva/WarClass-test` while staying original and static-site friendly. WarClass was studied for CSS perspective, dense RPG HUD layout, pixel/grain treatment, party/status panels, encounter presentation, and menu density. No WarClass assets, copied sprites, sounds, or placeholder art were imported.
+
+Version changes:
+
+- Visible version badge: `App v0.3.0 · Roadside Realm 0.3.0`.
+- Roadside Realm game data version: `0.3.0`.
+- Roadside Realm art metadata version: `0.3.0`.
+- Save wrapper remains version `1`.
+
+Implemented in this checkpoint:
+
+- Added a DOM/CSS first-person `realm-neo-view` above the canvas fallback.
+- Added layered sky, ceiling, floor, side walls, far wall, doors, objects, enemy silhouettes, crosshair, caption, grain, and vignette.
+- Added state-driven visual classes for walls, locked doors, hidden walls, mansion doors, river gates, glass paths, exits, monsters, and items.
+- Added a dense RPG party strip with HP meter, route state, threat state, facing state, and front-tile state.
+- Added side-panel room scanner and gear deck readouts.
+- Expanded README with current version, controls, visual direction, run instructions, known limitations, and WarClass asset-safety note.
+- Added `CHANGELOG.md`.
+
+Rules kept from the project plan:
+
+- The game remains vanilla HTML/CSS/JavaScript.
+- The existing canvas renderer remains available as a fallback.
+- No dependencies, backend, analytics, tracking, GPS, or external asset loading were added.

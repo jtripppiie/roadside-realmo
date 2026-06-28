@@ -37,7 +37,7 @@
               <label><input id="realm-option-sound" type="checkbox"> Sound</label>
             </fieldset>
             <p class="realm-credit">Made by TripperDeeLabs.</p>
-            <p class="realm-version">App v0.2.8 · Roadside Realm 0.2.8</p>
+            <p class="realm-version">App v0.3.0 · Roadside Realm 0.3.0</p>
           </div>
         </div>
 
@@ -60,8 +60,46 @@
             <div class="realm-stat"><span>Gold</span><strong id="realm-gold">0</strong></div>
           </section>
 
+          <section class="realm-party-strip" aria-label="Party status">
+            <div class="realm-party-card realm-party-card--active">
+              <span>Driver</span>
+              <strong>Mapbearer</strong>
+              <meter id="realm-hp-meter" min="0" max="18" value="18">18 HP</meter>
+            </div>
+            <div class="realm-party-card">
+              <span>Route</span>
+              <strong id="realm-route-state">Main Kiosk</strong>
+              <small id="realm-threat-state">Threat: calm</small>
+            </div>
+            <div class="realm-party-card">
+              <span>Focus</span>
+              <strong id="realm-facing-state">Facing South</strong>
+              <small id="realm-front-state">Open path ahead</small>
+            </div>
+          </section>
+
           <div class="realm-layout">
             <div class="realm-view-panel">
+              <div id="realm-neo-view" class="realm-neo-view realm-neo-view--map-kiosk-dungeon" aria-hidden="true">
+                <div class="realm-neo__grain"></div>
+                <div class="realm-neo__sky"></div>
+                <div class="realm-neo__ceiling"></div>
+                <div class="realm-neo__floor"></div>
+                <div class="realm-neo__wall realm-neo__wall--left"></div>
+                <div class="realm-neo__wall realm-neo__wall--right"></div>
+                <div class="realm-neo__wall realm-neo__wall--far"></div>
+                <div id="realm-neo-door" class="realm-neo__door"></div>
+                <div id="realm-neo-object" class="realm-neo__object"></div>
+                <div id="realm-neo-entity" class="realm-neo__entity">
+                  <span id="realm-neo-entity-icon" class="realm-neo__entity-icon"></span>
+                </div>
+                <div class="realm-neo__crosshair"></div>
+                <div class="realm-neo__vignette"></div>
+                <div class="realm-neo__caption">
+                  <span id="realm-neo-location">Map Kiosk Dungeon</span>
+                  <strong id="realm-neo-ahead">Open path ahead</strong>
+                </div>
+              </div>
               <canvas
                 id="realm-canvas"
                 class="realm-canvas"
@@ -80,6 +118,22 @@
             </div>
 
             <aside class="realm-side-panel">
+              <section aria-labelledby="realm-room-title">
+                <h3 id="realm-room-title">Room Scanner</h3>
+                <dl class="realm-room-readout">
+                  <div><dt>Location</dt><dd id="realm-room-name">Map Kiosk Dungeon</dd></div>
+                  <div><dt>Tile</dt><dd id="realm-room-coords">1,1</dd></div>
+                  <div><dt>Ahead</dt><dd id="realm-room-ahead">Open path</dd></div>
+                </dl>
+              </section>
+              <section aria-labelledby="realm-equipment-title">
+                <h3 id="realm-equipment-title">Gear Deck</h3>
+                <div class="realm-equipment-grid">
+                  <div><span>Hand</span><strong>Route Baton</strong></div>
+                  <div><span>Charm</span><strong id="realm-active-charm">Empty</strong></div>
+                  <div><span>Relic</span><strong id="realm-active-relic">None</strong></div>
+                </div>
+              </section>
               <section aria-labelledby="realm-inventory-title">
                 <h3 id="realm-inventory-title">Inventory</h3>
                 <div id="realm-inventory" class="realm-inventory"></div>

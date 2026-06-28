@@ -1,71 +1,107 @@
 # Roadside Realmo
 
-Roadside Realmo is a first-person, tile-based road-fantasy dungeon crawler concept. It is inspired by classic grid movement, turn-by-turn exploration, strange roadside landmarks, and compact adventures that can run in a browser.
+Roadside Realmo is the working repo for **Roadside Realm**, a static first-person road-fantasy dungeon crawler built with HTML, CSS, vanilla JavaScript, and local assets.
 
-The working name is temporary, but the mood is clear: gas-station castles, motel labyrinths, neon ruins, vending-machine sages, and monsters that feel like they wandered out from the edge of a highway map.
+Current preview version: **0.3.0**
+
+Live GitHub Pages preview:
+
+```text
+https://jtripppiie.github.io/roadside-realmo/
+```
 
 ## Current Status
 
-This repository is only a planning scaffold for now. No playable code has been added yet.
+Roadside Realm is now a playable in-development browser game, not just a planning scaffold. The current `0.3.0` checkpoint adds a WarClass-inspired visual overhaul while keeping the game original and GitHub Pages friendly.
 
-## Game Pillars
+The game includes:
 
-- First-person exploration with simple grid movement.
-- Quick sessions that work well on desktop and mobile web.
-- Roadside fantasy instead of traditional medieval fantasy.
-- Readable, family-friendly encounters.
-- Offline-friendly static web app architecture.
-- Original art, names, maps, enemies, and mechanics.
+- first-person grid movement
+- canvas fallback renderer
+- new DOM/CSS perspective viewport
+- D-pad and keyboard controls
+- inventory, log, stats, room scanner, and gear deck
+- main dungeon, Forgotten Underpass, Never-Finished Mansion, Hidden Conservatory, and Soldotna Creek Wayside
+- normal, secret, impossible, and Glass Rose ending paths
+- local save/load
+- debug mode with `?realmDebug=1`
+- development cheatsheet overlay
 
-## Early Gameplay Idea
+## Visual Direction
 
-Players explore roadside "realms" one tile at a time:
+The current visual target is a **WarClass-inspired but original roadside RPG interface**:
 
-- Turn left or right.
-- Step forward.
-- Inspect signs, doors, trunks, vending machines, ruins, and odd landmarks.
-- Find map scraps, snacks, charms, and keys.
-- Battle or outwit strange road creatures.
-- Return to the road with new routes unlocked.
+- dense retro RPG panels around the play area
+- layered first-person viewport with ceiling, floor, side walls, far wall, gates, objects, enemy silhouettes, grain, and vignette
+- darker, stranger roadside-dungeon atmosphere
+- road-trip fantasy objects instead of copied medieval/fantasy assets
+- local CSS/JS/PNG treatment only
 
-## Possible Realms
+WarClass was used as a serious reference for interface density, CSS perspective, pixel filter treatment, and first-person RPG presentation. **No WarClass art, sprites, sounds, or placeholder assets were copied.**
 
-- The Motel of Many Doors
-- The Neon Marsh Rest Stop
-- The Overpass Catacombs
-- The Cornfield Roundabout
-- The Snowplow Shrine
-- The Desert Pump Kingdom
+## How To Run
 
-## Tech Direction
+No build step is required.
 
-The likely first implementation will be a static browser game:
+Open `index.html` in a browser, or use any simple static server:
 
-- HTML
-- CSS
-- Vanilla JavaScript or TypeScript
-- Canvas for the first-person view
-- Local storage for saves/settings
-- Optional service worker for offline play
+```bash
+python3 -m http.server 8080
+```
+
+Then open:
+
+```text
+http://localhost:8080/
+```
+
+## Controls
+
+- Move forward: `ArrowUp` or `W`
+- Move backward: `ArrowDown` or `S`
+- Turn left: `ArrowLeft` or `A`
+- Turn right: `ArrowRight` or `D`
+- Inspect: `Enter` or `Space`
+- Attack: `F`
+- Use item: `I`
+- Toggle map: `M`
+- Development cheatsheet: Help button or press `Ctrl` three times quickly
+
+## Debug Mode
+
+Use:
+
+```text
+?realmDebug=1
+```
+
+Debug mode includes position/state readouts and jump/give/heal helpers for testing main, secret, mansion, conservatory, and Soldotna routes.
+
+## Known Limitations
+
+- The WarClass-style viewport is a new DOM/CSS presentation layer; the canvas renderer still exists as a fallback.
+- Enemy/NPC silhouettes are original symbolic placeholders and need more bespoke art.
+- No sound pass has been done yet.
+- QA still needs manual browser playthroughs after each larger visual/content change.
+
+## Roadmap
+
+- Replace placeholder enemy symbols with original Roadside Realm sprites.
+- Add deeper WarClass-style menu tabs for quest, map, items, and route history.
+- Add more room-specific art states and encounter presentation.
+- Improve mobile fullscreen ergonomics.
+- Complete V1.0 QA routes documented in `docs/roadside-realm-qa.md`.
 
 ## Repository Contents
 
-- `README.md`: project overview
-- `docs/game-design.md`: early design notes
-- `docs/technical-plan.md`: implementation direction
-- `docs/roadside-realm-summary.md`: maintained quick summary for the V1.0 game spec
-- `docs/roadside-realm-game-plan.md`: full Roadside Realm V1.0 game plan
-- `docs/roadside-realm-image-spec.md`: optional image asset specifications for the game
-- `assets/roadside-realm/ASSET_MANIFEST.md`: generated starter asset inventory and usage notes
-- `CONTRIBUTING.md`: contribution guidelines
-- `LICENSE`: project license placeholder
-
-## Development
-
-No build system exists yet. The first playable milestone should add the smallest useful loop:
-
-1. Render one realm.
-2. Move on a small grid.
-3. Inspect objects.
-4. Resolve one encounter.
-5. Save basic progress locally.
+- `index.html`: app shell and Roadside Realm markup
+- `style.css`: layout, HUD, first-person viewport, responsive styling
+- `script.js`: app bootstrap
+- `js/games/roadside-realm-data.js`: maps, items, monsters, events
+- `js/games/roadside-realm-art.js`: local art metadata
+- `js/games/roadside-realm.js`: runtime state, movement, rendering, save/load, debug mode
+- `assets/roadside-realm/`: local generated starter assets
+- `docs/roadside-realm-game-plan.md`: full V1.0 game plan
+- `docs/roadside-realm-summary.md`: maintained quick summary
+- `docs/roadside-realm-qa.md`: QA routes
+- `docs/roadside-realm-progress.md`: build progress log

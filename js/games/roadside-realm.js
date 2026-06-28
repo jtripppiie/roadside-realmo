@@ -127,6 +127,7 @@
       log: [],
       ending: null,
       showMap: false,
+      lastAction: 'idle',
       debug: DEBUG,
     };
   }
@@ -160,9 +161,26 @@
       pickupIcon: document.getElementById('realm-pickup-icon'),
       pickupTitle: document.getElementById('realm-pickup-title'),
       pickupText: document.getElementById('realm-pickup-text'),
+      neoView: document.getElementById('realm-neo-view'),
+      neoDoor: document.getElementById('realm-neo-door'),
+      neoObject: document.getElementById('realm-neo-object'),
+      neoEntity: document.getElementById('realm-neo-entity'),
+      neoEntityIcon: document.getElementById('realm-neo-entity-icon'),
+      neoLocation: document.getElementById('realm-neo-location'),
+      neoAhead: document.getElementById('realm-neo-ahead'),
       helpOverlay: document.getElementById('realm-help-overlay'),
       helpClose: document.getElementById('realm-help-close'),
       objective: document.getElementById('realm-objective'),
+      hpMeter: document.getElementById('realm-hp-meter'),
+      routeState: document.getElementById('realm-route-state'),
+      threatState: document.getElementById('realm-threat-state'),
+      facingState: document.getElementById('realm-facing-state'),
+      frontState: document.getElementById('realm-front-state'),
+      roomName: document.getElementById('realm-room-name'),
+      roomCoords: document.getElementById('realm-room-coords'),
+      roomAhead: document.getElementById('realm-room-ahead'),
+      activeCharm: document.getElementById('realm-active-charm'),
+      activeRelic: document.getElementById('realm-active-relic'),
       hp: document.getElementById('realm-hp'),
       atk: document.getElementById('realm-atk'),
       def: document.getElementById('realm-def'),
@@ -311,6 +329,7 @@
     if (inputLocked) return;
     inputLocked = true;
     try {
+      state.lastAction = action;
       if (action === 'turnLeft') rotate(-1);
       if (action === 'turnRight') rotate(1);
       if (action === 'forward') attemptMove(1);
@@ -930,11 +949,95 @@
     elements.level.textContent = state.player.level;
     elements.gold.textContent = state.player.gold;
     elements.objective.textContent = objectiveText();
+    elements.hpMeter.max = state.player.maxHp;
+    elements.hpMeter.value = state.player.hp;
+    elements.routeState.textContent = currentMap().name;
+    elements.threatState.textContent = `Threat: ${threatText().toLowerCase()}`;
+    elements.facingState.textContent = `Facing ${titleCase(state.player.facing)}`;
+    elements.frontState.textContent = aheadDescription();
+    elements.roomName.textContent = currentMap().name;
+    elements.roomCoords.textContent = `${state.player.x},${state.player.y}`;
+    elements.roomAhead.textContent = aheadDescription();
+    elements.activeCharm.textContent = hasItem('kenai-river-charm') ? 'Kenai River Charm' : hasItem('moon-toll-token') ? 'Moon Toll Token' : 'Empty';
+    elements.activeRelic.textContent = hasItem('mapstone') ? 'Mapstone' : 'None';
     elements.inventory.innerHTML = state.player.inventory.length
       ? state.player.inventory.map((id) => renderInventoryChip(id)).join('')
       : '<span class="realm-chip">No items yet</span>';
     elements.log.innerHTML = state.log.map((message) => `<li>${message}</li>`).join('');
     elements.live.textContent = `Facing ${state.player.facing}. ${aheadDescription()}`;
+    renderNeoView();
+  }
+
+  function renderNeoView() {
+    if (!elements.neoView) return;
+    const map = currentMap();
+    const target = tileAhead(1);
+    const tile = getTile(map, target.x, target.y);
+    const event = getEvent(map, target.x, target.y);
+    const presentation = frontPresentation(tile, event, target);
+
+    elements.neoView.className = [
+      'realm-neo-view',
+      `realm-neo-view--${map.id}`,
+      `realm-neo-view--${presentation.kind}`,
+      `realm-facing-${state.player.facing}`,
+      inputLocked ? 'realm-neo-view--busy' : '',
+      state.lastAction ? `realm-neo-view--action-${state.lastAction}` : '',
+    ].filter(Boolean).join(' ');
+
+    elements.neoDoor.className = `realm-neo__door realm-neo__door--${presentation.door || 'none'}`;
+    elements.neoObject.className = `realm-neo__object realm-neo__object--${presentation.object || 'none'}`;
+    elements.neoEntity.className = `realm-neo__entity realm-neo__entity--${presentation.entity || 'none'}`;
+    elements.neoEntityIcon.textContent = presentation.icon || '';
+    elements.neoLocation.textContent = map.name;
+    elements.neoAhead.textContent = presentation.label;
+  }
+
+  function frontPresentation(tile, event, target) {
+    if (!tile || tile === '#') return { kind: 'wall', label: 'Stone and old route lines', door: 'none', object: 'none', entity: 'none' };
+    if (event?.type === 'lockedDoor' && !state.flags[event.flag]) return { kind: 'door', label: 'Locked Toll Gate', door: 'toll', object: 'none', entity: 'none' };
+    if (event?.type === 'hiddenWall' && !state.flags[event.flag]) {
+      return state.flags[event.requiredFlag]
+        ? { kind: 'secret', label: 'Moon scratch wall', door: 'moon', object: 'moon', entity: 'none' }
+        : { kind: 'wall', label: 'Hollow wall', door: 'none', object: 'none', entity: 'none' };
+    }
+    if (event?.type === 'mansionDoor') return { kind: 'gate', label: 'Painted mansion door', door: 'mansion', object: 'none', entity: 'none' };
+    if (event?.type === 'soldotnaGate') return { kind: 'gate', label: 'Blue river route', door: 'river', object: 'river', entity: 'none' };
+    if (event?.type === 'hiddenConservatory') return { kind: 'gate', label: 'Glass conservatory seam', door: 'glass', object: 'glass', entity: 'none' };
+    if (event?.type === 'exit') return { kind: 'exit', label: hasItem('mapstone') ? 'Exit route glowing' : 'Dim kiosk exit', door: 'exit', object: 'route', entity: 'none' };
+    if (event?.type === 'monster') {
+      const monster = state.monsters[event.monsterId];
+      if (monster?.hp > 0) {
+        const sprite = ART.monsterSprites[monster.type] || {};
+        return { kind: 'monster', label: `${monster.name} ahead`, door: 'none', object: 'none', entity: monster.type, icon: iconGlyph(sprite.icon || monster.type) };
+      }
+    }
+    if (event?.type === 'item' && !state.collectedItems[`${state.player.mapId}:${targetKey(target)}`]) {
+      const item = DATA.items[event.itemId];
+      const sprite = ART.sprites[event.itemId] || {};
+      return { kind: 'item', label: item?.name || 'Item ahead', door: 'none', object: sprite.icon || event.itemId, entity: 'none' };
+    }
+    if (event?.type === 'heal') return { kind: 'fountain', label: 'Healing fizz drain', door: 'none', object: 'heal', entity: 'none' };
+    return { kind: 'open', label: 'Open route ahead', door: 'none', object: 'none', entity: 'none' };
+  }
+
+  function targetKey(target) {
+    return `${target.x},${target.y}`;
+  }
+
+  function threatText() {
+    const target = tileAhead(1);
+    const event = getEvent(currentMap(), target.x, target.y);
+    if (event?.type === 'monster') {
+      const monster = state.monsters[event.monsterId];
+      if (monster?.hp > 0) return monster.boss ? 'Boss' : 'Hostile';
+    }
+    if (state.player.hp <= Math.ceil(state.player.maxHp * 0.3)) return 'Low HP';
+    return state.player.mapId.includes('mansion') || state.player.mapId.includes('underpass') ? 'Strange' : 'Calm';
+  }
+
+  function titleCase(value) {
+    return value ? value.charAt(0).toUpperCase() + value.slice(1) : '';
   }
 
   function renderInventoryChip(itemId) {
@@ -970,6 +1073,16 @@
       'blueprint-key': 'B',
       'star-map': '*',
       'glass-rose': 'R',
+      'sun-snack': '+',
+      'river-charm': '~',
+      'dust-goblin': 'G',
+      'map-bat': 'B',
+      'toll-troll': 'T',
+      'signpost-ogre': 'O',
+      'moonlit-warden': 'W',
+      'blueprint-warden': 'P',
+      'spruce-signling': 'S',
+      'river-current-sprite': '~',
     };
     return glyphs[icon] || '?';
   }
