@@ -162,12 +162,29 @@ npm run test:browser
 
 1. Test portrait width around 375px.
 2. Confirm the D-pad targets are large enough to tap.
-3. Confirm no horizontal scrolling is required for the main controls.
-4. Test keyboard controls on desktop.
-5. Confirm the canvas has an accessible label.
-6. Confirm the live status and log update outside the canvas.
-7. Toggle reduced motion, high contrast, and large text.
-8. Confirm controls remain readable and do not overlap.
+3. Confirm the D-pad stays fixed to the game viewport and does not scroll with the page.
+4. Hold left and confirm the player keeps turning left.
+5. Hold right and confirm the player keeps turning right.
+6. Hold up and down and confirm movement repeats or reports blocked movement.
+7. Confirm tapping controls does not scroll the browser page.
+8. Rotate to landscape and confirm the fixed controls remain usable.
+9. Confirm the canvas/viewport is not tiny, stretched, or weirdly cropped.
+10. Test keyboard controls on desktop.
+11. Confirm the canvas has an accessible label.
+12. Confirm the live status and log update outside the canvas.
+13. Toggle reduced motion, high contrast, and large text.
+14. Confirm controls remain readable and do not overlap.
+
+## Playable Controls Stabilization Route
+
+1. Open the game without debug mode and start a new quest.
+2. Use keyboard `ArrowUp/W`, `ArrowDown/S`, `ArrowLeft/A`, and `ArrowRight/D`.
+3. Confirm each keyboard input updates position/facing or reports a blocked move in the visible status.
+4. Open `?realmDebug=1`.
+5. Confirm the debug panel shows `Last Input`.
+6. Try to walk into a wall and confirm `Last Input` starts with `Blocked:`.
+7. Open `?computerMode=1&speed=fast`.
+8. Confirm Real Computer Mode includes D-pad/action button presence, forward movement, backward movement, left/right turning, blocked-movement feedback, scene signature, normal ending, and zero runtime errors.
 
 ## Current Known Gaps
 
@@ -176,3 +193,4 @@ npm run test:browser
 - Normal enemies need better sprite graphics.
 - Browser-play QA still needs pass/fail notes.
 - Service worker/cache is not added yet.
+- Real-device mobile QA is still recommended after every pushed controls/layout change.

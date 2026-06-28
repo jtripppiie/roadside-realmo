@@ -68,6 +68,36 @@ http://localhost:8080/
 - Toggle map: `M`
 - Development cheatsheet: Help button or press `Ctrl` three times quickly
 
+## Playable Controls Stabilization
+
+The current stabilization pass fixes the playable input layer before more features are added. The broken behavior was mobile-first: the D-pad and menu controls were still participating in page layout, so they could scroll with the document and feel detached from the game viewport.
+
+Files changed for this pass:
+
+- `js/games/roadside-realm.js`
+- `style.css`
+- `README.md`
+- `docs/roadside-realm-progress.md`
+- `docs/roadside-realm-qa.md`
+
+Movement is now wired through one shared path. Keyboard shortcuts map to an action ID, D-pad/menu buttons use the same `data-action` ID, and both call the same runtime action handler. The visible status/debug readout now reports the last input result, so blocked walls/doors are distinguishable from broken input.
+
+Keyboard test:
+
+1. Start a new quest.
+2. Press `ArrowUp` or `W` and confirm the position/status changes.
+3. Press `ArrowDown` or `S` and confirm the player steps back.
+4. Press `ArrowLeft`/`A` and `ArrowRight`/`D` and confirm facing changes.
+
+Mobile test:
+
+1. Open the game in a narrow mobile viewport.
+2. Start a new quest.
+3. Confirm the D-pad remains fixed to the bottom of the game viewport.
+4. Tap and hold left/right/up/down and confirm each repeats movement or turning.
+5. Confirm tapping controls does not scroll the browser page.
+6. Rotate to landscape and confirm the controls remain fixed and usable.
+
 ## Debug Mode
 
 Use:
@@ -77,6 +107,8 @@ Use:
 ```
 
 Debug mode includes position/state readouts and jump/give/heal helpers for testing main, secret, mansion, conservatory, and Soldotna routes.
+
+Debug mode now also shows the latest input result. Use that line to tell the difference between "input fired but movement was blocked" and "input did not reach the game."
 
 ## Verification Modes
 

@@ -447,3 +447,62 @@ Verification notes:
 - Debug deep verification can be performed with `https://jtripppiie.github.io/roadside-realmo/?computerMode=1&speed=fast&debugDeep=1`.
 - Playwright browser verification is scaffolded with `npm run test:browser`; install dev dependencies and Chromium first with `npm install` and `npm run test:browser:install`.
 - In this workspace, `npm run test:browser` was attempted and returned `playwright: not found` because dev dependencies are not installed.
+
+## Checkpoint: Playable Canvas Layout And Mobile Controls Stabilization
+
+This checkpoint pauses feature work and fixes the basic playability layer. The broken behavior was that mobile controls were styled as page-flow/sticky controls, so the D-pad could move with document scrolling and feel visually present but disconnected from a game viewport. The earlier verification also did not explicitly prove the D-pad buttons were present and using the same action path as keyboard input.
+
+Files changed:
+
+- `js/games/roadside-realm.js`
+- `style.css`
+- `README.md`
+- `docs/roadside-realm-progress.md`
+- `docs/roadside-realm-qa.md`
+
+What changed:
+
+- Added a `realm-playing` body state while the game screen is active.
+- Locked the mobile play viewport while Roadside Realm is being played.
+- Changed mobile `.realm-control-deck` from sticky page layout to fixed overlay positioning.
+- Added `touch-action: none` and selection prevention to D-pad/action controls.
+- Added hold-to-repeat behavior for forward, backward, turn left, and turn right.
+- Routed touch/pointer D-pad input through the same action dispatcher used by keyboard controls.
+- Added visible `lastInputResult` status text so blocked movement is visibly different from missing input.
+- Added Computer Mode checks for D-pad/action button presence, shared forward/back/left/right input, visible blocked-move feedback, scene sizing signature, and runtime errors.
+
+How movement is wired now:
+
+```text
+keyboard key or data-action button
+-> action ID
+-> dispatchSharedInput/action handler
+-> rotate, attemptMove, inspect, attack, use item, map, save, or help
+-> render DOM, viewport, debug panel, and computer report
+```
+
+Keyboard test:
+
+1. Start Roadside Realm.
+2. Use `ArrowUp/W`, `ArrowDown/S`, `ArrowLeft/A`, and `ArrowRight/D`.
+3. Confirm movement/facing changes and the front status reports the latest input.
+
+Mobile test:
+
+1. Open a narrow viewport or a phone.
+2. Start a new quest.
+3. Confirm the D-pad is fixed at the bottom of the game viewport and does not scroll with the page.
+4. Tap and hold left, right, up, and down.
+5. Confirm the page does not scroll when tapping controls.
+6. Rotate to landscape and confirm the canvas is not tiny or stretched and the fixed controls remain usable.
+
+Debug/computer mode:
+
+- `?realmDebug=1` shows the live debug panel, including the latest input result.
+- `?computerMode=1&speed=fast` runs the real playthrough check and now validates shared input and D-pad presence before the route.
+- `?computerMode=1&speed=fast&debugDeep=1` remains the deep route regression check.
+
+Known limitations:
+
+- Browser Playwright checks require dependencies to be installed locally.
+- A real-device mobile pass is still recommended after pushing, because VM verification cannot physically feel thumb ergonomics.

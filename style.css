@@ -1051,6 +1051,9 @@ button {
   box-shadow:
     inset 0 0 0 3px #2e3036,
     inset 0 -8px 0 rgba(0, 0, 0, 0.28);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .realm-action-pad {
@@ -1249,13 +1252,35 @@ button {
 }
 
 @media (max-width: 640px) {
+  body.realm-playing {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100svh;
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+
   .app-shell {
     padding: 0.35rem;
+  }
+
+  body.realm-playing .app-shell {
+    height: 100svh;
+    overflow: hidden;
   }
 
   .realm-play {
     padding: 0.45rem;
     gap: 0.45rem;
+  }
+
+  body.realm-playing .realm-play {
+    height: 100svh;
+    max-height: 100svh;
+    overflow: hidden;
+    padding-bottom: calc(166px + env(safe-area-inset-bottom));
   }
 
   .realm-topbar {
@@ -1309,8 +1334,9 @@ button {
   }
 
   .realm-neo-view {
-    min-height: clamp(250px, 46vh, 390px);
-    aspect-ratio: 9 / 10;
+    min-height: clamp(270px, 52svh, 430px);
+    max-height: calc(100svh - 235px);
+    aspect-ratio: 4 / 5;
   }
 
   .realm-neo__caption {
@@ -1334,9 +1360,11 @@ button {
 
   .realm-control-deck {
     order: 4;
-    position: sticky;
-    bottom: 0.25rem;
-    z-index: 30;
+    position: fixed;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    z-index: 60;
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     gap: 0.5rem;
@@ -1347,6 +1375,9 @@ button {
     border-radius: 6px;
     background: rgba(5, 6, 9, 0.94);
     box-shadow: 0 -14px 36px rgba(0,0,0,0.45);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .realm-dpad {
@@ -1370,6 +1401,8 @@ button {
 
   .realm-side-panel {
     order: 5;
+    min-height: 0;
+    overflow: auto;
   }
 
   .realm-log {
@@ -1466,8 +1499,29 @@ body.realm-reduced-motion *::after {
 }
 
 @media (max-width: 640px) {
+  body.realm-playing {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100svh;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
   .app-shell {
     padding: 0.35rem;
+  }
+
+  body.realm-playing .app-shell {
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  body.realm-playing .realm-play {
+    height: 100svh;
+    max-height: 100svh;
+    overflow: hidden;
+    padding-bottom: calc(166px + env(safe-area-inset-bottom));
   }
 
   .realm-layout {
@@ -1484,23 +1538,31 @@ body.realm-reduced-motion *::after {
   }
 
   .realm-neo-view {
-    min-height: clamp(250px, 46vh, 390px);
-    aspect-ratio: 9 / 10;
+    min-height: clamp(270px, 52svh, 430px);
+    max-height: calc(100svh - 235px);
+    aspect-ratio: 4 / 5;
   }
 
   .realm-control-deck {
     order: 4;
-    position: sticky;
-    bottom: 0.25rem;
-    z-index: 30;
+    position: fixed;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    z-index: 60;
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     justify-items: stretch;
-    width: 100%;
+    width: auto;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .realm-side-panel {
     order: 5;
+    min-height: 0;
+    overflow: auto;
   }
 
   .realm-action-pad {
@@ -1508,5 +1570,36 @@ body.realm-reduced-motion *::after {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     justify-content: stretch;
     width: 100%;
+  }
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+  body.realm-playing .realm-play {
+    padding-right: min(430px, 45vw);
+    padding-bottom: 0.45rem;
+  }
+
+  body.realm-playing .realm-neo-view {
+    min-height: min(72svh, 520px);
+    max-height: calc(100svh - 88px);
+    aspect-ratio: 16 / 9;
+  }
+
+  body.realm-playing .realm-control-deck {
+    left: auto;
+    right: calc(0.5rem + env(safe-area-inset-right));
+    bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    width: min(420px, 44vw);
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  body.realm-playing .realm-dpad {
+    grid-template-columns: repeat(3, 50px);
+    grid-template-rows: repeat(2, 50px);
+  }
+
+  body.realm-playing .realm-dpad .realm-button,
+  body.realm-playing .realm-action-pad .realm-button {
+    min-height: 50px;
   }
 }

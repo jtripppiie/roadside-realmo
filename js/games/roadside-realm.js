@@ -22,6 +22,9 @@
   let eventsBound = false;
   let renderCount = 0;
   let computerTimer = null;
+  let lastTouchActionAt = 0;
+  let holdDelayTimer = null;
+  let holdRepeatTimer = null;
   const runtimeErrors = [];
   const keyedImageCache = new Map();
   const computerReport = {
@@ -148,6 +151,7 @@
       ending: null,
       showMap: false,
       lastAction: 'idle',
+      lastInputResult: 'Waiting for input.',
       debug: DEBUG,
     };
   }
@@ -242,9 +246,7 @@
     elements.summaryMenu.addEventListener('click', () => showSplash());
     elements.helpClose.addEventListener('click', () => toggleHelp(false));
 
-    document.querySelectorAll('[data-action]').forEach((button) => {
-      button.addEventListener('click', () => handleAction(button.dataset.action));
-    });
+    document.querySelectorAll('[data-action]').forEach(bindActionControl);
 
     document.querySelectorAll('[data-debug-action]').forEach((button) => {
       button.addEventListener('click', () => handleDebugAction(button.dataset.debugAction));
@@ -274,6 +276,55 @@
       event.preventDefault();
       handleAction(action);
     });
+  }
+
+  function bindActionControl(button) {
+    button.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      if (button.setPointerCapture && event.pointerId !== undefined) {
+        button.setPointerCapture(event.pointerId);
+      }
+      lastTouchActionAt = Date.now();
+      dispatchSharedInput(button.dataset.action, event);
+      startHeldAction(button.dataset.action);
+    }, { passive: false });
+
+    button.addEventListener('pointerup', stopHeldAction);
+    button.addEventListener('pointercancel', stopHeldAction);
+    button.addEventListener('pointerleave', stopHeldAction);
+    button.addEventListener('lostpointercapture', stopHeldAction);
+
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      if (Date.now() - lastTouchActionAt < 500) return;
+      dispatchSharedInput(button.dataset.action, event);
+    });
+  }
+
+  function dispatchSharedInput(action, event) {
+    if (event) event.stopPropagation();
+    handleAction(action);
+  }
+
+  function startHeldAction(action) {
+    stopHeldAction();
+    if (!isHoldableAction(action)) return;
+    holdDelayTimer = window.setTimeout(() => {
+      holdRepeatTimer = window.setInterval(() => {
+        handleAction(action);
+      }, 150);
+    }, 260);
+  }
+
+  function stopHeldAction() {
+    if (window.clearTimeout) window.clearTimeout(holdDelayTimer);
+    if (window.clearInterval) window.clearInterval(holdRepeatTimer);
+    holdDelayTimer = null;
+    holdRepeatTimer = null;
+  }
+
+  function isHoldableAction(action) {
+    return ['forward', 'backward', 'turnLeft', 'turnRight'].includes(action);
   }
 
   function keyToAction(key) {
@@ -339,6 +390,8 @@
   }
 
   function showSplash() {
+    elements.body.classList.toggle('realm-playing', false);
+    stopHeldAction();
     elements.splash.hidden = false;
     elements.play.hidden = true;
     elements.summary.hidden = true;
@@ -348,6 +401,7 @@
   }
 
   function showPlay() {
+    elements.body.classList.toggle('realm-playing', true);
     state.mode = 'EXPLORING';
     elements.splash.hidden = true;
     elements.play.hidden = false;
@@ -426,7 +480,9 @@
   function rotate(delta) {
     const index = DIRECTIONS.indexOf(state.player.facing);
     state.player.facing = DIRECTIONS[(index + delta + DIRECTIONS.length) % DIRECTIONS.length];
-    addLog(delta < 0 ? 'You turn left.' : 'You turn right.');
+    const message = delta < 0 ? 'You turn left.' : 'You turn right.';
+    addLog(message);
+    state.lastInputResult = `${message} Facing ${titleCase(state.player.facing)}.`;
     debugLog('move', { action: delta < 0 ? 'turnLeft' : 'turnRight', facing: state.player.facing });
   }
 
@@ -437,6 +493,7 @@
     const check = canEnter(target);
     if (!check.ok) {
       addLog(check.message);
+      state.lastInputResult = `Blocked: ${check.message}`;
       debugLog('move', { blocked: true, from, target, message: check.message });
       return;
     }
@@ -446,6 +503,9 @@
     state.counters.steps += 1;
     revealCurrentTile();
     addLog(dir > 0 ? 'You step forward.' : 'You step back.');
+    state.lastInputResult = dir > 0
+      ? `Moved forward to ${state.player.x},${state.player.y}.`
+      : `Moved back to ${state.player.x},${state.player.y}.`;
     if (dodgedSpin) addLog('The Big Spin clips empty air.');
     resolveEnterEvent(target);
     debugLog('move', { from, to: { mapId: state.player.mapId, x: state.player.x, y: state.player.y }, facing: state.player.facing });
@@ -792,6 +852,8 @@
   }
 
   function showSummary() {
+    elements.body.classList.toggle('realm-playing', false);
+    stopHeldAction();
     elements.splash.hidden = true;
     elements.play.hidden = true;
     elements.summary.hidden = false;
@@ -1020,7 +1082,7 @@
     safeText(elements.routeState, map.name);
     safeText(elements.threatState, `Threat: ${threatText().toLowerCase()}`);
     safeText(elements.facingState, `Facing ${titleCase(state.player.facing)}`);
-    safeText(elements.frontState, ahead);
+    safeText(elements.frontState, state.lastInputResult || ahead);
     safeText(elements.roomName, map.name);
     safeText(elements.roomCoords, `x=${state.player.x}, y=${state.player.y}`);
     safeText(elements.roomAhead, ahead);
@@ -1030,7 +1092,7 @@
       ? state.player.inventory.map((id) => renderInventoryChip(id)).join('')
       : '<span class="realm-chip">No items yet</span>');
     safeHtml(elements.log, state.log.map((message) => `<li>${escapeHtml(message)}</li>`).join(''));
-    safeText(elements.live, `Facing ${state.player.facing}. ${ahead}`);
+    safeText(elements.live, `Facing ${state.player.facing}. ${ahead} ${state.lastInputResult || ''}`.trim());
     renderNeoView();
   }
 
@@ -1203,6 +1265,7 @@
       `Facing: ${state.player.facing}`,
       `Ahead Tile: ${tile || 'void'}`,
       `Ahead Event: ${event ? event.type : 'none'}`,
+      `Last Input: ${state.lastInputResult || 'none'}`,
       `HP: ${state.player.hp}/${state.player.maxHp}`,
       `Inventory: ${state.player.inventory.join(', ') || 'empty'}`,
       `Counters: ${JSON.stringify(state.counters)}`,
@@ -1230,6 +1293,7 @@
       `Fail: ${computerReport.failed}`,
       `Runtime errors: ${runtimeErrors.length}`,
       state ? `Map: ${state.player.mapId} @ ${state.player.x},${state.player.y} facing ${state.player.facing}` : 'State: not ready',
+      state ? `Last input: ${state.lastInputResult || 'none'}` : '',
       state?.ending ? `Ending: ${state.ending}` : 'Ending: not reached',
     ].join('\n'));
     safeHtml(elements.computerLog, computerReport.log.slice(0, 14).map((entry) => {
@@ -1261,22 +1325,43 @@
     return [
       ['Launch creates playable state', () => assertComputer(Boolean(state && !elements.play.hidden), 'Play screen did not open.')],
       ['Initial render completes', () => assertComputer(renderCount > 0 && Boolean(elements.neoView?.dataset.sceneSignature), 'Visible viewport did not render.')],
+      ['D-pad controls are present and action-bound', () => {
+        const actionButtons = Array.from(document.querySelectorAll('[data-action]'));
+        const availableActions = actionButtons.map((button) => button.dataset.action);
+        ['forward', 'backward', 'turnLeft', 'turnRight', 'inspect', 'attack', 'useItem', 'toggleMap'].forEach((action) => {
+          assertComputer(availableActions.includes(action), `Missing action button: ${action}.`);
+        });
+      }],
       ['Forward changes position', () => {
         const before = snapshotPlayer();
-        handleAction('forward');
+        dispatchSharedInput('forward');
         const after = snapshotPlayer();
         assertComputer(before.x !== after.x || before.y !== after.y, `Position stayed at ${after.x},${after.y}.`);
       }],
+      ['Backward changes position through shared input', () => {
+        const before = snapshotPlayer();
+        dispatchSharedInput('backward');
+        const after = snapshotPlayer();
+        assertComputer(before.x !== after.x || before.y !== after.y, `Backward stayed at ${after.x},${after.y}.`);
+        dispatchSharedInput('forward');
+      }],
       ['Turn changes facing', () => {
         const before = state.player.facing;
-        handleAction('turnLeft');
+        dispatchSharedInput('turnLeft');
         assertComputer(state.player.facing !== before, `Facing stayed ${before}.`);
       }],
       ['Visible scene signature changes after input', () => {
         const before = elements.neoView?.dataset.sceneSignature || '';
-        handleAction('turnRight');
+        dispatchSharedInput('turnRight');
         const after = elements.neoView?.dataset.sceneSignature || '';
         assertComputer(after && after !== before, 'Scene signature did not change.');
+      }],
+      ['Blocked movement reports a visible input result', () => {
+        jumpTo('map-kiosk-dungeon', 1, 1, 'west');
+        dispatchSharedInput('forward');
+        assertComputer((state.lastInputResult || '').startsWith('Blocked:'), `Blocked state was not reported: ${state.lastInputResult || 'none'}.`);
+        jumpTo('map-kiosk-dungeon', 1, 2, 'south');
+        render();
       }],
       ['Item pickup works through movement', () => {
         handleAction('forward');
@@ -1504,7 +1589,14 @@
     let guard = 0;
     while (guard < 40) {
       const event = eventAhead();
-      assertComputer(event?.type === 'monster', 'No monster ahead to fight.');
+      if (event?.type !== 'monster') {
+        if (expectedMonsterId && state.monsters[expectedMonsterId]?.hp > 0) {
+          computerStandFacingMonster(expectedMonsterId);
+          guard += 1;
+          continue;
+        }
+        assertComputer(event?.type === 'monster', 'No monster ahead to fight.');
+      }
       assertComputer(!expectedMonsterId || event.monsterId === expectedMonsterId, `Expected ${expectedMonsterId}, got ${event.monsterId}.`);
       const monster = state.monsters[event.monsterId];
       if (!monster || monster.hp <= 0) return;
@@ -1521,6 +1613,36 @@
       guard += 1;
     }
     throw new Error('Combat did not resolve within 40 actions.');
+  }
+
+  function computerStandFacingMonster(monsterId) {
+    let targetMap = null;
+    let targetEvent = null;
+    Object.values(DATA.maps).some((map) => {
+      const entry = Object.entries(map.events || {}).find(([, event]) => event.type === 'monster' && event.monsterId === monsterId);
+      if (!entry) return false;
+      const [coords, event] = entry;
+      const [x, y] = coords.split(',').map(Number);
+      targetMap = map;
+      targetEvent = { ...event, x, y };
+      return true;
+    });
+    assertComputer(targetMap && targetEvent, `Could not find monster ${monsterId}.`);
+    assertComputer(state.player.mapId === targetMap.id, `Cannot route to ${monsterId} from ${state.player.mapId}.`);
+
+    const standOptions = DIRECTIONS.map((direction) => {
+      const vector = VECTORS[direction];
+      return {
+        x: targetEvent.x - vector.x,
+        y: targetEvent.y - vector.y,
+        facing: direction,
+      };
+    }).filter((point) => isComputerTraversable(targetMap, point));
+
+    assertComputer(standOptions.length, `No stand point found for ${monsterId}.`);
+    const point = standOptions[0];
+    computerGoTo(targetMap.id, point.x, point.y);
+    computerFace(point.facing);
   }
 
   function handleDebugAction(action) {
