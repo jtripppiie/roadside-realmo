@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#24314a">
+    <title>Roadside Realm</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <main id="app" class="app-shell">
+      <section id="realm-game" class="realm-game" aria-labelledby="realm-heading">
+        <div id="realm-splash" class="realm-splash">
+          <div class="realm-splash__art" aria-hidden="true">
+            <div class="realm-kiosk">
+              <span class="realm-kiosk__route realm-kiosk__route--main"></span>
+              <span class="realm-kiosk__route realm-kiosk__route--moon"></span>
+              <span class="realm-kiosk__star"></span>
+            </div>
+          </div>
+          <div class="realm-splash__content">
+            <p class="realm-eyebrow">Road Trip Adventures Quest</p>
+            <h1 id="realm-heading">Roadside Realm</h1>
+            <p class="realm-splash__copy">
+              Enter a glowing roadside map kiosk, recover the Mapstone, and find the hidden road beneath the road.
+            </p>
+            <div class="realm-splash__actions">
+              <button id="realm-start" class="realm-button realm-button--primary" type="button">Start New Quest</button>
+              <button id="realm-continue" class="realm-button" type="button" hidden>Continue Quest</button>
+              <button id="realm-reset-save" class="realm-button realm-button--ghost" type="button" hidden>Reset Quest</button>
+            </div>
+            <fieldset class="realm-options">
+              <legend>Options</legend>
+              <label><input id="realm-option-motion" type="checkbox"> Reduced motion</label>
+              <label><input id="realm-option-contrast" type="checkbox"> High contrast</label>
+              <label><input id="realm-option-large-text" type="checkbox"> Large text</label>
+              <label><input id="realm-option-sound" type="checkbox"> Sound</label>
+            </fieldset>
+            <p class="realm-credit">Made by TripperDeeLabs.</p>
+            <p class="realm-version">App v0.1.0 · Roadside Realm 0.1.0</p>
+          </div>
+        </div>
+
+        <div id="realm-play" class="realm-play" hidden>
+          <header class="realm-topbar">
+            <div>
+              <p class="realm-eyebrow">Roadside Realm</p>
+              <h2 id="realm-title">Find the Mapstone</h2>
+            </div>
+            <div id="realm-objective" class="realm-objective" aria-live="polite">
+              Find the Mapstone hidden inside the roadside realm.
+            </div>
+          </header>
+
+          <section class="realm-status-grid" aria-label="Player status">
+            <div class="realm-stat"><span>HP</span><strong id="realm-hp">18/18</strong></div>
+            <div class="realm-stat"><span>ATK</span><strong id="realm-atk">4</strong></div>
+            <div class="realm-stat"><span>DEF</span><strong id="realm-def">1</strong></div>
+            <div class="realm-stat"><span>LVL</span><strong id="realm-level">1</strong></div>
+            <div class="realm-stat"><span>Gold</span><strong id="realm-gold">0</strong></div>
+          </section>
+
+          <div class="realm-layout">
+            <div class="realm-view-panel">
+              <canvas
+                id="realm-canvas"
+                class="realm-canvas"
+                width="720"
+                height="420"
+                aria-label="First-person dungeon view for Roadside Realm"
+              ></canvas>
+              <div id="realm-live" class="visually-hidden" aria-live="polite"></div>
+            </div>
+
+            <aside class="realm-side-panel">
+              <section aria-labelledby="realm-inventory-title">
+                <h3 id="realm-inventory-title">Inventory</h3>
+                <div id="realm-inventory" class="realm-inventory"></div>
+              </section>
+              <section aria-labelledby="realm-log-title">
+                <h3 id="realm-log-title">Log</h3>
+                <ol id="realm-log" class="realm-log" aria-label="Adventure log"></ol>
+              </section>
+            </aside>
+          </div>
+
+          <div class="realm-control-deck">
+            <div class="realm-dpad" aria-label="Movement controls">
+              <button class="realm-button realm-dpad__up" data-action="forward" type="button" aria-label="Move forward">▲</button>
+              <button class="realm-button realm-dpad__left" data-action="turnLeft" type="button" aria-label="Turn left">◀</button>
+              <button class="realm-button realm-dpad__down" data-action="backward" type="button" aria-label="Move backward">▼</button>
+              <button class="realm-button realm-dpad__right" data-action="turnRight" type="button" aria-label="Turn right">▶</button>
+            </div>
+            <div class="realm-action-pad" aria-label="Action controls">
+              <button class="realm-button" data-action="inspect" type="button">Inspect</button>
+              <button class="realm-button" data-action="attack" type="button">Attack</button>
+              <button class="realm-button" data-action="useItem" type="button">Item</button>
+              <button class="realm-button" data-action="toggleMap" type="button">Map</button>
+              <button class="realm-button" data-action="save" type="button">Save</button>
+              <button class="realm-button realm-button--ghost" data-action="showSplash" type="button">Menu</button>
+            </div>
+          </div>
+
+          <section id="realm-debug" class="realm-debug" hidden aria-labelledby="realm-debug-title">
+            <h3 id="realm-debug-title">Roadside Realm Debug</h3>
+            <pre id="realm-debug-status" class="realm-debug__status"></pre>
+            <div class="realm-debug__actions" aria-label="Debug controls">
+              <button class="realm-button" data-debug-action="heal" type="button">Heal Player</button>
+              <button class="realm-button" data-debug-action="giveMapstone" type="button">Give Mapstone</button>
+              <button class="realm-button" data-debug-action="giveMoonToken" type="button">Give Moon Toll Token</button>
+              <button class="realm-button" data-debug-action="jumpMain" type="button">Jump Main</button>
+              <button class="realm-button" data-debug-action="jumpUnderpass" type="button">Jump Underpass</button>
+              <button class="realm-button" data-debug-action="jumpBoss" type="button">Jump Boss</button>
+              <button class="realm-button" data-debug-action="jumpExit" type="button">Jump Exit</button>
+              <button class="realm-button" data-debug-action="revealMap" type="button">Reveal Map</button>
+              <button class="realm-button" data-debug-action="resetSave" type="button">Reset Realm Save</button>
+              <button class="realm-button" data-debug-action="logState" type="button">Log State</button>
+            </div>
+          </section>
+        </div>
+
+        <section id="realm-summary" class="realm-summary" hidden aria-labelledby="realm-summary-title">
+          <h2 id="realm-summary-title">Roadside Realm Complete</h2>
+          <p id="realm-summary-copy"></p>
+          <dl id="realm-summary-stats" class="realm-summary-stats"></dl>
+          <div class="realm-splash__actions">
+            <button id="realm-summary-new" class="realm-button realm-button--primary" type="button">Start New Quest</button>
+            <button id="realm-summary-menu" class="realm-button" type="button">Back to Splash</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="js/games/roadside-realm-data.js"></script>
+    <script src="js/games/roadside-realm.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
