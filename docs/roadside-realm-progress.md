@@ -152,3 +152,36 @@ Next recommended work:
 3. Add custom primitive sprites for Dust Goblin, Map Bat, Toll Troll, and Blueprint Warden.
 4. Add service worker/cache only after preview paths settle.
 5. Expand the QA checklist with pass/fail notes from real browser testing.
+
+## 2026-06-28 Checkpoint: Visual Polish Preview
+
+This checkpoint improves the public preview's visual readability without adding new asset files or new systems.
+
+Version changes:
+
+- Visible version badge: `App v0.2.1 · Roadside Realm 0.2.1`.
+- Roadside Realm game data version: `0.2.1`.
+- Save wrapper remains version `1`.
+
+Implemented in this checkpoint:
+
+- Added map-specific canvas palettes for:
+  - Map Kiosk Dungeon
+  - Forgotten Underpass
+  - Never-Finished Mansion
+  - Hidden Conservatory
+- Added a room/map banner inside the canvas.
+- Added painted mansion door rendering.
+- Added hidden Conservatory glass-path rendering.
+- Replaced generic fallback monster block with distinct primitive silhouettes for:
+  - Dust Goblin
+  - Map Bat
+  - Toll Troll
+  - Blueprint Warden
+- Kept Signpost Ogre and Moonlit Warden wired to generated sprite assets.
+
+Known limitations after this checkpoint:
+
+- Browser console QA still needs a real browser environment.
+- Primitive sprites are improved placeholders, not final production sprite sheets.
+- Mansion room layout is still compact and needs final expansion/polish.

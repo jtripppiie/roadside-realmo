@@ -976,26 +976,41 @@
     const target = tileAhead(1);
     const event = getEvent(map, target.x, target.y);
     const tile = getTile(map, target.x, target.y);
+    const theme = themeForMap(map.id);
 
     ctx.clearRect(0, 0, w, h);
     const sky = ctx.createLinearGradient(0, 0, 0, h * 0.5);
-    sky.addColorStop(0, map.id === 'forgotten-underpass' ? '#121923' : '#24314a');
-    sky.addColorStop(1, '#17191f');
+    sky.addColorStop(0, theme.sky);
+    sky.addColorStop(1, theme.shadow);
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, w, h * 0.5);
     const floor = ctx.createLinearGradient(0, h * 0.5, 0, h);
-    floor.addColorStop(0, map.id === 'forgotten-underpass' ? '#263342' : '#5b4632');
-    floor.addColorStop(1, '#17191f');
+    floor.addColorStop(0, theme.floor);
+    floor.addColorStop(1, theme.shadow);
     ctx.fillStyle = floor;
     ctx.fillRect(0, h * 0.5, w, h * 0.5);
 
-    drawCorridor(ctx, tile, event);
+    drawCorridor(ctx, tile, event, theme);
+    drawRoomBanner(ctx, map.name, theme);
     drawCompass(ctx);
     if (state.showMap) drawMiniMap(ctx);
   }
 
-  function drawCorridor(ctx, tile, event) {
-    const wall = '#7d7462';
+  function themeForMap(mapId) {
+    if (mapId === 'forgotten-underpass') {
+      return { sky: '#121923', floor: '#263342', wall: '#42566c', accent: '#9de8ff', shadow: '#0b1018' };
+    }
+    if (mapId === 'never-finished-mansion') {
+      return { sky: '#2d2235', floor: '#3e3028', wall: '#806f82', accent: '#f3c64e', shadow: '#17111d' };
+    }
+    if (mapId === 'hidden-conservatory') {
+      return { sky: '#18342f', floor: '#2d4a3d', wall: '#5f8a70', accent: '#c9f7d5', shadow: '#0f1d1a' };
+    }
+    return { sky: '#24314a', floor: '#5b4632', wall: '#7d7462', accent: '#f3c64e', shadow: '#17191f' };
+  }
+
+  function drawCorridor(ctx, tile, event, theme) {
+    const wall = theme.wall;
     ctx.strokeStyle = 'rgba(244,230,193,0.25)';
     ctx.lineWidth = 4;
     ctx.beginPath();
@@ -1019,12 +1034,25 @@
 
     ctx.fillStyle = 'rgba(244,230,193,0.08)';
     ctx.fillRect(270, 125, 180, 175);
+    if (event?.type === 'mansionDoor') drawMansionDoor(ctx, theme);
+    if (event?.type === 'hiddenConservatory') drawConservatoryDoor(ctx, theme);
     if (event?.type === 'monster') {
       const monster = state.monsters[event.monsterId];
       if (monster?.hp > 0) drawMonster(ctx, monster);
     }
     if (event?.type === 'item') drawItem(ctx, event.itemId);
     if (event?.type === 'exit') drawExit(ctx);
+  }
+
+  function drawRoomBanner(ctx, name, theme) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(23,25,31,0.72)';
+    ctx.fillRect(18, 374, 300, 30);
+    ctx.fillStyle = theme.accent;
+    ctx.font = '800 14px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(name, 30, 394);
+    ctx.restore();
   }
 
   function drawWallTexture(ctx, x, y, width, height) {
@@ -1055,6 +1083,45 @@
     for (let x = 180; x < 540; x += 48) {
       ctx.fillRect(x, 205, 24, 34);
     }
+  }
+
+  function drawMansionDoor(ctx, theme) {
+    ctx.save();
+    ctx.fillStyle = '#3a2633';
+    ctx.strokeStyle = theme.accent;
+    ctx.lineWidth = 5;
+    ctx.fillRect(302, 125, 116, 175);
+    ctx.strokeRect(302, 125, 116, 175);
+    ctx.fillStyle = '#f4e6c1';
+    ctx.fillRect(352, 198, 16, 16);
+    ctx.strokeStyle = 'rgba(244,230,193,0.5)';
+    ctx.beginPath();
+    ctx.moveTo(320, 145);
+    ctx.lineTo(400, 145);
+    ctx.moveTo(320, 175);
+    ctx.lineTo(400, 175);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawConservatoryDoor(ctx, theme) {
+    ctx.save();
+    ctx.strokeStyle = theme.accent;
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(310, 130);
+    ctx.bezierCurveTo(350, 95, 410, 130, 410, 205);
+    ctx.lineTo(410, 300);
+    ctx.lineTo(310, 300);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(201,247,213,0.16)';
+    ctx.fill();
+    ctx.fillStyle = '#c9f7d5';
+    ctx.font = '800 18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Glass path', 360, 326);
+    ctx.restore();
   }
 
   function drawMoonScratch(ctx) {
@@ -1096,9 +1163,102 @@
 
     ctx.save();
     ctx.translate(360, 245);
-    ctx.fillStyle = monster.boss ? '#3e8f68' : monster.secret ? '#8fd3ff' : '#e56b2f';
+    drawPrimitiveMonster(ctx, monster);
+    ctx.fillStyle = '#fff';
+    ctx.font = '700 18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(monster.name, 0, 105);
+    ctx.fillText(`${monster.hp}/${monster.maxHp} HP`, 0, 130);
+    ctx.restore();
+  }
+
+  function drawPrimitiveMonster(ctx, monster) {
     ctx.strokeStyle = '#17191f';
     ctx.lineWidth = 6;
+    if (monster.type === 'dust-goblin') {
+      ctx.fillStyle = '#b99a62';
+      ctx.beginPath();
+      ctx.roundRect(-58, -38, 116, 84, 18);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#f4e6c1';
+      ctx.beginPath();
+      ctx.moveTo(-28, -40);
+      ctx.lineTo(-8, -78);
+      ctx.lineTo(10, -40);
+      ctx.moveTo(22, -40);
+      ctx.lineTo(42, -74);
+      ctx.lineTo(50, -35);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#17191f';
+      ctx.beginPath();
+      ctx.arc(-18, -10, 6, 0, Math.PI * 2);
+      ctx.arc(20, -10, 6, 0, Math.PI * 2);
+      ctx.fill();
+      drawTinySign(ctx, -8, 36, 'KEY');
+      return;
+    }
+    if (monster.type === 'map-bat') {
+      ctx.fillStyle = '#f4e6c1';
+      ctx.beginPath();
+      ctx.moveTo(-120, -20);
+      ctx.lineTo(-35, -72);
+      ctx.lineTo(-20, -8);
+      ctx.lineTo(-72, 26);
+      ctx.closePath();
+      ctx.moveTo(120, -20);
+      ctx.lineTo(35, -72);
+      ctx.lineTo(20, -8);
+      ctx.lineTo(72, 26);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#24314a';
+      ctx.beginPath();
+      ctx.arc(0, -12, 34, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#8fd3ff';
+      ctx.beginPath();
+      ctx.arc(-10, -20, 5, 0, Math.PI * 2);
+      ctx.arc(12, -20, 5, 0, Math.PI * 2);
+      ctx.fill();
+      return;
+    }
+    if (monster.type === 'toll-troll') {
+      ctx.fillStyle = '#3e8f68';
+      ctx.beginPath();
+      ctx.roundRect(-64, -82, 128, 140, 12);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#e56b2f';
+      ctx.fillRect(-82, -18, 164, 22);
+      ctx.strokeRect(-82, -18, 164, 22);
+      drawTinySign(ctx, 0, -44, 'TOLL');
+      return;
+    }
+    if (monster.type === 'blueprint-warden') {
+      ctx.fillStyle = '#806f82';
+      ctx.beginPath();
+      ctx.roundRect(-72, -98, 144, 174, 10);
+      ctx.fill();
+      ctx.stroke();
+      ctx.strokeStyle = '#f3c64e';
+      ctx.lineWidth = 4;
+      for (let y = -70; y <= 35; y += 28) {
+        ctx.beginPath();
+        ctx.moveTo(-48, y);
+        ctx.lineTo(48, y + 10);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#f3c64e';
+      ctx.fillRect(-38, -16, 76, 28);
+      ctx.strokeStyle = '#17191f';
+      ctx.strokeRect(-38, -16, 76, 28);
+      return;
+    }
+    ctx.fillStyle = monster.boss ? '#3e8f68' : monster.secret ? '#8fd3ff' : '#e56b2f';
     ctx.beginPath();
     ctx.roundRect(-70, -95, 140, 170, 16);
     ctx.fill();
@@ -1107,11 +1267,20 @@
     ctx.beginPath();
     ctx.arc(0, -36, 18, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#fff';
-    ctx.font = '700 18px sans-serif';
+  }
+
+  function drawTinySign(ctx, x, y, label) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = '#f3c64e';
+    ctx.strokeStyle = '#17191f';
+    ctx.lineWidth = 4;
+    ctx.fillRect(-34, -14, 68, 28);
+    ctx.strokeRect(-34, -14, 68, 28);
+    ctx.fillStyle = '#17191f';
+    ctx.font = '900 12px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(monster.name, 0, 105);
-    ctx.fillText(`${monster.hp}/${monster.maxHp} HP`, 0, 130);
+    ctx.fillText(label, 0, 5);
     ctx.restore();
   }
 
