@@ -1010,30 +1010,16 @@
   }
 
   function drawCorridor(ctx, tile, event, theme) {
-    const wall = theme.wall;
-    ctx.strokeStyle = 'rgba(244,230,193,0.25)';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(0, 420);
-    ctx.lineTo(270, 230);
-    ctx.lineTo(450, 230);
-    ctx.lineTo(720, 420);
-    ctx.stroke();
+    drawPerspectiveTunnel(ctx, theme);
 
     if (!tile || tile === '#' || event?.type === 'lockedDoor' || event?.type === 'hiddenWall') {
-      ctx.fillStyle = wall;
-      ctx.fillRect(140, 55, 440, 310);
-      ctx.strokeStyle = '#17191f';
-      ctx.lineWidth = 5;
-      ctx.strokeRect(140, 55, 440, 310);
-      drawWallTexture(ctx, 140, 55, 440, 310);
+      drawFrontWall(ctx, theme);
       if (event?.type === 'lockedDoor' && !state.flags[event.flag]) drawTollGate(ctx);
       if (event?.type === 'hiddenWall' && state.flags[event.requiredFlag]) drawMoonScratch(ctx);
       return;
     }
 
-    ctx.fillStyle = 'rgba(244,230,193,0.08)';
-    ctx.fillRect(270, 125, 180, 175);
+    drawOpenPassage(ctx, theme);
     if (event?.type === 'mansionDoor') drawMansionDoor(ctx, theme);
     if (event?.type === 'hiddenConservatory') drawConservatoryDoor(ctx, theme);
     if (event?.type === 'monster') {
@@ -1042,6 +1028,84 @@
     }
     if (event?.type === 'item') drawItem(ctx, event.itemId);
     if (event?.type === 'exit') drawExit(ctx);
+  }
+
+  function drawPerspectiveTunnel(ctx, theme) {
+    const near = { x: 52, y: 26, w: 616, h: 368 };
+    const mid = { x: 142, y: 76, w: 436, h: 268 };
+    const far = { x: 246, y: 132, w: 228, h: 154 };
+    ctx.save();
+    ctx.fillStyle = shade(theme.wall, -24);
+    fillPoly(ctx, [[0, 0], [near.x, near.y], [near.x, near.y + near.h], [0, 420]]);
+    fillPoly(ctx, [[720, 0], [near.x + near.w, near.y], [near.x + near.w, near.y + near.h], [720, 420]]);
+    ctx.fillStyle = shade(theme.wall, -10);
+    fillPoly(ctx, [[near.x, near.y], [mid.x, mid.y], [mid.x, mid.y + mid.h], [near.x, near.y + near.h]]);
+    fillPoly(ctx, [[near.x + near.w, near.y], [mid.x + mid.w, mid.y], [mid.x + mid.w, mid.y + mid.h], [near.x + near.w, near.y + near.h]]);
+    ctx.fillStyle = shade(theme.wall, 4);
+    fillPoly(ctx, [[mid.x, mid.y], [far.x, far.y], [far.x, far.y + far.h], [mid.x, mid.y + mid.h]]);
+    fillPoly(ctx, [[mid.x + mid.w, mid.y], [far.x + far.w, far.y], [far.x + far.w, far.y + far.h], [mid.x + mid.w, mid.y + mid.h]]);
+    ctx.strokeStyle = 'rgba(244,230,193,0.22)';
+    ctx.lineWidth = 4;
+    [near, mid, far].forEach((rect) => ctx.strokeRect(rect.x, rect.y, rect.w, rect.h));
+    ctx.strokeStyle = theme.accent;
+    ctx.lineWidth = 3;
+    ctx.globalAlpha = 0.55;
+    ctx.beginPath();
+    ctx.moveTo(324, 420);
+    ctx.lineTo(350, 292);
+    ctx.moveTo(396, 420);
+    ctx.lineTo(370, 292);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawFrontWall(ctx, theme) {
+    ctx.save();
+    ctx.fillStyle = theme.wall;
+    ctx.fillRect(128, 48, 464, 324);
+    ctx.strokeStyle = '#08090d';
+    ctx.lineWidth = 8;
+    ctx.strokeRect(128, 48, 464, 324);
+    ctx.strokeStyle = 'rgba(244,230,193,0.32)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(144, 64, 432, 292);
+    drawWallTexture(ctx, 128, 48, 464, 324);
+    ctx.fillStyle = theme.accent;
+    ctx.globalAlpha = 0.72;
+    ctx.fillRect(174, 82, 90, 14);
+    ctx.fillRect(456, 326, 86, 12);
+    ctx.restore();
+  }
+
+  function drawOpenPassage(ctx, theme) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(8,9,13,0.58)';
+    ctx.fillRect(246, 132, 228, 154);
+    ctx.strokeStyle = theme.accent;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(246, 132, 228, 154);
+    ctx.fillStyle = 'rgba(244,230,193,0.10)';
+    ctx.fillRect(300, 184, 120, 74);
+    ctx.restore();
+  }
+
+  function fillPoly(ctx, points) {
+    ctx.beginPath();
+    points.forEach(([x, y], index) => {
+      if (index === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function shade(hex, amount) {
+    const clean = hex.replace('#', '');
+    const num = parseInt(clean, 16);
+    const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+    const g = Math.max(0, Math.min(255, ((num >> 8) & 255) + amount));
+    const b = Math.max(0, Math.min(255, (num & 255) + amount));
+    return `rgb(${r}, ${g}, ${b})`;
   }
 
   function drawRoomBanner(ctx, name, theme) {

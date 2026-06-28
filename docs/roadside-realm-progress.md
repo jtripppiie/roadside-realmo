@@ -185,3 +185,31 @@ Known limitations after this checkpoint:
 - Browser console QA still needs a real browser environment.
 - Primitive sprites are improved placeholders, not final production sprite sheets.
 - Mansion room layout is still compact and needs final expansion/polish.
+
+## 2026-06-28 Checkpoint: Retro Dungeon Feel Pass
+
+This checkpoint responds to the preview not feeling enough like an old-school first-person dungeon crawler. It keeps Roadside Realm original and avoids copying protected QuestLord content, while pushing the broad genre language closer to a classic grid-based RPG.
+
+Version changes:
+
+- Visible version badge: `App v0.2.2 · Roadside Realm 0.2.2`.
+- Roadside Realm game data version: `0.2.2`.
+- Save wrapper remains version `1`.
+
+Implemented in this checkpoint:
+
+- Reworked the play screen into a darker, chunkier RPG console frame.
+- Added thicker viewport border treatment.
+- Tightened the HUD/status strip.
+- Restyled inventory/log panels as compact RPG side panels.
+- Restyled D-pad and command buttons with heavier borders and pressed-control feel.
+- Replaced the flat canvas corridor with a deeper perspective tunnel made from side wall panels and nested depth frames.
+- Added a stronger front-wall rendering for blocked tiles.
+- Added an open-passage rendering for walkable corridors.
+- Kept the original Roadside Realm story, items, maps, and art direction intact.
+
+Known limitations after this checkpoint:
+
+- Still needs true browser screenshot review on desktop and mobile.
+- Canvas perspective is hand-drawn rather than raycasted.
+- It is closer to the old-school dungeon crawler feel, but still not final art direction.
