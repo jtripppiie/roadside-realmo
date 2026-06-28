@@ -30,8 +30,35 @@
       '2,9': { type: 'heal', healAmount: 6, text: 'A trickle of leftover soda fizzes near a drain grate.' },
       '5,10': { type: 'monster', monsterId: 'signpost-ogre-1' },
       '10,1': { type: 'item', itemId: 'mapstone', requiresFlag: 'bossDefeated', blockedText: 'The Mapstone is sealed until the Signpost Ogre is defeated.', text: 'The Mapstone hums like a tiny dashboard compass.' },
+      '9,5': { type: 'soldotnaGate', requiredItem: 'mapstone', mapId: 'soldotna-wayside', x: 1, y: 1, facing: 'east', blockedText: 'A blue river route ripples on the wall, but the Mapstone has not learned its current yet.', text: 'The Mapstone catches a cold blue route. The wall opens into a river-bright wayside.' },
       '1,7': { type: 'secretSwitch', flag: 'secretSwitchPressed', text: 'You press a loose map pin. Somewhere, a hidden wall clicks.' },
       '10,6': { type: 'hiddenWall', requiredFlag: 'secretSwitchPressed', flag: 'secretWallOpen', text: 'A moon-shaped scratch glows. The wall slides open.', blockedText: 'A dusty wall. It sounds hollow when you knock.' },
+    },
+  };
+
+  const SOLDOTNA_WAYSIDE = {
+    id: 'soldotna-wayside',
+    name: 'Soldotna Creek Wayside',
+    width: 9,
+    height: 9,
+    start: { x: 1, y: 1, facing: 'east' },
+    tiles: [
+      '#########',
+      '#R..M..G#',
+      '#.###.#.#',
+      '#...#.#.#',
+      '###.#T#.#',
+      '#...#...#',
+      '#.###M###',
+      '#.......#',
+      '#########',
+    ],
+    events: {
+      '1,1': { type: 'return', mapId: 'map-kiosk-dungeon', x: 9, y: 5, facing: 'west', text: 'You follow the blue route back from the Soldotna Creek Wayside.' },
+      '4,1': { type: 'monster', monsterId: 'spruce-signling-1' },
+      '5,4': { type: 'item', itemId: 'midnight-sun-snack', text: 'A midnight-sun snack packet glows beside a spruce-root bench.' },
+      '5,6': { type: 'monster', monsterId: 'river-current-sprite-1' },
+      '7,1': { type: 'item', itemId: 'kenai-river-charm', text: 'You found the Kenai River Charm. A blue route line curls across your map.' },
     },
   };
 
@@ -106,13 +133,14 @@
   };
 
   window.RTA_ROADSIDE_REALM_DATA = {
-    version: '0.2.6',
+    version: '0.2.8',
     title: 'Roadside Realm',
     saveKey: 'rtaRoadsideRealmSave',
     startMap: 'map-kiosk-dungeon',
     start: { mapId: 'map-kiosk-dungeon', x: 1, y: 1, facing: 'south' },
     maps: {
       [MAP_KIOSK_DUNGEON.id]: MAP_KIOSK_DUNGEON,
+      [SOLDOTNA_WAYSIDE.id]: SOLDOTNA_WAYSIDE,
       [FORGOTTEN_UNDERPASS.id]: FORGOTTEN_UNDERPASS,
       [NEVER_FINISHED_MANSION.id]: NEVER_FINISHED_MANSION,
       [HIDDEN_CONSERVATORY.id]: HIDDEN_CONSERVATORY,
@@ -125,6 +153,8 @@
       'blueprint-key': { id: 'blueprint-key', name: 'Blueprint Key', type: 'quest', description: 'A flat brass key shaped like a folded floor plan.' },
       'star-map-fragment': { id: 'star-map-fragment', name: 'Star Map Fragment', type: 'quest', description: 'A torn piece of map showing a road through a mansion hallway.' },
       'glass-rose': { id: 'glass-rose', name: 'Glass Rose', type: 'collectible', description: 'A glass rose from a Conservatory that should not exist.' },
+      'midnight-sun-snack': { id: 'midnight-sun-snack', name: 'Midnight Sun Snack', type: 'consumable', heal: 10, description: 'A bright wayside snack that restores 10 HP.' },
+      'kenai-river-charm': { id: 'kenai-river-charm', name: 'Kenai River Charm', type: 'collectible', description: 'A blue charm inspired by river parks, spruce trails, and salmon-bright water.' },
     },
     monsters: {
       'dust-goblin-1': { id: 'dust-goblin-1', type: 'dust-goblin', name: 'Dust Goblin', hp: 7, maxHp: 7, attack: 3, defense: 0, xp: 3, gold: 2, text: 'A Dust Goblin rattles an old motel key at you.' },
@@ -133,6 +163,8 @@
       'signpost-ogre-1': { id: 'signpost-ogre-1', type: 'signpost-ogre', name: 'Signpost Ogre', hp: 26, maxHp: 26, attack: 5, defense: 1, xp: 8, gold: 8, boss: true, text: 'The Signpost Ogre spins its arrow-arms and blocks the goal corridor.' },
       'moonlit-warden-1': { id: 'moonlit-warden-1', type: 'moonlit-warden', name: 'Moonlit Warden', hp: 22, maxHp: 22, attack: 5, defense: 2, xp: 8, gold: 6, secret: true, text: 'The Moonlit Warden guards the route that does not appear on ordinary maps.' },
       'blueprint-warden-1': { id: 'blueprint-warden-1', type: 'blueprint-warden', name: 'Blueprint Warden', hp: 24, maxHp: 24, attack: 5, defense: 2, xp: 9, gold: 7, secret: true, text: 'The Blueprint Warden folds the hallway into a shield.' },
+      'spruce-signling-1': { id: 'spruce-signling-1', type: 'spruce-signling', name: 'Spruce Signling', hp: 10, maxHp: 10, attack: 3, defense: 1, xp: 4, gold: 3, text: 'A Spruce Signling points a wooden trail sign across the river route.' },
+      'river-current-sprite-1': { id: 'river-current-sprite-1', type: 'river-current-sprite', name: 'River Current Sprite', hp: 14, maxHp: 14, attack: 4, defense: 1, xp: 5, gold: 4, text: 'A River Current Sprite swirls like cold blue water over polished stones.' },
     },
   };
 })();

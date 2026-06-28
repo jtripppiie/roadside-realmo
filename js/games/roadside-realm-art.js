@@ -1,6 +1,26 @@
 (function () {
   window.RTA_ROADSIDE_REALM_ART = {
-    version: '0.2.6',
+    version: '0.2.8',
+    assetFiles: {
+      signpostOgre: 'assets/roadside-realm/sprites/realm-sprite-signpost-ogre.png',
+      moonlitWarden: 'assets/roadside-realm/sprites/realm-sprite-moonlit-warden.png',
+      itemSheet: 'assets/roadside-realm/items/realm-items-core.png',
+      moonScratch: 'assets/roadside-realm/tiles/realm-tile-hidden-moon-scratch.png',
+      trueRouteEnding: 'assets/roadside-realm/endings/realm-ending-true-route.png',
+    },
+    itemSheet: {
+      frameCount: 8,
+      order: [
+        'rusty-road-key',
+        'mapstone',
+        'moon-toll-token',
+        'apple-juice-potion',
+        'snack-charm',
+        'postcard-shield',
+        'compass-sticker',
+        'lucky-toll-coin',
+      ],
+    },
     sprites: {
       'rusty-road-key': { icon: 'key', label: 'Rusty Road Key', kind: 'quest' },
       'apple-juice-potion': { icon: 'juice', label: 'Apple Juice Potion', kind: 'consumable' },
@@ -9,6 +29,8 @@
       'blueprint-key': { icon: 'blueprint-key', label: 'Blueprint Key', kind: 'quest' },
       'star-map-fragment': { icon: 'star-map', label: 'Star Map Fragment', kind: 'quest' },
       'glass-rose': { icon: 'glass-rose', label: 'Glass Rose', kind: 'collectible' },
+      'midnight-sun-snack': { icon: 'sun-snack', label: 'Midnight Sun Snack', kind: 'consumable' },
+      'kenai-river-charm': { icon: 'river-charm', label: 'Kenai River Charm', kind: 'collectible' },
     },
     monsterSprites: {
       'dust-goblin': { icon: 'dust-goblin', label: 'Dust Goblin', frames: 2 },
@@ -17,6 +39,8 @@
       'signpost-ogre': { icon: 'signpost-ogre', label: 'Signpost Ogre', frames: 6 },
       'moonlit-warden': { icon: 'moonlit-warden', label: 'Moonlit Warden', frames: 6 },
       'blueprint-warden': { icon: 'blueprint-warden', label: 'Blueprint Warden', frames: 2 },
+      'spruce-signling': { icon: 'spruce-signling', label: 'Spruce Signling', frames: 2 },
+      'river-current-sprite': { icon: 'river-current-sprite', label: 'River Current Sprite', frames: 2 },
     },
     layers: [
       'ceiling',

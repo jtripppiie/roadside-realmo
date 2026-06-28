@@ -37,7 +37,7 @@
               <label><input id="realm-option-sound" type="checkbox"> Sound</label>
             </fieldset>
             <p class="realm-credit">Made by TripperDeeLabs.</p>
-            <p class="realm-version">App v0.2.6 · Roadside Realm 0.2.6</p>
+            <p class="realm-version">App v0.2.8 · Roadside Realm 0.2.8</p>
           </div>
         </div>
 
@@ -104,9 +104,57 @@
               <button class="realm-button" data-action="useItem" type="button">Item</button>
               <button class="realm-button" data-action="toggleMap" type="button">Map</button>
               <button class="realm-button" data-action="save" type="button">Save</button>
+              <button class="realm-button" data-action="toggleHelp" type="button">Help</button>
               <button class="realm-button realm-button--ghost" data-action="showSplash" type="button">Menu</button>
             </div>
           </div>
+
+          <section
+            id="realm-help-overlay"
+            class="realm-help-overlay"
+            hidden
+            aria-labelledby="realm-help-title"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div class="realm-help-panel">
+              <div class="realm-help-panel__header">
+                <div>
+                  <p class="realm-eyebrow">Development Cheatsheet</p>
+                  <h3 id="realm-help-title">How To Play Roadside Realm</h3>
+                </div>
+                <button id="realm-help-close" class="realm-button realm-button--ghost" type="button">Close</button>
+              </div>
+              <div class="realm-help-grid">
+                <section>
+                  <h4>Goal</h4>
+                  <p>Find the Mapstone, defeat the Signpost Ogre, and return to the kiosk exit.</p>
+                  <p>Optional routes include the Forgotten Underpass, Never-Finished Mansion, Hidden Conservatory, and Soldotna Creek Wayside.</p>
+                </section>
+                <section>
+                  <h4>Controls</h4>
+                  <ul>
+                    <li>Move: Arrow keys or WASD.</li>
+                    <li>Inspect: Enter or Space.</li>
+                    <li>Attack: F.</li>
+                    <li>Use item: I.</li>
+                    <li>Map: M.</li>
+                    <li>Help: press Ctrl three times quickly.</li>
+                  </ul>
+                </section>
+                <section>
+                  <h4>Combat</h4>
+                  <p>Monsters block the tile ahead. Attack until they clear the path. Use healing items before HP runs out.</p>
+                  <p>When the Signpost Ogre winds up Big Spin, step backward to dodge it.</p>
+                </section>
+                <section>
+                  <h4>Secrets</h4>
+                  <p>Inspect suspicious walls, moon scratches, painted doors, wallpaper seams, and blue river routes.</p>
+                  <p>The main ending works without secrets. Extra routes unlock better endings and bonus rewards.</p>
+                </section>
+              </div>
+            </div>
+          </section>
 
           <section id="realm-debug" class="realm-debug" hidden aria-labelledby="realm-debug-title">
             <h3 id="realm-debug-title">Roadside Realm Debug</h3>
@@ -120,6 +168,7 @@
               <button class="realm-button" data-debug-action="jumpMain" type="button">Jump Main</button>
               <button class="realm-button" data-debug-action="jumpUnderpass" type="button">Jump Underpass</button>
               <button class="realm-button" data-debug-action="jumpMansion" type="button">Jump Mansion</button>
+              <button class="realm-button" data-debug-action="jumpSoldotna" type="button">Jump Soldotna</button>
               <button class="realm-button" data-debug-action="jumpBoss" type="button">Jump Boss</button>
               <button class="realm-button" data-debug-action="jumpExit" type="button">Jump Exit</button>
               <button class="realm-button" data-debug-action="revealMap" type="button">Reveal Map</button>

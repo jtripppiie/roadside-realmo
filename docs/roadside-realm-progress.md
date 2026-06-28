@@ -16,7 +16,7 @@ GitHub default branch:
 
 GitHub Pages deployment plan:
 
-Use `codex/roadside-realm-plan-assets` as the Pages source while Roadside Realm is under active construction, so the public preview tracks the current playable checkpoint without prematurely merging incomplete game work into `main`.
+Use `main` as the Pages source while Roadside Realm is under active construction, per the current repo policy. Every pushed checkpoint should land on `main` so the public preview tracks the build the user is reviewing.
 
 ## 2026-06-28 Checkpoint: App Shell And First Playable Slice
 
@@ -334,3 +334,58 @@ Known limitations after this checkpoint:
 
 - The event hook currently feeds debug logging only; later passes can attach save, HUD, and animation listeners.
 - Sprite metadata is structural; most icons still render as simple glyphs.
+
+## Checkpoint: WarClass-Inspired Asset Safety Pass
+
+This checkpoint reviews the newly shared `haasva/WarClass-test` reference repo and the newly added local Roadside Realm images. WarClass is useful as inspiration for dense HTML/CSS RPG interface design, cell-based first-person movement, interactable overlays, and immediate RPG feedback. Its README states that most assets are placeholders from other games, so Roadside Realm must borrow structure and feel only, not assets or protected content.
+
+Version changes:
+
+- Visible version badge: `App v0.2.7 · Roadside Realm 0.2.7`.
+- Roadside Realm game data version: `0.2.7`.
+- Roadside Realm art metadata version: `0.2.7`.
+- Save wrapper remains version `1`.
+
+Implemented in this checkpoint:
+
+- Added image asset paths and item-sheet order to `window.RTA_ROADSIDE_REALM_ART`.
+- Added runtime chroma-key drawing for local sprite sheets so green-screen pixels are removed safely at render time.
+- Applied keyed drawing to Signpost Ogre, Moonlit Warden, item-sheet icons, and the moon-scratch overlay.
+- Updated QA to check `main`, `0.2.7`, and green-screen-free sprite rendering.
+- Added `.gitignore` protection for the unpacked `APKPure_3.20.7005_apkpure.com/` reference folder.
+
+Rules kept from the project plan:
+
+- WarClass is used heavily for interface and interaction inspiration only.
+- No WarClass assets, placeholder assets, or copied protected content are imported.
+- No WebGL, npm, build step, backend, analytics, GPS, or external asset loading added.
+- Roadside Realm remains original and static-GitHub-Pages friendly.
+
+## Checkpoint: Soldotna Creek Wayside Optional Level
+
+This checkpoint adds an original optional level inspired by Soldotna, Alaska. The design borrows stable public-place cues like the Kenai River, spruce-trail atmosphere, fishing/wayside identity, and midnight-sun glow without recreating real private locations, real businesses, or a literal town map.
+
+Version changes:
+
+- Visible version badge: `App v0.2.8 · Roadside Realm 0.2.8`.
+- Roadside Realm game data version: `0.2.8`.
+- Roadside Realm art metadata version: `0.2.8`.
+- Save wrapper remains version `1`.
+
+Implemented in this checkpoint:
+
+- Added `soldotna-wayside`, displayed as `Soldotna Creek Wayside`.
+- Added a blue river-route gate in the main dungeon that opens after the Mapstone.
+- Added a safe return route back to the main dungeon.
+- Added `Spruce Signling` and `River Current Sprite` encounters.
+- Added `Midnight Sun Snack` as a healing item.
+- Added `Kenai River Charm` as the wayside reward and score bonus.
+- Added a distinct blue-green canvas palette and river-route gate drawing.
+- Added a debug jump for the Soldotna level.
+- Added a development cheatsheet overlay available from the Help button or by pressing `Ctrl` three times quickly.
+- Updated QA with a Soldotna route test.
+
+Rules kept from the project plan:
+
+- This is an optional scenic detour, not a blocker for normal, secret, mansion, or conservatory endings.
+- The level is inspired by place-feel only and remains original Roadside Realm fantasy.

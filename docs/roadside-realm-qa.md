@@ -4,10 +4,10 @@ Use this checklist for every pushed preview checkpoint. Roadside Realm is not V1
 
 ## Current Preview
 
-- App version: `v0.2.6`
-- Game version: `0.2.6`
+- App version: `v0.2.8`
+- Game version: `0.2.8`
 - Save version: `1`
-- Preview branch: `codex/roadside-realm-plan-assets`
+- Preview branch: `main`
 - GitHub Pages URL: `https://jtripppiie.github.io/roadside-realmo/`
 - Debug URL: `https://jtripppiie.github.io/roadside-realmo/?realmDebug=1`
 
@@ -15,12 +15,15 @@ Use this checklist for every pushed preview checkpoint. Roadside Realm is not V1
 
 1. Open the Pages URL.
 2. Confirm the Roadside Realm splash screen appears.
-3. Confirm the visible version reads `App v0.2.6 · Roadside Realm 0.2.6`.
+3. Confirm the visible version reads `App v0.2.8 · Roadside Realm 0.2.8`.
 4. Confirm Start New Quest works.
 5. Confirm the canvas renders.
 6. Confirm the D-pad, action buttons, inventory, log, and objective are visible.
 7. Pick up an item and confirm the pickup card appears briefly.
-8. Confirm no console errors appear.
+8. Press Help and confirm the development cheatsheet overlay opens and closes.
+9. Press `Ctrl` three times quickly and confirm the cheatsheet toggles.
+10. Confirm Signpost Ogre and Moonlit Warden sprite art does not show green-screen backing.
+11. Confirm no console errors appear.
 
 ## Main Route Test
 
@@ -52,6 +55,19 @@ Use this checklist for every pushed preview checkpoint. Roadside Realm is not V1
 8. Collect the Mapstone if not already collected.
 9. Return to the kiosk exit.
 10. Confirm the Secret Star Ending appears.
+
+## Soldotna Wayside Route Test
+
+1. Defeat the Signpost Ogre and collect the Mapstone.
+2. Return to the blue river-route wall in the main dungeon.
+3. Confirm the route blocks entry before Mapstone and opens after Mapstone.
+4. Enter Soldotna Creek Wayside.
+5. Defeat the Spruce Signling.
+6. Collect the Midnight Sun Snack.
+7. Defeat the River Current Sprite.
+8. Collect the Kenai River Charm.
+9. Return to the main dungeon.
+10. Confirm the map, log, inventory, and score remain stable.
 
 ## Impossible Route Test
 

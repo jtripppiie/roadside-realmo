@@ -14,6 +14,8 @@
   let state = null;
   let elements = {};
   let inputLocked = false;
+  let ctrlPresses = [];
+  const keyedImageCache = new Map();
   const assets = {
     signpostOgre: loadImage('assets/roadside-realm/sprites/realm-sprite-signpost-ogre.png'),
     moonlitWarden: loadImage('assets/roadside-realm/sprites/realm-sprite-moonlit-warden.png'),
@@ -37,6 +39,41 @@
     image.src = src;
     image.addEventListener('load', () => render());
     return image;
+  }
+
+  function drawKeyedImage(ctx, image, sx, sy, sw, sh, dx, dy, dw, dh) {
+    if (!image?.complete || !image.naturalWidth) return false;
+    const cacheKey = `${image.src}|${sx}|${sy}|${sw}|${sh}`;
+    let canvas = keyedImageCache.get(cacheKey);
+
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(sw));
+      canvas.height = Math.max(1, Math.round(sh));
+      const keyCtx = canvas.getContext('2d');
+      keyCtx.drawImage(image, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+
+      try {
+        const imageData = keyCtx.getImageData(0, 0, canvas.width, canvas.height);
+        const pixels = imageData.data;
+        for (let i = 0; i < pixels.length; i += 4) {
+          const red = pixels[i];
+          const green = pixels[i + 1];
+          const blue = pixels[i + 2];
+          if (green > 130 && green > red * 1.35 && green > blue * 1.35) {
+            pixels[i + 3] = 0;
+          }
+        }
+        keyCtx.putImageData(imageData, 0, 0);
+      } catch (error) {
+        debugLog('error', { message: 'Unable to apply chroma key to local sprite.', error: String(error) });
+      }
+
+      keyedImageCache.set(cacheKey, canvas);
+    }
+
+    ctx.drawImage(canvas, dx, dy, dw, dh);
+    return true;
   }
 
   function createDefaultState() {
@@ -70,6 +107,8 @@
         blueprintWardenDefeated: false,
         blueprintStudyUnlocked: false,
         starMapFragmentFound: false,
+        soldotnaWaysideFound: false,
+        kenaiRiverCharmFound: false,
         hiddenConservatoryOpen: false,
         glassRoseFound: false,
         trueEndingUnlocked: false,
@@ -121,6 +160,8 @@
       pickupIcon: document.getElementById('realm-pickup-icon'),
       pickupTitle: document.getElementById('realm-pickup-title'),
       pickupText: document.getElementById('realm-pickup-text'),
+      helpOverlay: document.getElementById('realm-help-overlay'),
+      helpClose: document.getElementById('realm-help-close'),
       objective: document.getElementById('realm-objective'),
       hp: document.getElementById('realm-hp'),
       atk: document.getElementById('realm-atk'),
@@ -152,6 +193,7 @@
     elements.resetSave.addEventListener('click', () => resetGame());
     elements.summaryNew.addEventListener('click', () => newGame());
     elements.summaryMenu.addEventListener('click', () => showSplash());
+    elements.helpClose.addEventListener('click', () => toggleHelp(false));
 
     document.querySelectorAll('[data-action]').forEach((button) => {
       button.addEventListener('click', () => handleAction(button.dataset.action));
@@ -169,6 +211,15 @@
     });
 
     window.addEventListener('keydown', (event) => {
+      if (event.key === 'Control') {
+        if (event.repeat) return;
+        handleCtrlCheatSheetShortcut();
+        return;
+      }
+      if (!elements.helpOverlay.hidden) {
+        if (event.key === 'Escape') toggleHelp(false);
+        return;
+      }
       if (!elements.play || elements.play.hidden) return;
       const action = keyToAction(event.key);
       if (!action) return;
@@ -276,10 +327,27 @@
         saveGame();
         addLog('Quest saved on this device.');
       }
+      if (action === 'toggleHelp') toggleHelp();
     } finally {
       inputLocked = false;
       render();
     }
+  }
+
+  function handleCtrlCheatSheetShortcut() {
+    const now = Date.now();
+    ctrlPresses = ctrlPresses.filter((time) => now - time < 1200);
+    ctrlPresses.push(now);
+    if (ctrlPresses.length >= 3) {
+      ctrlPresses = [];
+      toggleHelp();
+    }
+  }
+
+  function toggleHelp(force) {
+    const shouldOpen = typeof force === 'boolean' ? force : elements.helpOverlay.hidden;
+    elements.helpOverlay.hidden = !shouldOpen;
+    if (shouldOpen) elements.helpClose.focus();
   }
 
   function rotate(delta) {
@@ -343,6 +411,11 @@
     if (event?.type === 'mansionDoor') {
       if (!hasItem(event.requiredItem)) return { ok: false, message: event.blockedText };
       state.flags.neverFinishedMansionUnlocked = true;
+      return { ok: true };
+    }
+    if (event?.type === 'soldotnaGate') {
+      if (!hasItem(event.requiredItem)) return { ok: false, message: event.blockedText };
+      state.flags.soldotnaWaysideFound = true;
       return { ok: true };
     }
     if (event?.type === 'hiddenConservatory' && !state.flags[event.flag]) {
@@ -417,6 +490,17 @@
       debugLog('map-transition', { mapId: state.player.mapId, x: state.player.x, y: state.player.y });
     }
 
+    if (event.type === 'soldotnaGate' && hasItem(event.requiredItem)) {
+      addLog(event.text);
+      state.flags.soldotnaWaysideFound = true;
+      state.player.mapId = event.mapId;
+      state.player.x = event.x;
+      state.player.y = event.y;
+      state.player.facing = event.facing;
+      revealCurrentTile();
+      debugLog('map-transition', { mapId: state.player.mapId, x: state.player.x, y: state.player.y });
+    }
+
     if (event.type === 'hiddenConservatory' && state.flags[event.flag]) {
       state.player.mapId = event.mapId;
       state.player.x = event.x;
@@ -447,6 +531,11 @@
       return;
     }
     if (event?.type === 'mansionDoor') {
+      addLog(hasItem(event.requiredItem) ? event.text : event.blockedText);
+      debugLog('inspect', { target, event });
+      return;
+    }
+    if (event?.type === 'soldotnaGate') {
       addLog(hasItem(event.requiredItem) ? event.text : event.blockedText);
       debugLog('inspect', { target, event });
       return;
@@ -606,6 +695,7 @@
       state.flags.impossibleRouteEndingUnlocked = true;
     }
     if (itemId === 'glass-rose') state.flags.glassRoseFound = true;
+    if (itemId === 'kenai-river-charm') state.flags.kenaiRiverCharmFound = true;
     addLog(text || `You found ${item.name}.`);
     showPickupCard(itemId, item);
     emitRealmEvent('item-collected', { itemId, itemName: item.name, mapId: map.id, x: state.player.x, y: state.player.y });
@@ -678,6 +768,7 @@
       + (state.flags.trueEndingUnlocked ? 1000 : 0)
       + (state.flags.impossibleRouteEndingUnlocked ? 1200 : 0)
       + (state.flags.glassRoseFound ? 500 : 0)
+      + (state.flags.kenaiRiverCharmFound ? 350 : 0)
       - state.counters.defeats * 100
     );
   }
@@ -937,6 +1028,10 @@
       const start = DATA.maps['never-finished-mansion'].start;
       jumpTo('never-finished-mansion', start.x, start.y, start.facing);
     }
+    if (action === 'jumpSoldotna') {
+      const start = DATA.maps['soldotna-wayside'].start;
+      jumpTo('soldotna-wayside', start.x, start.y, start.facing);
+    }
     if (action === 'jumpBoss') jumpTo('map-kiosk-dungeon', 5, 9, 'south');
     if (action === 'jumpExit') jumpTo('map-kiosk-dungeon', 1, 1, 'south');
     if (action === 'revealMap') revealCurrentMap();
@@ -1011,6 +1106,7 @@
     if (event?.type === 'item') return `${DATA.items[event.itemId].name} is ahead.`;
     if (event?.type === 'exit') return 'The map kiosk exit is ahead.';
     if (event?.type === 'mansionDoor') return 'A painted mansion door is ahead.';
+    if (event?.type === 'soldotnaGate') return 'A blue river route is ahead.';
     if (event?.type === 'hiddenConservatory') return 'A wallpaper seam is ahead.';
     return 'An open path is ahead.';
   }
@@ -1054,6 +1150,9 @@
     if (mapId === 'hidden-conservatory') {
       return { sky: '#18342f', floor: '#2d4a3d', wall: '#607d67', accent: '#c9f7d5', shadow: '#0f1d1a', mortar: '#21372f' };
     }
+    if (mapId === 'soldotna-wayside') {
+      return { sky: '#17344f', floor: '#2f4b3f', wall: '#5f7f77', accent: '#6ed4ff', shadow: '#0d1c26', mortar: '#1f3a3a' };
+    }
     return { sky: '#202532', floor: '#3f3f4e', wall: '#6f7378', accent: '#f3c64e', shadow: '#11131a', mortar: '#2d3036' };
   }
 
@@ -1073,6 +1172,7 @@
     if (!blockedCell || blockedCell.depth > 1) drawOpenPassage(ctx, theme, blockedCell ? blockedCell.depth : 4);
     if (focusCell && (!blockedCell || focusCell.depth <= blockedCell.depth)) {
       if (focusCell.event.type === 'mansionDoor') drawMansionDoor(ctx, theme, focusCell.depth);
+      if (focusCell.event.type === 'soldotnaGate') drawSoldotnaGate(ctx, theme, focusCell.depth);
       if (focusCell.event.type === 'hiddenConservatory') drawConservatoryDoor(ctx, theme, focusCell.depth);
       if (focusCell.event.type === 'monster') {
         const monster = state.monsters[focusCell.event.monsterId];
@@ -1122,7 +1222,7 @@
       return Boolean(monster && monster.hp > 0);
     }
     if (cell.event.type === 'item') return !state.collectedItems[`${state.player.mapId}:${cell.x},${cell.y}`];
-    return ['exit', 'mansionDoor', 'hiddenConservatory'].includes(cell.event.type);
+    return ['exit', 'mansionDoor', 'soldotnaGate', 'hiddenConservatory'].includes(cell.event.type);
   }
 
   function drawSidePassages(ctx, theme, cells) {
@@ -1472,6 +1572,43 @@
     ctx.restore();
   }
 
+  function drawSoldotnaGate(ctx, theme, depth = 1) {
+    const rect = depthRect(depth);
+    const doorW = rect.w * 0.46;
+    const doorH = rect.h * 0.58;
+    const x = rect.x + (rect.w - doorW) / 2;
+    const y = rect.y + rect.h * 0.24;
+    ctx.save();
+    ctx.fillStyle = 'rgba(18, 88, 126, 0.58)';
+    ctx.strokeStyle = theme.accent;
+    ctx.lineWidth = Math.max(3, 7 - depth);
+    ctx.beginPath();
+    ctx.moveTo(x, y + doorH * 0.22);
+    ctx.bezierCurveTo(x + doorW * 0.24, y - doorH * 0.02, x + doorW * 0.76, y - doorH * 0.02, x + doorW, y + doorH * 0.22);
+    ctx.lineTo(x + doorW, y + doorH);
+    ctx.lineTo(x, y + doorH);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.strokeStyle = '#a9ecff';
+    ctx.lineWidth = Math.max(2, 5 - depth);
+    for (let i = 0; i < 3; i += 1) {
+      const waveY = y + doorH * (0.38 + i * 0.15);
+      ctx.beginPath();
+      ctx.moveTo(x + doorW * 0.14, waveY);
+      ctx.bezierCurveTo(x + doorW * 0.34, waveY - 18 / depth, x + doorW * 0.52, waveY + 18 / depth, x + doorW * 0.72, waveY);
+      ctx.bezierCurveTo(x + doorW * 0.82, waveY - 10 / depth, x + doorW * 0.9, waveY - 8 / depth, x + doorW * 0.94, waveY);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = '#f4e6c1';
+    ctx.font = `800 ${Math.max(10, 17 - depth * 2)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('River route', x + doorW / 2, y + doorH + 24 / depth);
+    ctx.restore();
+  }
+
   function drawConservatoryDoor(ctx, theme, depth = 1) {
     const rect = depthRect(depth);
     const doorW = rect.w * 0.36;
@@ -1501,7 +1638,18 @@
     const rect = depthRect(depth);
     if (assets.moonScratch.complete && assets.moonScratch.naturalWidth) {
       const size = rect.w * 0.36;
-      ctx.drawImage(assets.moonScratch, rect.x + rect.w * 0.32, rect.y + rect.h * 0.26, size, size);
+      drawKeyedImage(
+        ctx,
+        assets.moonScratch,
+        0,
+        0,
+        assets.moonScratch.naturalWidth,
+        assets.moonScratch.naturalHeight,
+        rect.x + rect.w * 0.32,
+        rect.y + rect.h * 0.26,
+        size,
+        size
+      );
       return;
     }
     ctx.strokeStyle = '#8fd3ff';
@@ -1529,7 +1677,7 @@
       const drawWidth = (monster.boss ? 255 : 225) * scale;
       const drawHeight = (monster.boss ? 208 : 225) * scale;
       const y = depth === 1 ? 112 : depth === 2 ? 145 : 174;
-      ctx.drawImage(sprite, frame * frameWidth, 0, frameWidth, sprite.naturalHeight, 360 - drawWidth / 2, y, drawWidth, drawHeight);
+      drawKeyedImage(ctx, sprite, frame * frameWidth, 0, frameWidth, sprite.naturalHeight, 360 - drawWidth / 2, y, drawWidth, drawHeight);
       ctx.fillStyle = '#fff';
       ctx.font = `700 ${Math.max(11, 18 * scale)}px sans-serif`;
       ctx.textAlign = 'center';
@@ -1670,7 +1818,7 @@
     if (assets.items.complete && assets.items.naturalWidth && ITEM_FRAMES[itemId] !== undefined) {
       const frameWidth = assets.items.naturalWidth / 8;
       const frame = ITEM_FRAMES[itemId];
-      ctx.drawImage(assets.items, frame * frameWidth, 0, frameWidth, assets.items.naturalHeight, 360 - (136 * scale) / 2, y, 136 * scale, 136 * scale);
+      drawKeyedImage(ctx, assets.items, frame * frameWidth, 0, frameWidth, assets.items.naturalHeight, 360 - (136 * scale) / 2, y, 136 * scale, 136 * scale);
       ctx.fillStyle = '#fff';
       ctx.font = `800 ${Math.max(11, 18 * scale)}px sans-serif`;
       ctx.textAlign = 'center';

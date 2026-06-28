@@ -6,13 +6,14 @@ The game design still supports canvas-drawn art. These files are optional produc
 
 ## Current Standing
 
-The game is currently in **planning plus starter asset** state:
+The game is currently in **playable preview plus starter asset** state:
 
 - Design plan: strong and build-ready.
 - Summary docs: maintained.
 - Optional image spec: complete.
 - Starter image assets: generated and placed in project folders.
-- Playable implementation: not started yet.
+- Playable implementation: underway on `main`.
+- Some production assets are now loaded by the canvas renderer with runtime chroma-key cleanup.
 
 ## Generated Assets
 
@@ -118,4 +119,3 @@ If these become production assets, do this before final implementation:
 3. Compress PNGs or export WebP copies if the service worker budget needs it.
 4. Add any used files to the service worker cache list.
 5. Test high contrast mode with image outlines or canvas overlays.
-
