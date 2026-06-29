@@ -1,6 +1,6 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.12.8';
-  const DISPLAY_BUILD = 'Build 2026-06-29.43';
+  const DISPLAY_VERSION = 'Hockey Smash v0.12.9';
+  const DISPLAY_BUILD = 'Build 2026-06-29.44';
 
   function actionFromTarget(target) {
     return target?.closest?.('[data-action]')?.dataset?.action || 'none';
@@ -25,14 +25,32 @@
     window.HOCKEY_BOOT_LOG?.log?.(source, message);
   }
 
+  function normalizeSofieLabels() {
+    document.querySelectorAll('[data-character="sofie"]').forEach((button) => {
+      if (button.textContent.trim() !== 'Sofie') button.textContent = 'Sofie';
+      button.setAttribute('aria-label', 'Choose Sofie');
+    });
+  }
+
+  function lockAccidentalCameraShake() {
+    const canvas = document.getElementById('hockey-canvas');
+    if (!canvas) return;
+    if (document.body.classList.contains('hockey-earthquake-active')) return;
+    if (canvas.dataset.shaking === 'true' || canvas.style.transform) {
+      canvas.style.transform = '';
+      delete canvas.dataset.shaking;
+    }
+  }
+
   function onReady() {
     const api = window.RTA_HOCKEY_SMASH;
     const badge = document.getElementById('hockey-build-badge');
     if (badge) badge.textContent = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
     if (api?.getVersion) api.getVersion = () => DISPLAY_VERSION;
-    document.body.dataset.hockeyButtonDebug = 'v0.12.8';
+    document.body.dataset.hockeyButtonDebug = 'v0.12.9';
 
-    window.HOCKEY_BOOT_LOG?.log?.('v0109', 'Button debug and hidden-screen repair marker loaded.');
+    normalizeSofieLabels();
+    window.HOCKEY_BOOT_LOG?.log?.('v0109', 'Sofie label normalized and accidental camera shake locked.');
     window.HOCKEY_BOOT_LOG?.snapshot?.('v0109-ready');
 
     ['pointerdown', 'pointerup', 'click', 'touchstart', 'touchend'].forEach((type) => {
@@ -47,9 +65,16 @@
     });
 
     window.setInterval(() => {
+      normalizeSofieLabels();
       const state = window.RTA_HOCKEY_SMASH?.getState?.();
       if (state?.mode === 'playing') window.HOCKEY_BOOT_LOG?.log?.('heartbeat', stateSummary());
     }, 1500);
+
+    function cameraSafetyLoop() {
+      lockAccidentalCameraShake();
+      window.requestAnimationFrame(cameraSafetyLoop);
+    }
+    window.requestAnimationFrame(cameraSafetyLoop);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onReady);
