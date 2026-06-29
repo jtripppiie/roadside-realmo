@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.11.8 - Puck Action And Computer Mode Parity
+
+- Shipped **Hockey Smash v0.11.8** with visible build badge `Build 2026-06-29.33`.
+- Added `js/games/hockey-smash-v0103.js` as the puck action and fish dodge layer.
+- Let stick input also launch a puck that can hit moving bear/moose obstacles.
+- Changed fish/salmon damage rules so fish require a jump or slide/duck dodge instead of always dealing normal contact damage.
+- Updated `js/games/hockey-smash-v096.js` so Computer Mode no longer skips the newer smooth movement controller.
+- Updated `js/games/hockey-smash-v0102.js` so Computer Mode uses the same moving encounter pass as normal play.
+- Documented that Computer Mode should now differ mainly by driver: human input in normal play, autoplay input in Watch Mode.
+
 ## 0.11.7 - Normal Mode Jump And Salmon Pass
 
 - Shipped **Hockey Smash v0.11.7** with visible build badge `Build 2026-06-29.32`.
