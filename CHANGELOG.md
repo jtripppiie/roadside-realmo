@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.10.0 - Game Over And Try Again Flow
+
+- Shipped **Hockey Smash v0.10.0** with visible build badge `Build 2026-06-29.21`.
+- Added `js/games/hockey-smash-v0100.js` as a Game Over / retry flow.
+- Watches Daniel's health during play and opens the existing **Try Again?** screen when health reaches zero.
+- Stops movement/slide state under the overlay so the run does not continue invisibly.
+- Makes the **Try Again** button reload the current page for a clean reset.
+- Added focused overlay styling so the retry screen appears clearly on top of gameplay.
+
 ## 0.9.9 - Computer Mode Entity Sizing
 
 - Shipped **Hockey Smash v0.9.9** with visible build badge `Build 2026-06-29.20`.
@@ -47,31 +56,3 @@
 - Disabled the Daniel overlay position transition so the jump button feels immediate instead of laggy.
 - Kept the small Daniel-down alignment override so his feet sit closer to the sidewalk.
 - Updated package metadata and static verification for the v0.9.5 startup/mobile feel fixes.
-
-## 0.9.3 - Player Border Removal And Background Preload
-
-- Shipped **Hockey Smash v0.9.3** with visible build badge `Build 2026-06-29.14`.
-- Removed the debug border, glow, and background box from the Daniel DOM overlay.
-- Added HTML preload links for all five Soldotna road backgrounds.
-- Added runtime image preloading for all five road backgrounds with async decoding hints.
-- Synced the stage background before resetting Daniel to the left side so transitions feel faster.
-- Updated static verification so the player border and missing background preload cannot regress.
-
-## 0.9.2 - Hidden Startup Overlay And Visible Stage Backgrounds
-
-- Shipped **Hockey Smash v0.9.2** with visible build badge `Build 2026-06-29.13`.
-- Hid the Daniel DOM overlay until the player has been synced to the real canvas position so he no longer flashes below the game area at load.
-- Removed the default `Ready.` status text from the HUD.
-- Added CSS to hide the status overlay when it is empty.
-- Added a visible stage-background layer so road-section changes show the next Soldotna background immediately.
-- Updated static verification so the Ready text and missing stage-background layer cannot regress.
-
-## 0.9.1 - Continuous Road Progression And Computer Player Cleanup
-
-- Shipped **Hockey Smash v0.9.1** with visible build badge `Build 2026-06-29.12`.
-- Added `js/games/hockey-smash-v091.js` as a focused gameplay override.
-- Hid the DOM Daniel overlay during Computer Play so the canvas-controlled computer player is not duplicated.
-- Added continuous road-section progression: when Daniel reaches the right edge, the game advances to the next Soldotna background section and places Daniel back on the left.
-- Added backtracking support from the left edge to the previous road section.
-- Added final-section looping so Daniel is no longer hard-stopped at the first background.
-- Updated package metadata, README, static verification, and browser tests.
