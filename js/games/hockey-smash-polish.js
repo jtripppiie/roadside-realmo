@@ -70,7 +70,10 @@
     game.appendChild(entityLayer);
     const entityNodes = new Map();
 
-    enhanceDpadControls();
+    // The later movement layer owns gameplay input in normal play. Keep this
+    // older direct-touch helper out of the way so buttons do not double-fire
+    // or swallow jump/slide state on mobile.
+    if (computerMode) enhanceDpadControls();
 
     const autoplayPanel = createAutoplayPanel();
     if (autoplayPanel) game.appendChild(autoplayPanel);

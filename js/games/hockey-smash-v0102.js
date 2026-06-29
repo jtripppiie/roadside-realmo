@@ -1,6 +1,6 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.11.6';
-  const DISPLAY_BUILD = 'Build 2026-06-29.31';
+  const DISPLAY_VERSION = 'Hockey Smash v0.11.7';
+  const DISPLAY_BUILD = 'Build 2026-06-29.32';
   const DESIGN_WIDTH = 1024;
   const DESIGN_HEIGHT = 576;
   const GROUND_Y = DESIGN_HEIGHT * 0.82;
@@ -130,11 +130,11 @@
         const now = performance.now();
         if (!firstPlayableAt) {
           firstPlayableAt = now;
-          nextSpawnAt = now + 700;
+          nextSpawnAt = now + 250;
         }
         if (now >= nextSpawnAt && activeMovingGameplayEntities(state).length < 2) {
           spawnMovingEncounter(state);
-          nextSpawnAt = now + 2400;
+          nextSpawnAt = now + 1600;
         }
       }
       window.requestAnimationFrame(runMovingGameplay);

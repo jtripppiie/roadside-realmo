@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.11.7 - Normal Mode Jump And Salmon Pass
+
+- Shipped **Hockey Smash v0.11.7** with visible build badge `Build 2026-06-29.32`.
+- Stopped the older polish touch-control layer from intercepting normal-mode gameplay buttons.
+- Let the smoother movement layer own normal-mode jump/slide input so the jump button works reliably.
+- Made the normal-mode moving salmon wave start much sooner after play begins.
+
 ## 0.11.6 - Health HUD Override
 
 - Shipped **Hockey Smash v0.11.6** with visible build badge `Build 2026-06-29.31`.

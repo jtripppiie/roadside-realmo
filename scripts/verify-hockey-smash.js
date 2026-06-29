@@ -1,9 +1,9 @@
 const fs = require('fs');
 
-const DISPLAY_VERSION = 'Hockey Smash v0.11.6';
-const DISPLAY_BUILD = 'Build 2026-06-29.31';
+const DISPLAY_VERSION = 'Hockey Smash v0.11.7';
+const DISPLAY_BUILD = 'Build 2026-06-29.32';
 const DISPLAY_BADGE = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
-const CACHE_KEY = '0.11.6-20260629.31';
+const CACHE_KEY = '0.11.7-20260629.32';
 
 const requiredFiles = [
   'index.html',
@@ -55,7 +55,7 @@ const v0102Js = read('js/games/hockey-smash-v0102.js');
 const packageJson = read('package.json');
 requiredFiles.forEach((file) => read(file));
 
-if (!packageJson.includes('"version": "0.11.6"')) errors.push('package.json version should be 0.11.6.');
+if (!packageJson.includes('"version": "0.11.7"')) errors.push('package.json version should be 0.11.7.');
 if (!html.includes(DISPLAY_BADGE)) errors.push('Visible build overlay is missing or stale.');
 if (!v0102Js.includes(DISPLAY_VERSION) || !v0102Js.includes(DISPLAY_BUILD)) errors.push('Loaded moving gameplay script should force the latest visible badge.');
 if (!html.includes(`style.css?v=${CACHE_KEY}`)) errors.push('Core CSS should be cache-busted.');
@@ -78,6 +78,8 @@ if (!v096Js.includes('stopImmediatePropagation')) errors.push('Duplicate button 
 if (!polishJs.includes("sliding: 'assets/hockey-smash/sprites/hockey-player-sliding.png'")) errors.push('Sliding Daniel sprite should be wired.');
 if (!polishJs.includes("sister: 'assets/hockey-smash/sprites/sister-spinning.png'")) errors.push('Sister spinning sprite should be wired.');
 if (!v0102Js.includes("type: 'sister'")) errors.push('Normal moving gameplay should spawn Sister.');
+if (!v0102Js.includes('nextSpawnAt = now + 250')) errors.push('Normal moving gameplay should start fish encounters quickly.');
+if (!read('js/games/hockey-smash-polish.js').includes('if (computerMode) enhanceDpadControls();')) errors.push('Older direct-touch polish controls should stay out of normal-mode input.');
 if (!html.includes('rel="preload" as="image" href="assets/hockey-smash/backgrounds/soldotna_cityscape_background_01_1280x720.webp"')) errors.push('First optimized road background preload link is missing.');
 if (html.includes('rel="preload" as="image" href="assets/hockey-smash/backgrounds/soldotna_cityscape_background_05_1280x720.webp"')) errors.push('Later road backgrounds should lazy-load instead of blocking startup.');
 if (read('js/games/hockey-smash.js').includes('_1920x1080.png')) errors.push('Core background paths should use optimized WebP files.');
