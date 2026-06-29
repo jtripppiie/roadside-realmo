@@ -1,7 +1,8 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.12.0';
-  const DISPLAY_BUILD = 'Build 2026-06-29.35';
+  const DISPLAY_VERSION = 'Hockey Smash v0.12.1';
+  const DISPLAY_BUILD = 'Build 2026-06-29.36';
   const DESIGN_WIDTH = 1024;
+  const DESIGN_HEIGHT = 576;
   const STORAGE_KEY = 'hockeySmashHighScore';
   const BASE_DISTANCE_SPEED = 14;
   const COMBO_TIMEOUT = 2.5;
@@ -10,6 +11,7 @@
   let canvas = null;
   let scoreEl = null;
   let splashHighEl = null;
+  let summaryEl = null;
   let originalCanvasTransform = '';
   let activeState = null;
   let lastFrame = performance.now();
@@ -22,12 +24,16 @@
       bonusScore: 0,
       score: 0,
       combo: 0,
+      peakCombo: 0,
       comboTimer: 0,
       difficulty: 0,
       highScore: loadHighScore(),
       lastHealth: null,
       shake: 0,
       newHighScore: false,
+      pucksHit: 0,
+      fishDodged: 0,
+      damageTaken: 0,
     };
   }
 
@@ -57,6 +63,7 @@
     if (api?.getVersion) api.getVersion = () => DISPLAY_VERSION;
 
     ensureScoreHud();
+    ensureSummaryPanel();
     exposeScoreHooks();
     window.requestAnimationFrame(runScoreLayer);
   }
@@ -78,6 +85,7 @@
         letterSpacing: '.03em',
         textShadow: '0 2px 6px rgba(0,0,0,.45)',
         whiteSpace: 'nowrap',
+        transition: 'transform .16s ease, color .16s ease',
       });
     }
 
@@ -93,21 +101,49 @@
     }
   }
 
+  function ensureSummaryPanel() {
+    const tryAgainCard = document.querySelector('#hockey-try-again > div');
+    if (!tryAgainCard) return;
+    summaryEl = document.getElementById('hockey-run-summary');
+    if (!summaryEl) {
+      summaryEl = document.createElement('div');
+      summaryEl.id = 'hockey-run-summary';
+      summaryEl.className = 'hockey-run-summary';
+      tryAgainCard.insertBefore(summaryEl, tryAgainCard.querySelector('button') || null);
+    }
+    Object.assign(summaryEl.style, {
+      display: 'grid',
+      gap: '.35rem',
+      margin: '1rem 0',
+      padding: '.85rem',
+      border: '2px solid rgba(255,255,255,.35)',
+      borderRadius: '1rem',
+      background: 'rgba(6,10,18,.58)',
+      fontWeight: '900',
+    });
+  }
+
   function exposeScoreHooks() {
     window.RTA_HOCKEY_SMASH_SCORE = {
       recordPuckHit(payload = {}) {
         const destroyed = Boolean(payload.destroyed);
-        addComboBonus(destroyed ? 200 : 80, destroyed ? 'KO!' : 'PUCK!', payload.state);
+        const aerialBonus = payload.puckVariant === 'aerial' ? 60 : payload.puckVariant === 'slide' ? 35 : 0;
+        metrics.pucksHit += 1;
+        addComboBonus((destroyed ? 200 : 80) + aerialBonus, destroyed ? 'KO!' : payload.puckVariant === 'aerial' ? 'AIR PUCK!' : payload.puckVariant === 'slide' ? 'LOW PUCK!' : 'PUCK!', payload.state, payload.target);
         metrics.shake = Math.max(metrics.shake, destroyed ? 0.18 : 0.09);
       },
       recordDodge(payload = {}) {
-        addComboBonus(70, 'DODGE!', payload.state);
+        metrics.fishDodged += 1;
+        addComboBonus(70, 'DODGE!', payload.state, payload.entity || payload.state?.player);
       },
       recordDamage(payload = {}) {
+        const amount = Number(payload.amount) || 0;
+        metrics.damageTaken += amount;
         resetCombo();
         metrics.shake = Math.max(metrics.shake, 0.28);
         const state = payload.state || activeState;
         if (state) state.message = payload.source === 'salmon' ? 'Fish clipped Daniel. Combo reset!' : 'Daniel got hit. Combo reset!';
+        createFloatingTextNear(state, state?.player, amount ? `-${amount} HP` : 'HIT!', '#fb7185');
       },
       getMetrics() {
         return { ...metrics };
@@ -115,11 +151,13 @@
     };
   }
 
-  function addComboBonus(points, label, state) {
+  function addComboBonus(points, label, state, anchor) {
     metrics.combo = Math.min(5, metrics.combo + 1);
+    metrics.peakCombo = Math.max(metrics.peakCombo, metrics.combo);
     metrics.comboTimer = COMBO_TIMEOUT;
     metrics.bonusScore += points * metrics.combo;
     const targetState = state || activeState;
+    const targetAnchor = anchor || targetState?.player;
     if (targetState?.effects) {
       const player = targetState.player || { x: DESIGN_WIDTH / 2, y: 300, width: 50 };
       targetState.effects.push({
@@ -129,11 +167,14 @@
         life: 0.45,
       });
     }
+    createFloatingTextNear(targetState, targetAnchor, `${label} x${metrics.combo}`, metrics.combo >= 3 ? '#facc15' : '#fff27a');
+    pulseScoreHud();
   }
 
   function resetCombo() {
     metrics.combo = 0;
     metrics.comboTimer = 0;
+    if (scoreEl) scoreEl.dataset.combo = '0';
   }
 
   function getState() {
@@ -148,6 +189,7 @@
     activeState = state;
     metrics = createFreshMetrics();
     metrics.lastHealth = state?.player?.health ?? null;
+    if (summaryEl) summaryEl.hidden = true;
   }
 
   function runScoreLayer(now) {
@@ -166,6 +208,7 @@
     }
 
     updateHud(state);
+    updateSummaryPanel(state);
     window.requestAnimationFrame(runScoreLayer);
   }
 
@@ -192,6 +235,9 @@
     state.distance = metrics.distance;
     state.score = metrics.score;
     state.difficulty = metrics.difficulty;
+    state.peakCombo = metrics.peakCombo;
+    state.pucksHit = metrics.pucksHit;
+    state.fishDodged = metrics.fishDodged;
     player.combo = metrics.combo;
     player.comboTimer = metrics.comboTimer;
   }
@@ -230,12 +276,70 @@
       const comboText = metrics.combo > 1 ? ` | Combo x${metrics.combo}` : '';
       const highText = metrics.newHighScore ? ' | NEW HIGH!' : ` | High ${metrics.highScore}`;
       scoreEl.textContent = `Distance ${Math.floor(metrics.distance)}m | Score ${metrics.score}${comboText}${highText}`;
+      scoreEl.dataset.combo = String(metrics.combo);
+      scoreEl.style.transform = metrics.combo > 1 ? 'scale(1.045)' : '';
     }
     if (splashHighEl) splashHighEl.textContent = `High Score: ${metrics.highScore}`;
 
     if (state?.mode === 'tryAgain' && metrics.score >= metrics.highScore) {
       saveHighScore(metrics.highScore);
     }
+  }
+
+  function updateSummaryPanel(state) {
+    if (!summaryEl) return;
+    if (state?.mode !== 'tryAgain') {
+      summaryEl.hidden = true;
+      return;
+    }
+    summaryEl.hidden = false;
+    summaryEl.innerHTML = `
+      <strong>Run Summary</strong>
+      <span>Distance: ${Math.floor(metrics.distance)}m</span>
+      <span>Score: ${metrics.score}${metrics.newHighScore ? ' — New High!' : ''}</span>
+      <span>Best Combo: x${metrics.peakCombo}</span>
+      <span>Puck Hits: ${metrics.pucksHit}</span>
+      <span>Fish Dodged: ${metrics.fishDodged}</span>
+    `;
+  }
+
+  function pulseScoreHud() {
+    if (!scoreEl) return;
+    scoreEl.style.transform = 'scale(1.08)';
+    window.setTimeout(() => {
+      if (scoreEl && metrics.combo <= 1) scoreEl.style.transform = '';
+    }, 180);
+  }
+
+  function createFloatingTextNear(state, anchor, text, color) {
+    if (!canvas || !state || !anchor) return;
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const scaleX = rect.width / DESIGN_WIDTH;
+    const scaleY = rect.height / DESIGN_HEIGHT;
+    const el = document.createElement('div');
+    el.className = 'hockey-floating-text';
+    el.textContent = text;
+    Object.assign(el.style, {
+      position: 'fixed',
+      left: `${rect.left + (anchor.x + (anchor.width || 0) / 2) * scaleX}px`,
+      top: `${rect.top + Math.max(40, (anchor.y || 0) - 12) * scaleY}px`,
+      zIndex: '99999',
+      pointerEvents: 'none',
+      color,
+      fontWeight: '1000',
+      letterSpacing: '.04em',
+      textShadow: '0 2px 8px rgba(0,0,0,.85)',
+      transform: 'translate(-50%, 0) scale(1)',
+      opacity: '1',
+      transition: 'transform 1.1s ease, opacity 1.1s ease',
+    });
+    document.body.appendChild(el);
+    window.requestAnimationFrame(() => {
+      el.style.transform = 'translate(-50%, -72px) scale(1.16)';
+      el.style.opacity = '0';
+    });
+    window.setTimeout(() => el.remove(), 1300);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onReady);
