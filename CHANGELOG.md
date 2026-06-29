@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.9.7 - Smooth Slide Dash
+
+- Shipped **Hockey Smash v0.9.7** with visible build badge `Build 2026-06-29.18`.
+- Added smooth slide behavior into the loaded movement override so the existing slide button is intercepted before the older handler fires.
+- Changed slide from a jumpy impulse into a short eased dash.
+- Added a slide cooldown so repeated desktop clicks do not stack into a burst.
+- Added an inline crouch/slide visual on Daniel during the dash.
+- Updated package metadata and static verification for the slide improvement.
+
 ## 0.9.6 - Smooth Left And Right Controls
 
 - Shipped **Hockey Smash v0.9.6** with visible build badge `Build 2026-06-29.17`.
