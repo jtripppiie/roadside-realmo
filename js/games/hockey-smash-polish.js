@@ -1,4 +1,6 @@
 (function () {
+  const DISPLAY_VERSION = 'Hockey Smash v0.5.4';
+  const DISPLAY_BUILD = 'Build 2026-06-29.1';
   const params = new URLSearchParams(window.location.search);
   const computerMode = params.get('computerMode') === '1';
   const DESIGN_WIDTH = 1024;
@@ -10,6 +12,10 @@
     const api = window.RTA_HOCKEY_SMASH;
     const game = document.getElementById('hockey-game');
     const canvas = document.getElementById('hockey-canvas');
+    const badge = document.getElementById('hockey-build-badge');
+
+    if (badge) badge.textContent = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
+    if (api?.getVersion) api.getVersion = () => DISPLAY_VERSION;
     if (!api || !game) return;
 
     const playerOverlay = document.createElement('img');
