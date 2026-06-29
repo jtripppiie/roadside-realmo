@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.11.1 - In-Canvas Health HUD Layout
+
+- Shipped **Hockey Smash v0.11.1** with visible build badge `Build 2026-06-29.26`.
+- Added `hockey-smash-v0111.css` as a layout-only gameplay HUD polish file.
+- Moved Daniel's health meter into the upper-right of the game/canvas area.
+- Hid the in-game title/status HUD blocks so the game name no longer takes space above the canvas during play.
+- Removed the portrait mobile canvas top margin so the game area starts higher on the screen.
+- Kept movement, gameplay enemies, Computer Mode, and Try Again behavior unchanged.
+
 ## 0.11.0 - Smooth Movement Controller
 
 - Shipped **Hockey Smash v0.11.0** with visible build badge `Build 2026-06-29.25`.
@@ -60,12 +69,3 @@
 - Added Mom and Sister interruption moments with speech bubbles and small health/slowdown effects.
 - Added a late Dad challenge plus Dad joke hazard.
 - Kept this as a first gameplay integration pass, not final level tuning.
-
-## 0.9.7 - Smooth Slide Dash
-
-- Shipped **Hockey Smash v0.9.7** with visible build badge `Build 2026-06-29.18`.
-- Added smooth slide behavior into the loaded movement override so the existing slide button is intercepted before the older handler fires.
-- Changed slide from a jumpy impulse into a short eased dash.
-- Added a slide cooldown so repeated desktop clicks do not stack into a burst.
-- Added an inline crouch/slide visual on Daniel during the dash.
-- Updated package metadata and static verification for the slide improvement.
