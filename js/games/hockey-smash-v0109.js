@@ -1,6 +1,6 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.13.1';
-  const DISPLAY_BUILD = 'Build 2026-06-29.46';
+  const DISPLAY_VERSION = 'Hockey Smash v0.13.2';
+  const DISPLAY_BUILD = 'Build 2026-06-29.48';
 
   function actionFromTarget(target) {
     return target?.closest?.('[data-action]')?.dataset?.action || 'none';
@@ -47,10 +47,10 @@
     const badge = document.getElementById('hockey-build-badge');
     if (badge) badge.textContent = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
     if (api?.getVersion) api.getVersion = () => DISPLAY_VERSION;
-    document.body.dataset.hockeyButtonDebug = 'v0.13.1';
+    document.body.dataset.hockeyButtonDebug = 'v0.13.2';
 
     normalizeSofieLabels();
-    window.HOCKEY_BOOT_LOG?.log?.('v0109', 'Dance Smash mode labels, pointe shoe action button, and accidental camera shake lock active.');
+    window.HOCKEY_BOOT_LOG?.log?.('v0109', 'Hockey Smash title, Dance Smash mode labels, pointe shoe action button, and accidental camera shake lock active.');
     window.HOCKEY_BOOT_LOG?.snapshot?.('v0109-ready');
 
     ['pointerdown', 'pointerup', 'click', 'touchstart', 'touchend'].forEach((type) => {
