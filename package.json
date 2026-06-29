@@ -1,11 +1,11 @@
 {
   "name": "hockey-smash",
-  "version": "0.10.2",
+  "version": "0.11.0",
   "private": true,
   "description": "Static Hockey Smash browser game verification helpers.",
   "scripts": {
     "verify": "npm run verify:syntax && npm run verify:hockey && npm run verify:actions",
-    "verify:syntax": "node --check script.js && node --check js/games/hockey-smash.js && node --check js/games/hockey-smash-polish.js && node --check js/games/hockey-smash-v091.js && node --check js/games/hockey-smash-v095.js && node --check js/games/hockey-smash-v096.js && node --check js/games/hockey-smash-v098.js && node --check js/games/hockey-smash-v099.js && node --check js/games/hockey-smash-v0100.js && node --check js/games/hockey-smash-v0102.js && node --check scripts/verify-hockey-smash.js && node --check scripts/verify-hockey-smash-actions.js",
+    "verify:syntax": "node --check script.js && node --check js/games/hockey-smash.js && node --check js/games/hockey-smash-polish.js && node --check js/games/hockey-smash-v091.js && node --check js/games/hockey-smash-v095.js && node --check js/games/hockey-smash-v096.js && node --check js/games/hockey-smash-v099.js && node --check js/games/hockey-smash-v0100.js && node --check js/games/hockey-smash-v0102.js && node --check scripts/verify-hockey-smash.js && node --check scripts/verify-hockey-smash-actions.js",
     "verify:hockey": "node scripts/verify-hockey-smash.js",
     "verify:actions": "node scripts/verify-hockey-smash-actions.js",
     "test:browser": "playwright test",
