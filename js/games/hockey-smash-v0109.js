@@ -1,6 +1,6 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.12.9';
-  const DISPLAY_BUILD = 'Build 2026-06-29.44';
+  const DISPLAY_VERSION = 'Hockey Smash v0.13.0';
+  const DISPLAY_BUILD = 'Build 2026-06-29.45';
 
   function actionFromTarget(target) {
     return target?.closest?.('[data-action]')?.dataset?.action || 'none';
@@ -47,10 +47,10 @@
     const badge = document.getElementById('hockey-build-badge');
     if (badge) badge.textContent = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
     if (api?.getVersion) api.getVersion = () => DISPLAY_VERSION;
-    document.body.dataset.hockeyButtonDebug = 'v0.12.9';
+    document.body.dataset.hockeyButtonDebug = 'v0.13.0';
 
     normalizeSofieLabels();
-    window.HOCKEY_BOOT_LOG?.log?.('v0109', 'Sofie label normalized and accidental camera shake locked.');
+    window.HOCKEY_BOOT_LOG?.log?.('v0109', 'Sofie label normalized, pointe shoe checkpoint active, and accidental camera shake locked.');
     window.HOCKEY_BOOT_LOG?.snapshot?.('v0109-ready');
 
     ['pointerdown', 'pointerup', 'click', 'touchstart', 'touchend'].forEach((type) => {
