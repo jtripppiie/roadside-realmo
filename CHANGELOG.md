@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.12.0 - Score, Combo, High Score, And Difficulty Ramp
+
+- Shipped **Hockey Smash v0.12.0** with visible build badge `Build 2026-06-29.35`.
+- Added `js/games/hockey-smash-v0104.js` as the score, distance, combo, high-score, difficulty, and impact-shake layer.
+- Added an in-game score HUD with distance, current score, combo, and high-score messaging.
+- Saved high score with `localStorage` so replay attempts have a persistent target.
+- Connected puck hits and fish dodges from `js/games/hockey-smash-v0103.js` into the score/combo system.
+- Reset combo and triggered a short screen shake when Daniel takes damage.
+- Updated `js/games/hockey-smash-v0102.js` so encounter spawn timing ramps up over time.
+- Added simple fast/tank encounter variants for less predictable later gameplay.
+- Bumped cache keys and package version to `0.12.0`.
+
 ## 0.11.8 - Puck Action And Computer Mode Parity
 
 - Shipped **Hockey Smash v0.11.8** with visible build badge `Build 2026-06-29.33`.
