@@ -1,6 +1,6 @@
 # Hockey Smash
 
-Current playable version: **Hockey Smash v0.11.8**
+Current playable version: **Hockey Smash v0.12.0**
 
 Live GitHub Pages preview:
 
@@ -16,30 +16,41 @@ https://jtripppiie.github.io/hockey-smash/?computerMode=1
 
 ## Current Status
 
-Hockey Smash is the primary public playable mode in this repo. It is a static GitHub Pages canvas game with local assets, fullscreen support, mobile controls, continuous road progression, smooth side-scroller movement, moving wildlife/family/fish encounters, puck gameplay, health, and Try Again flow.
+Hockey Smash is the primary public playable mode in this repo. It is a static GitHub Pages canvas game with local WebP assets, fullscreen support, mobile controls, continuous road progression, smooth side-scroller movement, moving wildlife/family/fish encounters, puck gameplay, score, distance, combo streaks, high-score persistence, health, and Try Again flow.
 
 ## Latest Visible Build
 
 The top-right badge should read:
 
 ```text
-Hockey Smash v0.11.8 · Build 2026-06-29.33
+Hockey Smash v0.12.0 · Build 2026-06-29.35
 ```
 
-Use that badge to confirm GitHub Pages is serving the latest checkpoint. The package version is also `0.11.8`.
+Use that badge to confirm GitHub Pages is serving the latest checkpoint. The package version is also `0.12.0`.
 
-## What v0.11.8 Includes
+## What v0.12.0 Includes
+
+- Adds `js/games/hockey-smash-v0104.js` as the score, distance, combo, high-score, difficulty, and screen-shake layer.
+- Displays distance and score in the in-game HUD.
+- Saves the best score in `localStorage` so replay attempts have a clear target.
+- Awards combo streaks for puck hits, bear/moose clears, and successful fish dodges.
+- Resets combo on damage and adds a small screen shake for impacts.
+- Ramps moving encounter spawn timing over roughly two minutes.
+- Adds fast/tank encounter variants so later play is less predictable.
+- Keeps the newer WebP sprite references loaded from the prior asset cleanup.
+- Current cache key: `0.12.0-20260629.35`.
+
+## Core Gameplay Already Included
 
 - Smooth left/right movement through the newer movement controller in `js/games/hockey-smash-v096.js`.
 - Jump buffer, coyote-time forgiveness, early-release jump cut-off, and timed slide/crouch state.
-- Computer Mode now feeds its autoplay phases into that same smooth movement controller instead of skipping it.
-- Moving encounter pass in `js/games/hockey-smash-v0102.js` now runs in normal play and Computer Mode.
+- Computer Mode feeds its autoplay phases into that same smooth movement controller instead of skipping it.
+- Moving encounter pass in `js/games/hockey-smash-v0102.js` runs in normal play and Computer Mode.
 - Fish/salmon fly across the road and require a duck/slide or jump dodge.
 - Bears and moose move toward Daniel and can be cleared with the stick/puck gameplay.
 - Mom and Sister can enter as moving interruptions with speech bubbles.
 - Hockey puck layer in `js/games/hockey-smash-v0103.js` launches pucks from stick input and can hit bears/moose.
 - Try Again flow appears when Daniel's health reaches zero.
-- Current cache key: `0.11.8-20260629.33`.
 
 ## Controls
 
@@ -65,7 +76,7 @@ Open the game with:
 http://localhost:8080/?computerMode=1
 ```
 
-Computer Play starts the game automatically and cycles through right, left, jump, slide, and stick actions. As of v0.11.8, it is closer to normal gameplay because the newer smooth movement layer and moving encounter layer also run in Computer Mode. The difference should now be the driver: a human controls normal mode, and the computer controls Watch Mode.
+Computer Play starts the game automatically and cycles through right, left, jump, slide, and stick actions. As of v0.12.0, it uses the same movement, moving encounter, puck, score, distance, combo, high-score, and difficulty-ramp layers as normal play. The difference should be the driver: a human controls normal mode, and the computer controls Watch Mode.
 
 For diagnostics, use:
 
@@ -89,7 +100,7 @@ http://localhost:8080/
 
 ## Main Files
 
-- `index.html`: Hockey Smash public shell, visible build badge, controls, and script/css loading order.
+- `index.html`: Hockey Smash public shell, visible build badge, controls, score HUD, and script/css loading order.
 - `style.css`: full-screen layout, splash, HUD, canvas scaling, and mobile controls.
 - `hockey-smash-polish.css`: presentation polish, player overlay, debug hiding, portrait mobile layout, and victory overlay styles.
 - `hockey-smash-v09.css`: fullscreen, entity overlay, and landscape-phone layout overrides.
@@ -101,8 +112,9 @@ http://localhost:8080/
 - `js/games/hockey-smash-v096.js`: smooth movement controller for normal play and Computer Mode.
 - `js/games/hockey-smash-v099.js`: Computer Mode entity sizing pass.
 - `js/games/hockey-smash-v0100.js`: Game Over / Try Again flow.
-- `js/games/hockey-smash-v0102.js`: moving gameplay encounter pass for fish, bear, moose, Mom, and Sister.
-- `js/games/hockey-smash-v0103.js`: puck action layer and fish dodge rules.
+- `js/games/hockey-smash-v0102.js`: moving gameplay encounter pass with difficulty ramp and encounter variants.
+- `js/games/hockey-smash-v0103.js`: puck action layer, fish dodge rules, and score-event hooks.
+- `js/games/hockey-smash-v0104.js`: distance, score, combo, high score, difficulty state, and screen shake layer.
 - `assets/hockey-smash/`: expected Hockey Smash sprite/background files.
 
 ## Verification
@@ -123,8 +135,11 @@ npm run test:browser
 
 Manual smoke checks before calling a checkpoint good:
 
-- Open `/` and confirm the visible badge says `Hockey Smash v0.11.8 · Build 2026-06-29.33`.
+- Open `/` and confirm the visible badge says `Hockey Smash v0.12.0 · Build 2026-06-29.35`.
 - Start normal Play and confirm Daniel moves left/right, jumps, slides/ducks, and uses stick/puck action.
-- Confirm fish fly in and require a jump or slide/duck.
+- Confirm the score HUD updates distance and score while playing.
+- Confirm fish dodges and puck hits increase combo/score.
+- Confirm missed fish or other damage resets combo and shakes the screen slightly.
 - Confirm bear/moose move toward Daniel and can be cleared.
-- Open `?computerMode=1` and confirm the same movement and encounter systems are visible under autoplay.
+- Confirm the high score persists after refresh.
+- Open `?computerMode=1` and confirm the same movement, encounter, puck, score, and difficulty systems are visible under autoplay.
