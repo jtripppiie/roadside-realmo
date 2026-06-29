@@ -1,6 +1,6 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.9.1';
-  const DISPLAY_BUILD = 'Build 2026-06-29.12';
+  const DISPLAY_VERSION = 'Hockey Smash v0.9.2';
+  const DISPLAY_BUILD = 'Build 2026-06-29.13';
   const DESIGN_WIDTH = 1024;
   const RIGHT_EDGE = 810;
   const LEFT_ENTRY = 108;
