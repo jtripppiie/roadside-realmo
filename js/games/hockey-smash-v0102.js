@@ -1,6 +1,6 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.11.7';
-  const DISPLAY_BUILD = 'Build 2026-06-29.32';
+  const DISPLAY_VERSION = 'Hockey Smash v0.11.8';
+  const DISPLAY_BUILD = 'Build 2026-06-29.33';
   const DESIGN_WIDTH = 1024;
   const DESIGN_HEIGHT = 576;
   const GROUND_Y = DESIGN_HEIGHT * 0.82;
@@ -9,8 +9,8 @@
 
   // This layer does not control Daniel.
   // It only adds moving gameplay objects to state.entities. The core game loop
-  // already moves entities by vx * dt, checks overlap, updates health, and lets
-  // the hockey stick clear wildlife objects.
+  // already moves entities by vx * dt and checks overlap. Computer Mode now uses
+  // this same encounter pass so watch mode and normal play stay closer together.
   const WAVE = [
     {
       type: 'salmon',
@@ -21,9 +21,10 @@
       vx: -420,
       vy: -80,
       hp: 1,
-      damage: 8,
+      damage: 0,
+      dodgeDamage: 8,
       flip: -1,
-      message: 'Fish flying in — jump or slide!'
+      message: 'Fish flying in — duck or jump!'
     },
     {
       type: 'bear',
@@ -35,7 +36,7 @@
       hp: 2,
       maxHp: 2,
       damage: 12,
-      message: 'Bear moving in — use the stick or jump!'
+      message: 'Bear moving in — use the stick and puck!'
     },
     {
       type: 'salmon',
@@ -46,9 +47,10 @@
       vx: 410,
       vy: -60,
       hp: 1,
-      damage: 8,
+      damage: 0,
+      dodgeDamage: 8,
       flip: 1,
-      message: 'Fish crossing back!'
+      message: 'Fish crossing back — duck or jump!'
     },
     {
       type: 'mom',
@@ -84,7 +86,7 @@
       hp: 3,
       maxHp: 3,
       damage: 16,
-      message: 'Moose moving in — use the stick or jump!'
+      message: 'Moose moving in — use the stick and puck!'
     }
   ];
 
@@ -94,7 +96,7 @@
     const status = document.getElementById('hockey-status');
     if (badge) badge.textContent = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
     if (api?.getVersion) api.getVersion = () => DISPLAY_VERSION;
-    if (!api || computerMode) return;
+    if (!api) return;
 
     let nextSpawnAt = 0;
     let waveIndex = 0;
@@ -117,7 +119,8 @@
       const entity = {
         ...template,
         key: `moving-${template.type}-${Date.now()}-${waveIndex}`,
-        fromMovingGameplayPass: true
+        fromMovingGameplayPass: true,
+        fromComputerMode: computerMode
       };
       state.entities.push(entity);
       state.message = template.message;
