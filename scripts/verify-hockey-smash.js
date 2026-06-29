@@ -1,9 +1,9 @@
 const fs = require('fs');
 
-const DISPLAY_VERSION = 'Hockey Smash v0.5.6';
-const DISPLAY_BUILD = 'Build 2026-06-29.3';
+const DISPLAY_VERSION = 'Hockey Smash v0.5.7';
+const DISPLAY_BUILD = 'Build 2026-06-29.4';
 const DISPLAY_BADGE = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
-const CACHE_KEY = '0.5.6-20260629.3';
+const CACHE_KEY = '0.5.7-20260629.4';
 
 const requiredFiles = [
   'index.html',
@@ -53,7 +53,7 @@ const css = read('style.css');
 const polishCss = read('hockey-smash-polish.css');
 const packageJson = read('package.json');
 
-if (!packageJson.includes('"version": "0.5.6"')) errors.push('package.json version should be 0.5.6.');
+if (!packageJson.includes('"version": "0.5.7"')) errors.push('package.json version should be 0.5.7.');
 if (!html.includes(DISPLAY_BADGE)) errors.push('Visible build overlay is missing or stale.');
 if (!polishJs.includes(DISPLAY_BADGE)) errors.push('Runtime polish script should force the latest visible badge.');
 if (!polishJs.includes('api.getVersion = () => DISPLAY_VERSION')) errors.push('Runtime getVersion override should report the visible build version.');
@@ -61,6 +61,17 @@ if (!html.includes(`style.css?v=${CACHE_KEY}`)) errors.push('Core CSS should be 
 if (!html.includes(`hockey-smash-polish.css?v=${CACHE_KEY}`)) errors.push('Polish CSS should be cache-busted.');
 if (!html.includes(`js/games/hockey-smash.js?v=${CACHE_KEY}`)) errors.push('Core JS should be cache-busted.');
 if (!html.includes(`js/games/hockey-smash-polish.js?v=${CACHE_KEY}`)) errors.push('Polish JS should be cache-busted.');
+if (!html.includes('id="hockey-watch"')) errors.push('Watch Computer Play button is missing.');
+if (!html.includes('href="?computerMode=1"')) errors.push('Watch Computer Play should launch ?computerMode=1.');
+if (!html.includes('Computer Play is now treated as a real watch/autoplay mode')) errors.push('Splash should explain Computer Play as a player-facing mode.');
+if (!html.includes('&debug=1')) errors.push('Splash should explain optional debug query parameter.');
+if (!polishJs.includes('debugMode')) errors.push('Polish script should separate watch mode from debug mode.');
+if (!polishJs.includes('hockey-debug-enabled')) errors.push('Debug body class hook is missing.');
+if (!polishJs.includes('createAutoplayPanel')) errors.push('Computer Play panel is missing.');
+if (!polishJs.includes('Watch mode is active')) errors.push('Computer Play panel copy is missing.');
+if (!polishCss.includes('body:not(.hockey-debug-enabled) .hockey-debug')) errors.push('Debug overlay should be hidden unless debug is enabled.');
+if (!polishCss.includes('.hockey-autoplay-panel')) errors.push('Computer Play panel CSS is missing.');
+if (!polishCss.includes('.hockey-button--secondary')) errors.push('Secondary watch button CSS is missing.');
 if (!html.includes('id="hockey-player-overlay"')) errors.push('Hard-coded player overlay is missing from HTML.');
 if (!html.includes('DANIEL')) errors.push('Hard-coded DANIEL label is missing from HTML.');
 if (!html.includes('z-index:9999')) errors.push('Player overlay should have an inline high z-index fallback.');
@@ -79,7 +90,6 @@ if (!html.includes('data-action="left"') || !html.includes('data-action="right"'
 if (!html.includes('data-action="jump"') || !html.includes('data-action="slide"') || !html.includes('data-action="stick"')) errors.push('Action buttons are missing.');
 if (!css.includes('body.hockey-playing')) errors.push('No-scroll gameplay body class is missing.');
 if (!css.includes('touch-action: none')) errors.push('Touch scroll prevention is missing.');
-if (!polishCss.includes('body:not(.hockey-computer-mode) .hockey-debug')) errors.push('Normal mode should hide the debug overlay.');
 if (!polishJs.includes('hockey-finish')) errors.push('Victory overlay script is missing.');
 if (!polishJs.includes('Final challenge cleared')) errors.push('Victory status text is missing.');
 if (!js.includes('groundRatio: 0.82')) errors.push('Ground ratio must be 0.82.');
@@ -102,4 +112,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`${DISPLAY_VERSION} static verification passed for hard-coded player visibility.`);
+console.log(`${DISPLAY_VERSION} static verification passed for player-facing Computer Play mode.`);
