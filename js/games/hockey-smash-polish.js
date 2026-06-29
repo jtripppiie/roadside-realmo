@@ -1,6 +1,6 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.5.8';
-  const DISPLAY_BUILD = 'Build 2026-06-29.5';
+  const DISPLAY_VERSION = 'Hockey Smash v0.5.9';
+  const DISPLAY_BUILD = 'Build 2026-06-29.6';
   const params = new URLSearchParams(window.location.search);
   const computerMode = params.get('computerMode') === '1';
   const debugMode = params.get('debug') === '1';
@@ -8,7 +8,8 @@
   const DESIGN_HEIGHT = 576;
   const CORE_GROUND_RATIO = 0.82;
   const VISUAL_GROUND_RATIO = 0.80;
-  const TAP_HOLD_MS = 260;
+  const DIRECT_MOVE_SPEED = 390;
+  const DIRECT_TAP_STEP = 72;
 
   function onReady() {
     document.body.classList.toggle('hockey-computer-mode', computerMode);
@@ -44,7 +45,7 @@
       game.appendChild(playerOverlay);
     }
 
-    enhanceTapControls();
+    enhanceDpadControls();
 
     const autoplayPanel = createAutoplayPanel();
     if (autoplayPanel) game.appendChild(autoplayPanel);
@@ -111,24 +112,104 @@
       return panel;
     }
 
-    function enhanceTapControls() {
-      const keyByAction = {
-        left: 'ArrowLeft',
-        right: 'ArrowRight',
-        jump: ' ',
-        slide: 'Shift',
-        stick: 'f',
-      };
+    function enhanceDpadControls() {
+      let activeMove = null;
+      let lastMoveTime = 0;
+      let directMoveRaf = 0;
+
+      function stateIsPlayable(state) {
+        return state && ['playing', 'bossIntro', 'bossFight'].includes(state.mode) && state.player;
+      }
+
+      function movePlayer(direction, distance) {
+        const state = api.getState?.();
+        if (!stateIsPlayable(state)) return;
+        const player = state.player;
+        const delta = direction === 'left' ? -distance : distance;
+        player.x = Math.max(22, Math.min(DESIGN_WIDTH - player.width - 22, player.x + delta));
+        player.vx = direction === 'left' ? -DIRECT_MOVE_SPEED : DIRECT_MOVE_SPEED;
+        player.facing = direction === 'left' ? -1 : 1;
+        state.message = direction === 'left' ? 'Daniel moves left.' : 'Daniel moves right.';
+        syncPlayerOverlay(state);
+      }
+
+      function jumpPlayer() {
+        const state = api.getState?.();
+        if (!stateIsPlayable(state) || !state.player.grounded) return;
+        state.player.vy = -(window.RTA_HOCKEY_SMASH?.tuning?.jumpVelocity || 810);
+        state.player.grounded = false;
+        state.message = 'Daniel jumps.';
+      }
+
+      function slidePlayer() {
+        movePlayer(activeMove || 'right', DIRECT_TAP_STEP * 1.35);
+      }
+
+      function stickPlayer() {
+        const state = api.getState?.();
+        if (!stateIsPlayable(state)) return;
+        state.player.attackTimer = 0.2;
+        state.message = 'Daniel swings the stick.';
+      }
+
+      function directMoveLoop(now) {
+        if (!activeMove) {
+          directMoveRaf = 0;
+          return;
+        }
+        const dt = Math.min(0.05, Math.max(0.016, (now - lastMoveTime) / 1000 || 0.016));
+        lastMoveTime = now;
+        movePlayer(activeMove, DIRECT_MOVE_SPEED * dt);
+        directMoveRaf = window.requestAnimationFrame(directMoveLoop);
+      }
+
+      function startMove(action) {
+        activeMove = action;
+        lastMoveTime = performance.now();
+        movePlayer(action, DIRECT_TAP_STEP);
+        if (!directMoveRaf) directMoveRaf = window.requestAnimationFrame(directMoveLoop);
+      }
+
+      function stopMove() {
+        const state = api.getState?.();
+        if (stateIsPlayable(state)) state.player.vx = 0;
+        activeMove = null;
+      }
+
+      function runAction(action) {
+        if (action === 'left' || action === 'right') {
+          startMove(action);
+          return;
+        }
+        if (action === 'jump') jumpPlayer();
+        if (action === 'slide') slidePlayer();
+        if (action === 'stick') stickPlayer();
+      }
 
       document.querySelectorAll('[data-action]').forEach((button) => {
-        button.addEventListener('click', () => {
-          const key = keyByAction[button.dataset.action];
-          if (!key) return;
-          window.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
-          window.setTimeout(() => {
-            window.dispatchEvent(new KeyboardEvent('keyup', { key, bubbles: true }));
-          }, TAP_HOLD_MS);
+        const action = button.dataset.action;
+
+        button.addEventListener('pointerdown', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          button.setPointerCapture?.(event.pointerId);
+          runAction(action);
+        }, { capture: true, passive: false });
+
+        ['pointerup', 'pointercancel', 'lostpointercapture', 'pointerleave'].forEach((eventName) => {
+          button.addEventListener(eventName, () => {
+            if (action === activeMove) stopMove();
+          }, { capture: true });
         });
+
+        button.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          if (action === 'left' || action === 'right') movePlayer(action, DIRECT_TAP_STEP);
+          if (action === 'jump') jumpPlayer();
+          if (action === 'slide') slidePlayer();
+          if (action === 'stick') stickPlayer();
+        }, { capture: true });
       });
     }
 
