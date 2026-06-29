@@ -1,0 +1,45 @@
+/* Normal player mode should feel like a game, not a diagnostic screen. */
+body:not(.hockey-computer-mode) .hockey-debug {
+  display: none;
+}
+
+.hockey-finish {
+  position: fixed;
+  inset: 0;
+  z-index: 12;
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 4vw, 3rem);
+  background: rgba(5, 8, 13, 0.74);
+  backdrop-filter: blur(10px);
+}
+
+.hockey-finish[hidden] {
+  display: none;
+}
+
+.hockey-finish__card {
+  width: min(92vw, 560px);
+  border: 3px solid rgba(255, 242, 207, 0.48);
+  border-radius: 18px;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  background: rgba(16, 25, 35, 0.94);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.52);
+  text-align: center;
+}
+
+.hockey-finish__card h2 {
+  margin: 0;
+  color: #fff8df;
+  font-size: clamp(2.4rem, 8vw, 5rem);
+  line-height: 0.95;
+  text-shadow: 0 5px 0 rgba(0, 0, 0, 0.48);
+}
+
+.hockey-finish__card p:not(.hockey-eyebrow) {
+  margin: 1rem auto 1.25rem;
+  max-width: 30rem;
+  color: rgba(255, 242, 207, 0.9);
+  font-size: clamp(1rem, 2.4vw, 1.25rem);
+  line-height: 1.45;
+}
