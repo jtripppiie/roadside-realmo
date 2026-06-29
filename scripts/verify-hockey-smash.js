@@ -1,9 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = 'Hockey Smash v0.13.4';
-const BUILD = 'Build 2026-06-29.50';
-const CACHE_KEY = '0.13.4-20260629.50';
+const VERSION = 'Hockey Smash v0.13.5';
+const BUILD = 'Build 2026-06-29.51';
+const CACHE_KEY = '0.13.5-20260629.51';
 
 const requiredFiles = [
   'index.html',
@@ -64,6 +64,7 @@ requiredFiles.forEach(read);
 const html = read('index.html');
 const pkg = read('package.json');
 const cssManifest = read('hockey-smash.css');
+const style = read('style.css');
 const readme = read('README.md');
 const changelog = read('CHANGELOG.md');
 const workflow = read('docs/hockey-smash-workflow.md');
@@ -85,7 +86,7 @@ const v0107 = read('js/games/hockey-smash-v0107.js');
 const v0108 = read('js/games/hockey-smash-v0108.js');
 const v0109 = read('js/games/hockey-smash-v0109.js');
 
-if (!pkg.includes('"version": "0.13.4"')) errors.push('Package version is stale.');
+if (!pkg.includes('"version": "0.13.5"')) errors.push('Package version is stale.');
 if (!html.includes(`${VERSION} · ${BUILD}`)) errors.push('Build badge is stale.');
 if (!html.includes(`hockey-smash.css?v=${CACHE_KEY}`)) errors.push('Single CSS manifest is not linked or cache-busted.');
 if (!html.includes(`js/games/hockey-smash-v0109.js?v=${CACHE_KEY}`)) errors.push('Final script is not linked or cache-busted.');
@@ -103,7 +104,8 @@ if (!html.includes('Cache-Control') || !html.includes('no-cache')) errors.push('
 });
 if (!cssManifest.includes('[hidden]') || !cssManifest.includes('display: none !important') || !cssManifest.includes('pointer-events: none !important')) errors.push('Hidden screen hard override is missing.');
 if (!cssManifest.includes('#hockey-watch') || !cssManifest.includes('body.hockey-dev-mode #hockey-watch') || !cssManifest.includes('body:not(.hockey-dev-mode) #hockey-boot-log')) errors.push('Dev-only CSS guards are missing.');
-if (!cssManifest.includes('#hockey-boot-log') || !cssManifest.includes('top: 0.75rem !important') || !cssManifest.includes('bottom: auto !important')) errors.push('Boot log is not forced away from the bottom-left D-pad.');
+if (!style.includes('max-height: min(32vh, 285px)') || !style.includes('@media (max-height: 720px)') || !style.includes('overflow: hidden')) errors.push('Compact no-scroll splash sizing is missing from style.css.');
+if (!customCss.includes('Hockey Smash v0.13.5') || !customCss.includes('padding: 0.4rem 0.78rem') || !customCss.includes('@media (orientation: portrait) and (max-width: 760px), (max-height: 720px)')) errors.push('Compact customization control sizing is missing.');
 if (!html.includes('id="hockey-boot-log"')) errors.push('Boot debug overlay markup is missing.');
 if (!html.includes('window.HOCKEY_BOOT_LOG')) errors.push('Boot debug API is missing.');
 if (!html.includes('resource-error') || !html.includes('js-error') || !html.includes('promise-error')) errors.push('Boot debug error handlers are missing.');
@@ -150,15 +152,15 @@ if (core.includes('_1920x1080.png')) errors.push('Large background paths are sti
 
 const docsToCheck = { readme, changelog, workflow, checklist, qa, progress, kidGuide };
 Object.entries(docsToCheck).forEach(([name, text]) => {
-  if (!text.includes('v0.13.4') && !text.includes('0.13.4')) errors.push(`${name} does not mention the current version.`);
+  if (!text.includes('v0.13.5') && !text.includes('0.13.5')) errors.push(`${name} does not mention the current version.`);
 });
-if (!readme.includes('10-second safe practice countdown') || !readme.includes('right side only') || !readme.includes('hockey-smash-kid-handoff.md')) errors.push('README does not document the countdown, salmon direction, and beginner handoff guide.');
-if (!changelog.includes('0.13.4 - Start Countdown And Right-Side Salmon Guard')) errors.push('Changelog is missing the v0.13.4 entry.');
-if (!workflow.includes('Current v0.13.4 Behavior Notes') || !workflow.includes('hockey-smash-kid-handoff.md')) errors.push('Workflow doc is stale.');
-if (!checklist.includes('Start Countdown') || !checklist.includes('fish/salmon fly in from the **right side only**')) errors.push('Dev checklist does not cover the latest gameplay checks.');
-if (!qa.includes('10-Second Start Countdown') || !qa.includes('right side only')) errors.push('QA doc does not cover the latest gameplay checks.');
-if (!progress.includes('Current Checkpoint: Hockey Smash v0.13.4') || !progress.includes('Start Countdown And Right-Side Salmon')) errors.push('Progress doc is stale.');
-if (!kidGuide.includes('How The Files Load') || !kidGuide.includes('Change the countdown length') || !kidGuide.includes('Current v0.13.4 Behavior To Preserve')) errors.push('Beginner handoff guide is missing key sections.');
+if (!readme.includes('compact splash') || !readme.includes('10-second safe practice countdown') || !readme.includes('right side only') || !readme.includes('hockey-smash-kid-handoff.md')) errors.push('README does not document the compact splash, countdown, salmon direction, and beginner handoff guide.');
+if (!changelog.includes('0.13.5 - Compact No-Scroll Splash')) errors.push('Changelog is missing the v0.13.5 entry.');
+if (!workflow.includes('Current v0.13.5 Behavior Notes') || !workflow.includes('compact splash')) errors.push('Workflow doc is stale.');
+if (!checklist.includes('Compact Splash') || !checklist.includes('fish/salmon fly in from the **right side only**')) errors.push('Dev checklist does not cover the latest gameplay/layout checks.');
+if (!qa.includes('Compact Splash') || !qa.includes('right side only')) errors.push('QA doc does not cover the latest layout/gameplay checks.');
+if (!progress.includes('Current Checkpoint: Hockey Smash v0.13.5') || !progress.includes('Compact No-Scroll Splash')) errors.push('Progress doc is stale.');
+if (!kidGuide.includes('How The Files Load') || !kidGuide.includes('Change the countdown length') || !kidGuide.includes('Current v0.13.5 Behavior To Preserve')) errors.push('Beginner handoff guide is missing key sections.');
 
 const textToScan = { html, cssManifest, core, polish, v0102, v0103, v0104, v0105, v0106, v0107, v0108, v0109 };
 Object.entries(textToScan).forEach(([name, text]) => {
