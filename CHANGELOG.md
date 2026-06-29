@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.9 - Direct D-pad Movement Fallback
+
+- Shipped **Hockey Smash v0.5.9** with visible build badge `Build 2026-06-29.6`.
+- Added a direct D-pad movement fallback that mutates the live game state when the left/right buttons are pressed.
+- Added pointer capture and hold-to-move behavior for the on-screen directional buttons.
+- Kept the visible Daniel overlay synced after direct D-pad movement.
+- Updated browser tests and static verification so D-pad clicks must change Daniel's x-position.
+
 ## 0.5.8 - Normal Movement And Road Anchoring
 
 - Shipped **Hockey Smash v0.5.8** with visible build badge `Build 2026-06-29.5`.
