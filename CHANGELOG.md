@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.11.0 - Smooth Movement Controller
+
+- Shipped **Hockey Smash v0.11.0** with visible build badge `Build 2026-06-29.25`.
+- Reworked the already-loaded movement file `js/games/hockey-smash-v096.js` into a clean smooth movement controller.
+- Implemented the smooth-platformer idea inside Hockey Smash instead of importing the reference repository.
+- Left/right now use held input with acceleration and deceleration.
+- Jump now includes a short jump buffer, coyote-time forgiveness, and early-release jump cut-off.
+- Slide is now a timed crouch/slide state with cooldown and a low stretched visual.
+- Stick input is left to the core game so existing stick combat can still clear wildlife objects.
+- Kept Computer Mode on the original driver so it remains useful for QA.
+- Cache-busted the live page to load the v0.11.0 controller.
+
 ## 0.10.2 - Movement And Encounter Repair
 
 - Shipped **Hockey Smash v0.10.2** with visible build badge `Build 2026-06-29.23`.
@@ -57,12 +69,3 @@
 - Added a slide cooldown so repeated desktop clicks do not stack into a burst.
 - Added an inline crouch/slide visual on Daniel during the dash.
 - Updated package metadata and static verification for the slide improvement.
-
-## 0.9.6 - Smooth Left And Right Controls
-
-- Shipped **Hockey Smash v0.9.6** with visible build badge `Build 2026-06-29.17`.
-- Added `js/games/hockey-smash-v096.js` as a focused movement-smoothing override.
-- Changed left/right to smooth hold movement with a smaller tap nudge.
-- Added duplicate event suppression so repeated desktop clicks do not stack pointerdown and click impulses.
-- Left jump, slide, and hockey-stick controls unchanged.
-- Updated package metadata and static verification for the movement smoothing patch.
