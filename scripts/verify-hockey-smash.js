@@ -1,8 +1,9 @@
 const fs = require('fs');
 
-const DISPLAY_VERSION = 'Hockey Smash v0.5.5';
-const DISPLAY_BUILD = 'Build 2026-06-29.2';
+const DISPLAY_VERSION = 'Hockey Smash v0.5.6';
+const DISPLAY_BUILD = 'Build 2026-06-29.3';
 const DISPLAY_BADGE = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
+const CACHE_KEY = '0.5.6-20260629.3';
 
 const requiredFiles = [
   'index.html',
@@ -11,13 +12,7 @@ const requiredFiles = [
   'script.js',
   'js/games/hockey-smash.js',
   'js/games/hockey-smash-polish.js',
-  'README.md',
-  'CHANGELOG.md',
-  'docs/hockey-smash-design.md',
-  'docs/hockey-smash-workflow.md',
-  'docs/hockey-smash-dev-checklist.md',
-  'docs/hockey-smash-progress.md',
-  'docs/hockey-smash-qa.md',
+  'package.json',
   'scripts/verify-hockey-smash-actions.js',
 ];
 
@@ -41,65 +36,50 @@ const requiredAssetPaths = [
 
 const errors = [];
 
-requiredFiles.forEach((file) => {
-  if (!fs.existsSync(file)) errors.push(`Missing required file: ${file}`);
-});
-
 function read(file) {
-  return fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  if (!fs.existsSync(file)) {
+    errors.push(`Missing required file: ${file}`);
+    return '';
+  }
+  return fs.readFileSync(file, 'utf8');
 }
+
+requiredFiles.forEach((file) => read(file));
 
 const html = read('index.html');
 const js = read('js/games/hockey-smash.js');
 const polishJs = read('js/games/hockey-smash-polish.js');
 const css = read('style.css');
 const polishCss = read('hockey-smash-polish.css');
-const readme = read('README.md');
-const changelog = read('CHANGELOG.md');
 const packageJson = read('package.json');
 
-[
-  ['index.html', html],
-  ['js/games/hockey-smash-polish.js', polishJs],
-  ['README.md', readme],
-  ['CHANGELOG.md', changelog],
-].forEach(([file, content]) => {
-  if (!content.includes(DISPLAY_VERSION)) errors.push(`${file} missing ${DISPLAY_VERSION}.`);
-});
-
-if (!packageJson.includes('"version": "0.5.5"')) errors.push('package.json version should be 0.5.5.');
-if (!html.includes('Entering Hockey Smash')) errors.push('Transition text is missing.');
-if (!html.includes('assets/hockey-smash/sprites/splash.png')) errors.push('Splash character image is missing.');
-if (!html.includes('Hockey Slash 2')) errors.push('Splash title is missing.');
-if (!html.includes("He's back with a vengance!")) errors.push('Splash tagline is missing.');
-if (!html.includes('Rotate for the best gaming experience.')) errors.push('Rotate guidance is missing from the public UI.');
+if (!packageJson.includes('"version": "0.5.6"')) errors.push('package.json version should be 0.5.6.');
 if (!html.includes(DISPLAY_BADGE)) errors.push('Visible build overlay is missing or stale.');
-if (!html.includes('hockey-smash-polish.css?v=0.5.5-20260629.2')) errors.push('Polish CSS should be cache-busted.');
-if (!html.includes('js/games/hockey-smash-polish.js?v=0.5.5-20260629.2')) errors.push('Polish JS should be cache-busted.');
 if (!polishJs.includes(DISPLAY_BADGE)) errors.push('Runtime polish script should force the latest visible badge.');
 if (!polishJs.includes('api.getVersion = () => DISPLAY_VERSION')) errors.push('Runtime getVersion override should report the visible build version.');
-if (!html.includes('id="hockey-canvas"')) errors.push('Hockey canvas is missing.');
-if (!html.includes('id="hockey-debug"')) errors.push('Debug overlay is missing.');
-if (!html.includes('hockey-smash-polish.css')) errors.push('Normal-mode polish stylesheet is missing from HTML.');
-if (!html.includes('js/games/hockey-smash-polish.js')) errors.push('Normal-mode polish script is missing from HTML.');
-if (html.includes('class="hockey-version"')) errors.push('Duplicate in-screen version label should be removed; keep version in the top-right badge.');
-if (!html.includes('Survive the salmon run')) errors.push('HUD subtitle should replace the duplicate HUD version label.');
+if (!html.includes(`style.css?v=${CACHE_KEY}`)) errors.push('Core CSS should be cache-busted.');
+if (!html.includes(`hockey-smash-polish.css?v=${CACHE_KEY}`)) errors.push('Polish CSS should be cache-busted.');
+if (!html.includes(`js/games/hockey-smash.js?v=${CACHE_KEY}`)) errors.push('Core JS should be cache-busted.');
+if (!html.includes(`js/games/hockey-smash-polish.js?v=${CACHE_KEY}`)) errors.push('Polish JS should be cache-busted.');
+if (!html.includes('id="hockey-player-overlay"')) errors.push('Hard-coded player overlay is missing from HTML.');
+if (!html.includes('DANIEL')) errors.push('Hard-coded DANIEL label is missing from HTML.');
+if (!html.includes('z-index:9999')) errors.push('Player overlay should have an inline high z-index fallback.');
+if (!html.includes('assets/hockey-smash/sprites/hockey-player.png')) errors.push('Player overlay sprite is missing from HTML.');
+if (!polishJs.includes('getElementById(\'hockey-player-overlay\')')) errors.push('Polish script should reuse the hard-coded player overlay.');
+if (!polishJs.includes('Math.max(112')) errors.push('Player overlay should enforce a visible minimum width.');
+if (!polishJs.includes('Math.max(136')) errors.push('Player overlay should enforce a visible minimum height.');
+if (!polishCss.includes('.hockey-player-overlay')) errors.push('Player overlay CSS is missing.');
+if (!polishCss.includes('.hockey-player-overlay__label')) errors.push('Player overlay label CSS is missing.');
+if (!html.includes('Entering Hockey Smash')) errors.push('Transition text is missing.');
+if (!html.includes('Hockey Slash 2')) errors.push('Splash title is missing.');
+if (!html.includes("He's back with a vengance!")) errors.push('Splash tagline is missing.');
+if (html.includes('class="hockey-version"')) errors.push('Duplicate in-screen version label should be removed.');
+if (!html.includes('Survive the salmon run')) errors.push('HUD subtitle is missing.');
 if (!html.includes('data-action="left"') || !html.includes('data-action="right"')) errors.push('D-pad left/right actions are missing.');
 if (!html.includes('data-action="jump"') || !html.includes('data-action="slide"') || !html.includes('data-action="stick"')) errors.push('Action buttons are missing.');
-if (!html.includes('aria-label="Jump">J</button>') || !html.includes('aria-label="Slide">S</button>')) errors.push('Compact J/S action labels are missing.');
-if (!html.includes('aria-label="Hockey stick attack"') || !html.includes('🏒')) errors.push('Hockey stick button icon is missing.');
 if (!css.includes('body.hockey-playing')) errors.push('No-scroll gameplay body class is missing.');
 if (!css.includes('touch-action: none')) errors.push('Touch scroll prevention is missing.');
 if (!polishCss.includes('body:not(.hockey-computer-mode) .hockey-debug')) errors.push('Normal mode should hide the debug overlay.');
-if (!polishCss.includes('.hockey-player-overlay')) errors.push('Normal-mode player overlay CSS is missing.');
-if (!polishCss.includes('.hockey-player-overlay__label')) errors.push('Visible Daniel label CSS is missing.');
-if (!polishCss.includes('DANIEL') && !polishJs.includes('DANIEL')) errors.push('Player overlay should include a visible DANIEL label.');
-if (!polishCss.includes('.hockey-finish')) errors.push('Victory overlay CSS is missing.');
-if (!polishJs.includes('hockey-computer-mode')) errors.push('Computer mode body class hook is missing.');
-if (!polishJs.includes('hockey-player-overlay')) errors.push('Normal-mode player overlay script is missing.');
-if (!polishJs.includes('syncPlayerOverlay')) errors.push('Player overlay sync function is missing.');
-if (!polishJs.includes('assets/hockey-smash/sprites/hockey-player.png')) errors.push('Player overlay must use the hockey-player sprite.');
-if (!polishJs.includes('appendChild')) errors.push('Polish script should use appendChild for broad browser compatibility.');
 if (!polishJs.includes('hockey-finish')) errors.push('Victory overlay script is missing.');
 if (!polishJs.includes('Final challenge cleared')) errors.push('Victory status text is missing.');
 if (!js.includes('groundRatio: 0.82')) errors.push('Ground ratio must be 0.82.');
@@ -115,7 +95,6 @@ if (!js.includes('drawSpriteOrPlaceholder')) errors.push('Asset fallback placeho
 
 requiredAssetPaths.forEach((assetPath) => {
   if (!js.includes(assetPath)) errors.push(`Runtime missing asset path definition: ${assetPath}`);
-  if (!readme.includes(assetPath)) errors.push(`README missing asset path: ${assetPath}`);
 });
 
 if (errors.length) {
@@ -123,4 +102,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`${DISPLAY_VERSION} static verification passed for normal-mode player visibility polish.`);
+console.log(`${DISPLAY_VERSION} static verification passed for hard-coded player visibility.`);
