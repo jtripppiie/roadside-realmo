@@ -1,25 +1,26 @@
-/* Player customization controls for Hockey Smash v0.12.3. */
+/* Player customization controls for Hockey Smash v0.13.5. */
 .hockey-character-select,
 .hockey-name-input-group {
   display: grid;
-  gap: 0.55rem;
+  gap: 0.34rem;
   justify-items: center;
-  margin: 0.85rem auto;
+  margin: 0.28rem auto;
 }
 
 .hockey-character-select__buttons {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.65rem;
+  gap: 0.45rem;
 }
 
 .hockey-character-button {
   border: 2px solid rgba(255, 242, 207, 0.38);
   border-radius: 999px;
-  padding: 0.55rem 0.95rem;
+  padding: 0.4rem 0.78rem;
   background: rgba(5, 8, 13, 0.78);
   color: #fff8df;
+  font-size: 0.92rem;
   font-weight: 1000;
   letter-spacing: 0.03em;
   cursor: pointer;
@@ -31,36 +32,64 @@
   border-color: #fff27a;
   background: #fff27a;
   color: #101923;
-  box-shadow: 0 0 0 4px rgba(255, 242, 122, 0.22);
+  box-shadow: 0 0 0 3px rgba(255, 242, 122, 0.2);
 }
 
 .hockey-name-input-group label,
 .hockey-character-select__label {
   color: rgba(255, 248, 223, 0.84);
-  font-size: 0.88rem;
+  font-size: 0.76rem;
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 #player-name {
-  width: min(13rem, 78vw);
+  width: min(12rem, 74vw);
   border: 3px solid rgba(255, 242, 122, 0.58);
   border-radius: 999px;
-  padding: 0.62rem 0.95rem;
+  padding: 0.46rem 0.82rem;
   background: rgba(255, 248, 223, 0.95);
   color: #101923;
-  font: 1000 1.05rem/1.1 system-ui, sans-serif;
+  font: 1000 0.95rem/1.05 system-ui, sans-serif;
   text-align: center;
   outline: none;
 }
 
 #player-name:focus {
   border-color: #9ce7ff;
-  box-shadow: 0 0 0 4px rgba(156, 231, 255, 0.22);
+  box-shadow: 0 0 0 3px rgba(156, 231, 255, 0.2);
 }
 
 .hockey-splash__hero.is-loading-fallback {
   object-fit: contain;
   filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.38));
+}
+
+@media (orientation: portrait) and (max-width: 760px), (max-height: 720px) {
+  .hockey-character-select,
+  .hockey-name-input-group {
+    gap: 0.25rem;
+    margin: 0.14rem auto;
+  }
+
+  .hockey-character-select__buttons {
+    gap: 0.32rem;
+  }
+
+  .hockey-character-button {
+    padding: 0.34rem 0.66rem;
+    font-size: 0.82rem;
+  }
+
+  .hockey-name-input-group label,
+  .hockey-character-select__label {
+    font-size: 0.68rem;
+  }
+
+  #player-name {
+    width: min(10.5rem, 72vw);
+    padding: 0.38rem 0.7rem;
+    font-size: 0.86rem;
+  }
 }
