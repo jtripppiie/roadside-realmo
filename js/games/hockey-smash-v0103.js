@@ -1,6 +1,6 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.12.0';
-  const DISPLAY_BUILD = 'Build 2026-06-29.35';
+  const DISPLAY_VERSION = 'Hockey Smash v0.12.1';
+  const DISPLAY_BUILD = 'Build 2026-06-29.36';
   const DESIGN_WIDTH = 1024;
   const DESIGN_HEIGHT = 576;
   const GROUND_Y = DESIGN_HEIGHT * 0.82;
@@ -56,6 +56,42 @@
     return state;
   }
 
+  function puckStatsForPlayer(player) {
+    const sliding = document.body.classList.contains('hockey-slide-active') || document.getElementById('hockey-player-overlay')?.dataset?.sliding === 'true';
+    const airborne = !player.grounded && player.y + player.height < GROUND_Y - 18;
+    if (airborne) {
+      return {
+        variant: 'aerial',
+        damage: 4,
+        width: 36,
+        height: 18,
+        message: 'Daniel launches an aerial slapshot!',
+        background: 'radial-gradient(circle at 35% 30%, #fff7a8 0 18%, #f59e0b 45%, #7c2d12 100%)',
+        boxShadow: '0 0 0 2px rgba(255,255,255,.8), 0 0 22px rgba(250,204,21,.75)'
+      };
+    }
+    if (sliding) {
+      return {
+        variant: 'slide',
+        damage: 3,
+        width: 34,
+        height: 14,
+        message: 'Daniel fires a low slide puck!',
+        background: 'radial-gradient(circle at 35% 30%, #dbeafe 0 18%, #2563eb 46%, #0f172a 100%)',
+        boxShadow: '0 0 0 2px rgba(255,255,255,.75), 0 0 18px rgba(96,165,250,.7)'
+      };
+    }
+    return {
+      variant: 'normal',
+      damage: PUCK_DAMAGE,
+      width: 30,
+      height: 16,
+      message: 'Daniel slaps a puck at the wildlife!',
+      background: 'radial-gradient(circle at 35% 30%, #5b6370 0 12%, #1b2028 42%, #05070a 100%)',
+      boxShadow: '0 0 0 2px rgba(255,255,255,.65), 0 8px 12px rgba(0,0,0,.25)'
+    };
+  }
+
   function firePuck() {
     const state = getPlayableState();
     if (!state) return;
@@ -64,27 +100,31 @@
     lastPuckAt = now;
     const player = state.player;
     const facing = player.facing < 0 ? -1 : 1;
+    const puckStats = puckStatsForPlayer(player);
     pucks.push({
       x: facing > 0 ? player.x + player.width + 6 : player.x - 34,
       y: player.y + player.height * 0.48,
-      width: 30,
-      height: 16,
+      width: puckStats.width,
+      height: puckStats.height,
       vx: PUCK_SPEED * facing,
       life: 1.35,
-      node: createPuckNode(),
+      damage: puckStats.damage,
+      variant: puckStats.variant,
+      node: createPuckNode(puckStats),
     });
-    state.message = 'Daniel slaps a puck at the wildlife!';
+    state.message = puckStats.message;
     if (status) status.textContent = state.message;
   }
 
-  function createPuckNode() {
+  function createPuckNode(puckStats) {
     const node = document.createElement('div');
     node.setAttribute('aria-hidden', 'true');
+    node.dataset.puckVariant = puckStats.variant;
     Object.assign(node.style, {
       position: 'fixed', left: '0', top: '0', width: '20px', height: '10px',
       zIndex: '8', pointerEvents: 'none', borderRadius: '999px',
-      background: 'radial-gradient(circle at 35% 30%, #5b6370 0 12%, #1b2028 42%, #05070a 100%)',
-      boxShadow: '0 0 0 2px rgba(255,255,255,.65), 0 8px 12px rgba(0,0,0,.25)'
+      background: puckStats.background,
+      boxShadow: puckStats.boxShadow,
     });
     document.body.appendChild(node);
     return node;
@@ -133,9 +173,9 @@
         return rectsOverlap(puck, entity);
       });
       if (!target) return;
-      target.hp -= PUCK_DAMAGE;
+      target.hp -= puck.damage || PUCK_DAMAGE;
       puck.life = 0;
-      state.effects?.push?.({ x: target.x + target.width / 2, y: target.y - 10, text: 'PUCK!', life: 0.35 });
+      state.effects?.push?.({ x: target.x + target.width / 2, y: target.y - 10, text: puck.variant === 'aerial' ? 'AIR PUCK!' : puck.variant === 'slide' ? 'LOW PUCK!' : 'PUCK!', life: 0.35 });
       const destroyed = target.hp <= 0;
       if (destroyed) {
         target.dead = true;
@@ -144,7 +184,7 @@
       } else {
         state.message = target.type === 'moose' ? 'Puck hit the moose. One more!' : 'Puck hit the bear!';
       }
-      notifyScoreLayer('recordPuckHit', { state, target, destroyed });
+      notifyScoreLayer('recordPuckHit', { state, target, destroyed, puckVariant: puck.variant, damage: puck.damage || PUCK_DAMAGE });
       if (status) status.textContent = state.message;
     });
     pucks = pucks.filter((puck) => {
