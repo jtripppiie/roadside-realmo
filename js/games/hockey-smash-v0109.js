@@ -30,31 +30,21 @@
     const badge = document.getElementById('hockey-build-badge');
     if (badge) badge.textContent = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
     if (api?.getVersion) api.getVersion = () => DISPLAY_VERSION;
-    document.body.dataset.hockeyInputLogger = 'v0.12.7';
+    document.body.dataset.hockeyButtonDebug = 'v0.12.7';
 
-    window.HOCKEY_BOOT_LOG?.log?.('v0109', 'Input logger loaded. Debug panel should be top-right, away from D-pad.');
+    window.HOCKEY_BOOT_LOG?.log?.('v0109', 'Button debug loaded. Debug panel should be top-right, away from D-pad.');
     window.HOCKEY_BOOT_LOG?.snapshot?.('v0109-ready');
 
     ['pointerdown', 'pointerup', 'click', 'touchstart', 'touchend'].forEach((type) => {
       document.addEventListener(type, (event) => {
         const action = actionFromTarget(event.target);
         if (action === 'none') return;
-        log('input', type, {
+        log('button', type, {
           action,
           detail: describeTarget(event.target),
         });
       }, { capture: true, passive: true });
     });
-
-    window.addEventListener('keydown', (event) => {
-      if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', ' ', 'a', 'A', 'd', 'D', 'w', 'W', 's', 'S', 'Shift', 'f', 'F', 'Enter'].includes(event.key)) return;
-      window.HOCKEY_BOOT_LOG?.log?.('input', `keydown key=${event.key} | ${stateSummary()}`);
-    }, { capture: true });
-
-    window.addEventListener('keyup', (event) => {
-      if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', ' ', 'a', 'A', 'd', 'D', 'w', 'W', 's', 'S', 'Shift', 'f', 'F', 'Enter'].includes(event.key)) return;
-      window.HOCKEY_BOOT_LOG?.log?.('input', `keyup key=${event.key} | ${stateSummary()}`);
-    }, { capture: true });
 
     window.setInterval(() => {
       const state = window.RTA_HOCKEY_SMASH?.getState?.();
