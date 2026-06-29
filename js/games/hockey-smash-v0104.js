@@ -1,6 +1,6 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.12.1';
-  const DISPLAY_BUILD = 'Build 2026-06-29.36';
+  const DISPLAY_VERSION = 'Hockey Smash v0.13.0';
+  const DISPLAY_BUILD = 'Build 2026-06-29.45';
   const DESIGN_WIDTH = 1024;
   const DESIGN_HEIGHT = 576;
   const STORAGE_KEY = 'hockeySmashHighScore';
@@ -123,14 +123,27 @@
     });
   }
 
+  function projectileHitLabel(payload = {}, destroyed = false) {
+    if (payload.projectileType === 'pointe-shoe') {
+      if (destroyed) return 'SHOE KO!';
+      if (payload.puckVariant === 'aerial') return 'AIR SHOE!';
+      if (payload.puckVariant === 'slide') return 'LOW SHOE!';
+      return 'POINTE SHOE!';
+    }
+    if (destroyed) return 'KO!';
+    if (payload.puckVariant === 'aerial') return 'AIR PUCK!';
+    if (payload.puckVariant === 'slide') return 'LOW PUCK!';
+    return 'PUCK!';
+  }
+
   function exposeScoreHooks() {
     window.RTA_HOCKEY_SMASH_SCORE = {
       recordPuckHit(payload = {}) {
         const destroyed = Boolean(payload.destroyed);
         const aerialBonus = payload.puckVariant === 'aerial' ? 60 : payload.puckVariant === 'slide' ? 35 : 0;
+        const label = projectileHitLabel(payload, destroyed);
         metrics.pucksHit += 1;
-        addComboBonus((destroyed ? 200 : 80) + aerialBonus, destroyed ? 'KO!' : payload.puckVariant === 'aerial' ? 'AIR PUCK!' : payload.puckVariant === 'slide' ? 'LOW PUCK!' : 'PUCK!', payload.state, payload.target);
-        metrics.shake = Math.max(metrics.shake, destroyed ? 0.18 : 0.09);
+        addComboBonus((destroyed ? 200 : 80) + aerialBonus, label, payload.state, payload.target);
       },
       recordDodge(payload = {}) {
         metrics.fishDodged += 1;
@@ -140,9 +153,9 @@
         const amount = Number(payload.amount) || 0;
         metrics.damageTaken += amount;
         resetCombo();
-        metrics.shake = Math.max(metrics.shake, 0.28);
         const state = payload.state || activeState;
-        if (state) state.message = payload.source === 'salmon' ? 'Fish clipped Daniel. Combo reset!' : 'Daniel got hit. Combo reset!';
+        const playerName = window.RTA_HOCKEY_SMASH?.getPlayerConfig?.().name || 'Daniel';
+        if (state) state.message = payload.source === 'salmon' ? `Fish clipped ${playerName}. Combo reset!` : `${playerName} got hit. Combo reset!`;
         createFloatingTextNear(state, state?.player, amount ? `-${amount} HP` : 'HIT!', '#fb7185');
       },
       getMetrics() {
@@ -202,7 +215,7 @@
     if (isPlayable(state)) {
       updateProgress(state, dt);
       detectDamage(state);
-      applyScreenShake(dt);
+      clearScreenShake();
     } else {
       clearScreenShake();
     }
@@ -251,24 +264,12 @@
     metrics.lastHealth = health;
   }
 
-  function applyScreenShake(dt) {
-    if (!canvas) return;
-    if (metrics.shake <= 0) {
-      clearScreenShake();
-      return;
-    }
-    metrics.shake = Math.max(0, metrics.shake - dt);
-    const strength = Math.max(1, metrics.shake * 30);
-    const x = Math.round(Math.random() * strength * 2 - strength);
-    const y = Math.round(Math.random() * strength - strength / 2);
-    canvas.dataset.shaking = 'true';
-    canvas.style.transform = `${originalCanvasTransform ? `${originalCanvasTransform} ` : ''}translate(${x}px, ${y}px)`;
-  }
-
   function clearScreenShake() {
-    if (!canvas || canvas.dataset.shaking !== 'true') return;
+    if (!canvas) return;
+    if (document.body.classList.contains('hockey-earthquake-active')) return;
     canvas.style.transform = originalCanvasTransform;
     delete canvas.dataset.shaking;
+    metrics.shake = 0;
   }
 
   function updateHud(state) {
@@ -298,7 +299,7 @@
       <span>Distance: ${Math.floor(metrics.distance)}m</span>
       <span>Score: ${metrics.score}${metrics.newHighScore ? ' — New High!' : ''}</span>
       <span>Best Combo: x${metrics.peakCombo}</span>
-      <span>Puck Hits: ${metrics.pucksHit}</span>
+      <span>Projectile Hits: ${metrics.pucksHit}</span>
       <span>Fish Dodged: ${metrics.fishDodged}</span>
     `;
   }
