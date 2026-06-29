@@ -21,6 +21,24 @@ body:not(.hockey-playing) .hockey-fullscreen-chip {
   display: none;
 }
 
+.hockey-stage-background {
+  position: fixed;
+  z-index: 1;
+  pointer-events: none;
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  transition: opacity 180ms ease, background-image 180ms ease;
+}
+
+body.hockey-stage-background-active .hockey-canvas {
+  opacity: 0.02;
+}
+
+.hockey-status:empty {
+  display: none !important;
+}
+
 .hockey-entity-layer {
   position: fixed;
   inset: 0;
@@ -108,7 +126,8 @@ body:not(.hockey-playing) .hockey-fullscreen-chip {
     display: none;
   }
 
-  body.hockey-playing .hockey-canvas {
+  body.hockey-playing .hockey-canvas,
+  body.hockey-playing .hockey-stage-background {
     position: fixed;
     left: 50%;
     top: clamp(3.55rem, 15svh, 4.9rem);
