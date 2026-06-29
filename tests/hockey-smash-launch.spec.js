@@ -11,7 +11,9 @@ test('Hockey Smash launches into a full viewport canvas game', async ({ page }) 
   await expect(page.locator('h1')).toHaveText('Hockey Slash 2');
   await expect(page.locator('.hockey-splash__tagline')).toHaveText("He's back with a vengance!");
   await expect(page.locator('.hockey-splash__hero')).toHaveAttribute('src', 'assets/hockey-smash/sprites/splash.png');
-  await expect(page.locator('#hockey-build-badge')).toContainText('Hockey Smash v0.5.6 · Build 2026-06-29.3');
+  await expect(page.locator('#hockey-build-badge')).toContainText('Hockey Smash v0.5.7 · Build 2026-06-29.4');
+  await expect(page.locator('#hockey-watch')).toHaveAttribute('href', '?computerMode=1');
+  await expect(page.locator('#hockey-watch')).toHaveText('Watch Computer Play');
   await expect(page.locator('.hockey-version')).toHaveCount(0);
   await page.locator('#hockey-play').click();
   await expect(page.locator('#hockey-transition')).toContainText('Entering Hockey Smash');
@@ -27,7 +29,7 @@ test('Hockey Smash launches into a full viewport canvas game', async ({ page }) 
   const bodyLocked = await page.evaluate(() => document.body.classList.contains('hockey-playing'));
   const overlayBox = await page.locator('#hockey-player-overlay').boundingBox();
 
-  expect(version).toBe('Hockey Smash v0.5.6');
+  expect(version).toBe('Hockey Smash v0.5.7');
   expect(state.mode).toBe('playing');
   expect(state.player.health).toBe(100);
   expect(bodyLocked).toBe(true);
@@ -48,4 +50,19 @@ test('Hockey Smash launches into a full viewport canvas game', async ({ page }) 
   expect(leftX).toBeLessThan(rightX);
 
   expect(consoleErrors).toEqual([]);
+});
+
+test('Computer Play is a player-facing watch mode without debug by default', async ({ page }) => {
+  await page.goto('/?computerMode=1');
+  await expect(page.locator('#hockey-build-badge')).toContainText('Hockey Smash v0.5.7 · Build 2026-06-29.4');
+  await expect(page.locator('#hockey-game')).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('.hockey-autoplay-panel')).toContainText('Watch mode is active');
+  await expect(page.locator('#hockey-debug')).toBeHidden();
+  await expect(page.locator('#hockey-player-overlay')).toBeVisible();
+
+  const computerEnabled = await page.evaluate(() => window.RTA_HOCKEY_SMASH.getState().computer.enabled);
+  const version = await page.evaluate(() => window.RTA_HOCKEY_SMASH.getVersion());
+
+  expect(computerEnabled).toBe(true);
+  expect(version).toBe('Hockey Smash v0.5.7');
 });
