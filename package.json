@@ -5,7 +5,7 @@
   "description": "Static Hockey Smash browser game verification helpers.",
   "scripts": {
     "verify": "npm run verify:syntax && npm run verify:hockey && npm run verify:actions",
-    "verify:syntax": "node --check script.js && node --check js/games/hockey-smash.js && node --check scripts/verify-hockey-smash.js && node --check scripts/verify-hockey-smash-actions.js",
+    "verify:syntax": "node --check script.js && node --check js/games/hockey-smash.js && node --check js/games/hockey-smash-polish.js && node --check scripts/verify-hockey-smash.js && node --check scripts/verify-hockey-smash-actions.js",
     "verify:hockey": "node scripts/verify-hockey-smash.js",
     "verify:actions": "node scripts/verify-hockey-smash-actions.js",
     "test:browser": "playwright test",
