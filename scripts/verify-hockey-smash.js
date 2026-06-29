@@ -1,9 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = 'Hockey Smash v0.13.2';
-const BUILD = 'Build 2026-06-29.48';
-const CACHE_KEY = '0.13.2-20260629.48';
+const VERSION = 'Hockey Smash v0.13.3';
+const BUILD = 'Build 2026-06-29.49';
+const CACHE_KEY = '0.13.3-20260629.49';
 
 const requiredFiles = [
   'index.html',
@@ -73,7 +73,7 @@ const v0107 = read('js/games/hockey-smash-v0107.js');
 const v0108 = read('js/games/hockey-smash-v0108.js');
 const v0109 = read('js/games/hockey-smash-v0109.js');
 
-if (!pkg.includes('"version": "0.13.2"')) errors.push('Package version is stale.');
+if (!pkg.includes('"version": "0.13.3"')) errors.push('Package version is stale.');
 if (!html.includes(`${VERSION} · ${BUILD}`)) errors.push('Build badge is stale.');
 if (!html.includes(`hockey-smash.css?v=${CACHE_KEY}`)) errors.push('Single CSS manifest is not linked or cache-busted.');
 if (!html.includes(`js/games/hockey-smash-v0109.js?v=${CACHE_KEY}`)) errors.push('Final script is not linked or cache-busted.');
@@ -81,18 +81,24 @@ if (!html.includes('<h1 id="hockey-title">Hockey Smash</h1>')) errors.push('Hock
 if (html.includes('Hockey Slash 2')) errors.push('Index should not say Hockey Slash 2.');
 if (!html.includes('>Sofie</button>')) errors.push('Sofie button should say only Sofie.');
 if (html.includes('Sofie the Dancer')) errors.push('Index still says Sofie the Dancer.');
+if (html.includes('hockey-fullscreen-button')) errors.push('Splash fullscreen button should not be present.');
+if (!html.includes('hockey-fullscreen-chip')) errors.push('Gameplay fullscreen chip should remain in the gameplay area.');
+if (!html.includes('id="hockey-watch"') || !html.includes('aria-hidden="true"') || !html.includes('tabindex="-1"')) errors.push('Computer Play link should start disabled for normal play.');
 if (html.includes('style.css?v=') || html.includes('hockey-smash-polish.css?v=') || html.includes('hockey-smash-touch.css?v=') || html.includes('hockey-smash-custom.css?v=')) errors.push('index.html should not load individual CSS layer links anymore.');
 if (!html.includes('Cache-Control') || !html.includes('no-cache')) errors.push('No-cache meta tags are missing.');
 ['style.css', 'hockey-smash-polish.css', 'hockey-smash-touch.css', 'hockey-smash-custom.css', 'hockey-smash-v09.css', 'hockey-smash-v094.css', 'hockey-smash-v095.css', 'hockey-smash-v0111.css'].forEach((file) => {
   if (!cssManifest.includes(`${file}?v=${CACHE_KEY}`)) errors.push(`CSS manifest is missing ${file}.`);
 });
 if (!cssManifest.includes('[hidden]') || !cssManifest.includes('display: none !important') || !cssManifest.includes('pointer-events: none !important')) errors.push('Hidden screen hard override is missing.');
+if (!cssManifest.includes('#hockey-watch') || !cssManifest.includes('body.hockey-dev-mode #hockey-watch') || !cssManifest.includes('body:not(.hockey-dev-mode) #hockey-boot-log')) errors.push('Dev-only CSS guards are missing.');
 if (!cssManifest.includes('#hockey-boot-log') || !cssManifest.includes('top: 0.75rem !important') || !cssManifest.includes('bottom: auto !important')) errors.push('Boot log is not forced away from the bottom-left D-pad.');
 if (!html.includes('id="hockey-boot-log"')) errors.push('Boot debug overlay markup is missing.');
 if (!html.includes('window.HOCKEY_BOOT_LOG')) errors.push('Boot debug API is missing.');
 if (!html.includes('resource-error') || !html.includes('js-error') || !html.includes('promise-error')) errors.push('Boot debug error handlers are missing.');
 if (!html.includes('Show splash') || !html.includes('Forced splash visible')) errors.push('Debug splash rescue is missing.');
 if (!v0109.includes(VERSION) || !v0109.includes(BUILD)) errors.push('Final marker build label is stale.');
+if (!v0109.includes('bindDevModeUnlock') || !v0109.includes('DEV_TAP_TARGET = 3') || !v0109.includes('enableDevMode') || !v0109.includes('hockey-dev-mode')) errors.push('Splash-image triple-tap dev unlock is missing.');
+if (!v0109.includes('setDevElementState') || !v0109.includes('hockey-watch') || !v0109.includes('hockey-boot-log')) errors.push('Dev element state management is missing.');
 if (!v0109.includes('normalizeSofieLabels') || !v0109.includes('lockAccidentalCameraShake')) errors.push('Sofie/camera repair helpers are missing.');
 if (!v0109.includes('hockey-earthquake-active')) errors.push('Earthquake escape hatch for future intentional shake is missing.');
 if (!v0109.includes('pointerdown') || !v0109.includes('pointerup') || !v0109.includes('touchstart')) errors.push('Button debug coverage is missing.');
