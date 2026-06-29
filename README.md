@@ -1,6 +1,6 @@
 # Hockey Smash
 
-Current playable version: **Hockey Smash v0.12.0**
+Current playable version: **Hockey Smash v0.12.1**
 
 Live GitHub Pages preview:
 
@@ -16,29 +16,28 @@ https://jtripppiie.github.io/hockey-smash/?computerMode=1
 
 ## Current Status
 
-Hockey Smash is the primary public playable mode in this repo. It is a static GitHub Pages canvas game with local WebP assets, fullscreen support, mobile controls, continuous road progression, smooth side-scroller movement, moving wildlife/family/fish encounters, puck gameplay, score, distance, combo streaks, high-score persistence, health, and Try Again flow.
+Hockey Smash is the primary public playable mode in this repo. It is a static GitHub Pages canvas game with local WebP assets, fullscreen support, mobile controls, continuous road progression, smooth side-scroller movement, moving wildlife/family/fish encounters, puck gameplay, score, distance, combo streaks, high-score persistence, floating feedback, end-of-run summaries, health, and Try Again flow.
 
 ## Latest Visible Build
 
 The top-right badge should read:
 
 ```text
-Hockey Smash v0.12.0 · Build 2026-06-29.35
+Hockey Smash v0.12.1 · Build 2026-06-29.36
 ```
 
-Use that badge to confirm GitHub Pages is serving the latest checkpoint. The package version is also `0.12.0`.
+Use that badge to confirm GitHub Pages is serving the latest checkpoint. The package version is also `0.12.1`.
 
-## What v0.12.0 Includes
+## What v0.12.1 Includes
 
-- Adds `js/games/hockey-smash-v0104.js` as the score, distance, combo, high-score, difficulty, and screen-shake layer.
-- Displays distance and score in the in-game HUD.
-- Saves the best score in `localStorage` so replay attempts have a clear target.
-- Awards combo streaks for puck hits, bear/moose clears, and successful fish dodges.
-- Resets combo on damage and adds a small screen shake for impacts.
-- Ramps moving encounter spawn timing over roughly two minutes.
-- Adds fast/tank encounter variants so later play is less predictable.
-- Keeps the newer WebP sprite references loaded from the prior asset cleanup.
-- Current cache key: `0.12.0-20260629.35`.
+- Adds puck power variants in `js/games/hockey-smash-v0103.js`.
+- Normal pucks keep the base puck damage and dark puck visual.
+- Slide pucks deal more damage and use a low blue puck visual.
+- Aerial slapshots deal the most damage and use a bright gold puck visual.
+- Adds floating feedback text for puck hits, fish dodges, combo gains, and damage.
+- Adds a Try Again run summary with distance, score, best combo, puck hits, and fish dodges.
+- Tracks peak combo, puck hits, fish dodges, and damage taken in the score layer.
+- Current cache key: `0.12.1-20260629.36`.
 
 ## Core Gameplay Already Included
 
@@ -50,6 +49,7 @@ Use that badge to confirm GitHub Pages is serving the latest checkpoint. The pac
 - Bears and moose move toward Daniel and can be cleared with the stick/puck gameplay.
 - Mom and Sister can enter as moving interruptions with speech bubbles.
 - Hockey puck layer in `js/games/hockey-smash-v0103.js` launches pucks from stick input and can hit bears/moose.
+- `js/games/hockey-smash-v0104.js` handles distance, score, combo, high score, difficulty state, screen shake, floating text, and run summary.
 - Try Again flow appears when Daniel's health reaches zero.
 
 ## Controls
@@ -76,7 +76,7 @@ Open the game with:
 http://localhost:8080/?computerMode=1
 ```
 
-Computer Play starts the game automatically and cycles through right, left, jump, slide, and stick actions. As of v0.12.0, it uses the same movement, moving encounter, puck, score, distance, combo, high-score, and difficulty-ramp layers as normal play. The difference should be the driver: a human controls normal mode, and the computer controls Watch Mode.
+Computer Play starts the game automatically and cycles through right, left, jump, slide, and stick actions. As of v0.12.1, it uses the same movement, moving encounter, puck, score, distance, combo, high-score, floating-feedback, run-summary, and difficulty-ramp layers as normal play. The difference should be the driver: a human controls normal mode, and the computer controls Watch Mode.
 
 For diagnostics, use:
 
@@ -113,8 +113,8 @@ http://localhost:8080/
 - `js/games/hockey-smash-v099.js`: Computer Mode entity sizing pass.
 - `js/games/hockey-smash-v0100.js`: Game Over / Try Again flow.
 - `js/games/hockey-smash-v0102.js`: moving gameplay encounter pass with difficulty ramp and encounter variants.
-- `js/games/hockey-smash-v0103.js`: puck action layer, fish dodge rules, and score-event hooks.
-- `js/games/hockey-smash-v0104.js`: distance, score, combo, high score, difficulty state, and screen shake layer.
+- `js/games/hockey-smash-v0103.js`: puck action layer, powered puck variants, fish dodge rules, and score-event hooks.
+- `js/games/hockey-smash-v0104.js`: distance, score, combo, high score, difficulty state, screen shake, floating text, and run summary layer.
 - `assets/hockey-smash/`: expected Hockey Smash sprite/background files.
 
 ## Verification
@@ -135,11 +135,12 @@ npm run test:browser
 
 Manual smoke checks before calling a checkpoint good:
 
-- Open `/` and confirm the visible badge says `Hockey Smash v0.12.0 · Build 2026-06-29.35`.
+- Open `/` and confirm the visible badge says `Hockey Smash v0.12.1 · Build 2026-06-29.36`.
 - Start normal Play and confirm Daniel moves left/right, jumps, slides/ducks, and uses stick/puck action.
+- Confirm normal, slide, and aerial pucks have different visuals/power.
 - Confirm the score HUD updates distance and score while playing.
-- Confirm fish dodges and puck hits increase combo/score.
+- Confirm fish dodges and puck hits create floating feedback and increase combo/score.
 - Confirm missed fish or other damage resets combo and shakes the screen slightly.
-- Confirm bear/moose move toward Daniel and can be cleared.
+- Confirm the Try Again screen shows a run summary.
 - Confirm the high score persists after refresh.
 - Open `?computerMode=1` and confirm the same movement, encounter, puck, score, and difficulty systems are visible under autoplay.
