@@ -11,7 +11,7 @@ test('Hockey Smash launches into a full viewport canvas game', async ({ page }) 
   await expect(page.locator('h1')).toHaveText('Hockey Slash 2');
   await expect(page.locator('.hockey-splash__tagline')).toHaveText("He's back with a vengance!");
   await expect(page.locator('.hockey-splash__hero')).toHaveAttribute('src', 'assets/hockey-smash/sprites/splash.png');
-  await expect(page.locator('#hockey-build-badge')).toContainText('Hockey Smash v0.5.3 · Build 2026-06-28.8');
+  await expect(page.locator('#hockey-build-badge')).toContainText('Hockey Smash v0.5.4 · Build 2026-06-29.1');
   await expect(page.locator('.hockey-version')).toHaveCount(0);
   await page.locator('#hockey-play').click();
   await expect(page.locator('#hockey-transition')).toContainText('Entering Hockey Smash');
@@ -26,7 +26,7 @@ test('Hockey Smash launches into a full viewport canvas game', async ({ page }) 
   const bodyLocked = await page.evaluate(() => document.body.classList.contains('hockey-playing'));
   const overlayBox = await page.locator('.hockey-player-overlay').boundingBox();
 
-  expect(version).toBe('Hockey Smash v0.5.3');
+  expect(version).toBe('Hockey Smash v0.5.4');
   expect(state.mode).toBe('playing');
   expect(state.player.health).toBe(100);
   expect(bodyLocked).toBe(true);
