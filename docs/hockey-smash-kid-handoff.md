@@ -2,6 +2,16 @@
 
 This guide explains the game in plain language so a beginner can safely help later.
 
+## Current Version
+
+Current checkpoint: **Hockey Smash v0.13.6 · Build 2026-06-29.52**
+
+Preview:
+
+```text
+https://jtripppiie.github.io/hockey-smash/?fresh=0136
+```
+
 ## Big Idea
 
 Hockey Smash is a browser game.
@@ -10,148 +20,52 @@ It uses:
 
 - `HTML` for the page and buttons.
 - `CSS` for layout, colors, size, and mobile controls.
-- `JavaScript` for movement, enemies, score, countdowns, and game rules.
+- `JavaScript` for movement, enemies, score, countdowns, projectiles, salmon patterns, power-ups, and game rules.
 - `Canvas` for drawing the game scene.
 
 There is no server. There are no accounts. There is no build step to play the game locally.
 
-## How To Open The Game Locally
-
-From the repo folder, run:
-
-```bash
-python3 -m http.server 8080
-```
-
-Then open:
-
-```text
-http://localhost:8080/
-```
-
-## The Most Important Rule
-
-Do not change five files at once unless you understand why.
-
-Safer pattern:
-
-1. Change one small thing.
-2. Save.
-3. Refresh the browser.
-4. Test it.
-5. Run `npm run verify`.
-6. Update docs if behavior changed.
-
 ## How The Files Load
 
-Open `index.html` and scroll to the bottom.
-
-You will see many script tags like:
-
-```html
-<script src="js/games/hockey-smash.js?v=..."></script>
-<script src="js/games/hockey-smash-v096.js?v=..."></script>
-<script src="js/games/hockey-smash-v0109.js?v=..."></script>
-```
-
-These load from top to bottom.
+Open `index.html` and scroll to the bottom. Script files load from top to bottom.
 
 Think of the files like clear plastic sheets:
 
 1. `js/games/hockey-smash.js` is the first drawing.
-2. Later files add more details on top.
-3. The last file can make final repairs.
+2. Later files add movement, score, projectiles, character labels, and safety fixes on top.
+3. `js/games/hockey-smash-v0110.js` loads last as the v0.13.6 release marker.
 
-That is why `js/games/hockey-smash-v0109.js` is important. It loads last and handles final safety rules.
-
-## Main Files And What They Do
+## Main Files
 
 ### `index.html`
 
-This is the page.
-
-Change this when you need to edit:
-
-- Build badge text.
-- Script load order.
-- CSS load path.
-- Splash screen text.
-- Buttons.
-- Canvas markup.
-- HUD markup.
-
-Be careful: changing script order can break the game.
+Change this for the visible badge, script load order, CSS cache key, splash text, controls, canvas, and HUD.
 
 ### `style.css`
 
-This has the main layout.
-
-Change this when you need to adjust:
-
-- Compact splash screen size.
-- Hero image size.
-- Title size.
-- Splash copy size.
-- Start Game button size.
-- Fullscreen layout.
-- Canvas size behavior.
-- HUD layout.
-- Controls layout.
+Change this for compact splash layout, hero image size, title size, canvas size, HUD layout, and controls layout.
 
 ### `hockey-smash-custom.css`
 
-This styles the player name input and character buttons.
-
-Change this when:
-
-- Daniel/Sofie selector looks wrong.
-- The player name field needs layout changes.
-- The splash still feels too tall after the compact splash pass.
+Change this for Daniel/Sofie selector styling and player name input styling.
 
 ### `hockey-smash.css`
 
-This is the CSS manifest.
-
-It imports the other CSS files.
-
-Change this when you need to:
-
-- Update CSS cache keys.
-- Add a new CSS file to the page.
-- Keep hidden screens truly hidden.
+This is the CSS manifest. Update the cache key here whenever visible CSS or page behavior changes.
 
 ### `js/games/hockey-smash.js`
 
-This is the original game brain.
+This is the original game brain. It owns the core state, player, old spawns, collision, drawing, health, and Try Again flow.
 
-It has:
-
-- Game states: splash, transition, playing, boss intro, boss fight, try again.
-- Player setup.
-- Original movement.
-- Original enemy spawning.
-- Collision detection.
-- Drawing the canvas.
-- Health and damage.
-
-Be careful in this file. Many later files depend on it.
+Be careful in this file because many later layers depend on it.
 
 ### `js/games/hockey-smash-v096.js`
 
-This owns smooth movement.
-
-Look here for:
-
-- Run acceleration.
-- Jump buffer.
-- Coyote time.
-- Slide timing.
-- Touch input tracking.
-- Computer Mode input bridge.
+This owns smooth movement, jump buffer, coyote time, slide timing, touch tracking, and Computer Mode input bridge.
 
 ### `js/games/hockey-smash-v0102.js`
 
-This owns moving encounter behavior.
+This owns moving encounters.
 
 Look here for:
 
@@ -159,81 +73,94 @@ Look here for:
 - Moose movement.
 - Mom/Sister movement.
 - Difficulty ramp.
-- Encounter variants.
+- `highArc` salmon.
+- `low` salmon.
+- `school` salmon.
+- Combo encounter spawns.
 
 ### `js/games/hockey-smash-v0103.js`
 
-This owns projectiles.
+This owns charged projectiles and fish dodge rules.
 
 Look here for:
 
-- Daniel's puck.
-- Sofie's pointe shoe.
+- Daniel puck shots.
+- Sofie pointe-shoe shots.
+- Hold/release charge timing.
 - Projectile speed.
 - Projectile damage.
-- Fish dodge rules.
+- Projectile arc/gravity.
+- Hit feedback text.
+- HighArc/low/school salmon dodge rules.
+- Safe puck-speed power-ups.
+
+Important safety note: power-ups stay inside this layer instead of `state.entities`. The old core collision code damages the player when they overlap normal entities, so putting power-ups in `state.entities` could accidentally make a reward hurt the player.
 
 ### `js/games/hockey-smash-v0104.js`
 
-This owns score and feedback.
-
-Look here for:
-
-- Distance.
-- Score.
-- Combo.
-- High score.
-- Floating text.
-- Try Again summary.
-- Impact feedback.
+This owns score, distance, combo, high score, floating text, and Try Again summary.
 
 ### `js/games/hockey-smash-v0106.js`
 
-This owns character customization.
-
-Look here for:
-
-- Daniel settings.
-- Sofie settings.
-- Hockey Smash vs Dance Smash labels.
-- Player name.
-- HUD name.
-- Try Again name.
-- Character sprites.
+This owns Daniel/Sofie character settings, Hockey Smash vs Dance Smash labels, action label, player name, and character sprites.
 
 ### `js/games/hockey-smash-v0109.js`
 
-This is the final safety/release layer.
+This owns hidden dev mode, triple-tap unlock, debug logs, accidental shake lock, 10-second countdown, and right-side-only salmon guard.
 
-It currently owns:
+### `js/games/hockey-smash-v0110.js`
 
-- Final visible version text.
-- Hidden dev mode.
-- Triple-tap splash image unlock.
-- Watch Computer Play visibility.
-- Debug button logging.
-- Accidental camera-shake lock.
-- 10-second practice countdown.
-- Right-side-only salmon/fish guard.
-
-This file has extra comments because it is the newest gameplay safety layer.
+This tiny file loads last and keeps the visible badge/version on v0.13.6 after older layers boot.
 
 ## Where To Change Common Things
 
-### Make the splash smaller or larger
+### Change charged shot feel
 
 Open:
 
 ```text
-style.css
-hockey-smash-custom.css
+js/games/hockey-smash-v0103.js
 ```
 
-Use `style.css` for the image, title, copy, gaps, and Start Game button.
+Look for:
 
-Use `hockey-smash-custom.css` for the Daniel/Sofie buttons and player name input.
+```js
+const PUCK_BASE_SPEED = 680;
+const PUCK_MAX_CHARGE_MS = 720;
+const PUCK_COOLDOWN_MS = 180;
+const PUCK_ARC_GRAVITY = 680;
+```
 
-After changing splash size, test a normal browser window, a short browser window, and a phone-sized portrait viewport.
+Change these numbers slowly and test after each change.
+
+### Change salmon patterns
+
+Open:
+
+```text
+js/games/hockey-smash-v0102.js
+```
+
+Look for the `WAVE` array and `applyVariant()`.
+
+Use `WAVE` to add known pattern types.
+Use `applyVariant()` to add random difficulty-based changes.
+
+### Change salmon dodge rules
+
+Open:
+
+```text
+js/games/hockey-smash-v0103.js
+```
+
+Look for:
+
+```js
+playerIsDodgingSalmon(player, entity)
+```
+
+That function decides whether a salmon was dodged or hit the player.
 
 ### Change the countdown length
 
@@ -249,177 +176,34 @@ Find:
 const START_COUNTDOWN_SECONDS = 10;
 ```
 
-Change `10` to another number.
-
-Then update:
-
-- `README.md`
-- `CHANGELOG.md`
-- `docs/hockey-smash-qa.md`
-- `docs/hockey-smash-dev-checklist.md`
-- `scripts/verify-hockey-smash.js` if it checks the exact number.
-
-### Make fish come from both sides again
+### Make the splash smaller or larger
 
 Open:
 
 ```text
-js/games/hockey-smash-v0109.js
+style.css
+hockey-smash-custom.css
 ```
-
-Find:
-
-```js
-forceSalmonFromRight()
-```
-
-That function moves any accidental left-spawned salmon back to the right.
-
-To allow both sides, you would remove or disable that function call inside:
-
-```js
-gameplaySafetyLoop()
-```
-
-Then update docs and QA, because right-side-only would no longer be true.
-
-### Change Daniel's action
-
-Open:
-
-```text
-js/games/hockey-smash-v0106.js
-js/games/hockey-smash-v0103.js
-```
-
-Use `v0106` for the button label and character text.
-
-Use `v0103` for the actual projectile behavior.
-
-### Change Sofie's action
-
-Open:
-
-```text
-js/games/hockey-smash-v0106.js
-js/games/hockey-smash-v0103.js
-js/games/hockey-smash-v0104.js
-```
-
-Use `v0106` for labels.
-
-Use `v0103` for projectile behavior.
-
-Use `v0104` for hit text and scoring feedback.
-
-### Change movement speed
-
-Open:
-
-```text
-js/games/hockey-smash-v096.js
-```
-
-Look for movement constants near the top.
-
-Do not change old movement in `hockey-smash.js` first, because the newer movement layer may override it.
-
-### Change bear or moose behavior
-
-Open:
-
-```text
-js/games/hockey-smash-v0102.js
-```
-
-Also check the original spawn helper in:
-
-```text
-js/games/hockey-smash.js
-```
-
-### Change the build number
-
-Update all of these together:
-
-- `index.html`
-- `hockey-smash.css`
-- `package.json`
-- `scripts/verify-hockey-smash.js`
-- `README.md`
-- `CHANGELOG.md`
-- `docs/hockey-smash-qa.md`
-- `docs/hockey-smash-dev-checklist.md`
-- `docs/hockey-smash-workflow.md`
-- `docs/hockey-smash-progress.md`
-- `docs/hockey-smash-kid-handoff.md`
 
 ## What To Test After Any Change
 
-Always test these basics:
-
 1. Splash screen loads.
-2. Splash screen is compact enough that Start Game is visible.
-3. Start Game works.
-4. Countdown appears in normal play.
-5. Controls work during countdown.
-6. Hazards start after countdown.
-7. Salmon/fish come from the right side only.
-8. Left/right movement works.
-9. Jump works.
-10. Slide works.
-11. Action works.
-12. Try Again works when health reaches zero.
-13. Computer Mode still starts with `?computerMode=1`.
-14. `npm run verify` passes.
-
-## Debug Mode
-
-Normal players should not see debug tools.
-
-To unlock debug tools:
-
-- Triple-tap/click the splash image quickly, or
-- Open with `?debug=1`, or
-- Open with `?computerMode=1`.
-
-Debug tools can help answer:
-
-- Is the game in splash, transition, or playing mode?
-- Did the button receive the tap?
-- Where is the player?
-- Is Computer Mode active?
-- Is the countdown active?
-
-## How To Comment Code Clearly
-
-Good comments explain **why**, not just **what**.
-
-Less helpful:
-
-```js
-state.time = 0;
-```
-
-Better:
-
-```js
-// Keep progression at the start line so the salmon run cannot begin while
-// the player is only practicing controls.
-state.time = 0;
-```
-
-Use comments when:
-
-- A line prevents a bug.
-- A line looks strange but is intentional.
-- A function protects normal players from dev tools.
-- A function is patching older layered behavior.
-- A kid or beginner might ask, "Why did we do that?"
+2. Start Game works.
+3. Countdown appears.
+4. Tap shot works.
+5. Charged shot works.
+6. Charged shot arcs.
+7. Daniel still fires pucks.
+8. Sofie still throws pointe shoes.
+9. highArc salmon can be jumped.
+10. low salmon can be slid under.
+11. school salmon appears wider.
+12. Power-up collection does not hurt the player.
+13. Try Again works when health reaches zero.
+14. Computer Mode still starts with `?computerMode=1`.
+15. `npm run verify` passes.
 
 ## How To Add A New Feature Safely
-
-Use this pattern:
 
 1. Name the feature in plain English.
 2. Decide which file should own it.
@@ -432,17 +216,16 @@ Use this pattern:
 9. Run `npm run verify`.
 10. Push only when the game still starts.
 
-## Current v0.13.5 Behavior To Preserve
+## Current v0.13.6 Behavior To Preserve
 
-- Splash screen is compact and should not require scrolling on common screen sizes.
-- Normal splash is clean.
-- Watch Computer Play is hidden unless dev mode is active.
-- Dev mode unlocks by triple-tapping the splash image.
-- Start Game leads to gameplay.
-- Gameplay starts with a 10-second safe countdown.
-- Controls work during the countdown.
-- Hazards do not attack during the countdown.
+- Splash screen is compact.
+- Start Game leads to a 10-second safe countdown.
 - Salmon/fish enter from the right side only.
 - Daniel uses Hockey Smash / puck behavior.
 - Sofie uses Dance Smash / pointe-shoe behavior.
+- Action can be tapped for quick shots or held/released for charged shots.
+- highArc salmon require a high jump.
+- low salmon require slide/duck.
+- school salmon are wider and more dangerous.
+- Safe power-ups can boost puck speed without damaging the player.
 - Computer Mode still starts quickly and uses the same gameplay systems.
