@@ -1,5 +1,9 @@
 const fs = require('fs');
 
+const DISPLAY_VERSION = 'Hockey Smash v0.5.4';
+const DISPLAY_BUILD = 'Build 2026-06-29.1';
+const DISPLAY_BADGE = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
+
 const requiredFiles = [
   'index.html',
   'style.css',
@@ -52,22 +56,26 @@ const css = read('style.css');
 const polishCss = read('hockey-smash-polish.css');
 const readme = read('README.md');
 const changelog = read('CHANGELOG.md');
+const packageJson = read('package.json');
 
 [
   ['index.html', html],
-  ['js/games/hockey-smash.js', js],
+  ['js/games/hockey-smash-polish.js', polishJs],
   ['README.md', readme],
   ['CHANGELOG.md', changelog],
 ].forEach(([file, content]) => {
-if (!content.includes('Hockey Smash v0.5.3')) errors.push(`${file} missing Hockey Smash v0.5.3.`);
+  if (!content.includes(DISPLAY_VERSION)) errors.push(`${file} missing ${DISPLAY_VERSION}.`);
 });
 
+if (!packageJson.includes('"version": "0.5.4"')) errors.push('package.json version should be 0.5.4.');
 if (!html.includes('Entering Hockey Smash')) errors.push('Transition text is missing.');
 if (!html.includes('assets/hockey-smash/sprites/splash.png')) errors.push('Splash character image is missing.');
 if (!html.includes('Hockey Slash 2')) errors.push('Splash title is missing.');
 if (!html.includes("He's back with a vengance!")) errors.push('Splash tagline is missing.');
 if (!html.includes('Rotate for the best gaming experience.')) errors.push('Rotate guidance is missing from the public UI.');
-if (!html.includes('Hockey Smash v0.5.3 · Build 2026-06-28.8')) errors.push('Visible build overlay is missing or stale.');
+if (!html.includes(DISPLAY_BADGE)) errors.push('Visible build overlay is missing or stale.');
+if (!polishJs.includes(DISPLAY_BADGE)) errors.push('Runtime polish script should force the latest visible badge.');
+if (!polishJs.includes('api.getVersion = () => DISPLAY_VERSION')) errors.push('Runtime getVersion override should report the visible build version.');
 if (!html.includes('id="hockey-canvas"')) errors.push('Hockey canvas is missing.');
 if (!html.includes('id="hockey-debug"')) errors.push('Debug overlay is missing.');
 if (!html.includes('hockey-smash-polish.css')) errors.push('Normal-mode polish stylesheet is missing from HTML.');
@@ -111,4 +119,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log('Hockey Smash static verification passed for v0.5.3 normal-mode player visibility polish.');
+console.log(`${DISPLAY_VERSION} static verification passed for normal-mode player visibility polish.`);
