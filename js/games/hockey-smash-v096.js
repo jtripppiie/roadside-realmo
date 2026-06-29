@@ -1,6 +1,6 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.11.0';
-  const DISPLAY_BUILD = 'Build 2026-06-29.25';
+  const DISPLAY_VERSION = 'Hockey Smash v0.11.8';
+  const DISPLAY_BUILD = 'Build 2026-06-29.33';
   const DESIGN_WIDTH = 1024;
   const GROUND_Y = 576 * 0.82;
   const RUN_SPEED = 360;
@@ -36,9 +36,7 @@
 
     if (badge) badge.textContent = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
     if (api?.getVersion) api.getVersion = () => DISPLAY_VERSION;
-
-    // Computer Mode should keep using the original test driver.
-    if (!api || computerMode) return;
+    if (!api) return;
 
     const input = {
       left: false,
@@ -54,6 +52,9 @@
     let slideCooldownUntil = 0;
     let slideDirection = 1;
     let lastPointerAt = 0;
+    let lastComputerPhase = '';
+    let computerJumpQueued = false;
+    let computerSlideQueued = false;
 
     function getState() {
       const state = api.getState?.();
@@ -117,6 +118,29 @@
       setSlideVisual(true);
     }
 
+    function syncComputerModeInput(state) {
+      if (!computerMode) return;
+      const phase = state.computer?.phaseName || 'manual';
+      if (phase !== lastComputerPhase) {
+        lastComputerPhase = phase;
+        computerJumpQueued = false;
+        computerSlideQueued = false;
+        if (phase !== 'jump') releaseJump();
+      }
+
+      input.left = phase === 'left';
+      input.right = phase === 'right' || phase === 'slide';
+
+      if (phase === 'jump' && !computerJumpQueued && isGrounded(state.player)) {
+        queueJump();
+        computerJumpQueued = true;
+      }
+      if (phase === 'slide' && !computerSlideQueued) {
+        startSlide();
+        computerSlideQueued = true;
+      }
+    }
+
     function controlKey(event) {
       const key = event.key;
       if (key === 'ArrowLeft' || key === 'a' || key === 'A') return 'left';
@@ -127,6 +151,7 @@
     }
 
     window.addEventListener('pointerdown', (event) => {
+      if (computerMode) return;
       const action = actionFromEvent(event);
       if (!action || action === 'stick') return;
       consume(event);
@@ -138,6 +163,7 @@
     }, { capture: true, passive: false });
 
     window.addEventListener('pointerup', (event) => {
+      if (computerMode) return;
       const action = actionFromEvent(event);
       if (!action || action === 'stick') return;
       consume(event);
@@ -146,12 +172,14 @@
     }, { capture: true, passive: false });
 
     window.addEventListener('pointercancel', () => {
+      if (computerMode) return;
       input.left = false;
       input.right = false;
       releaseJump();
     }, { capture: true, passive: false });
 
     window.addEventListener('click', (event) => {
+      if (computerMode) return;
       const action = actionFromEvent(event);
       if (!action || action === 'stick') return;
       consume(event);
@@ -165,6 +193,7 @@
     }, { capture: true, passive: false });
 
     window.addEventListener('keydown', (event) => {
+      if (computerMode) return;
       const action = controlKey(event);
       if (!action) return;
       consume(event);
@@ -174,6 +203,7 @@
     }, { capture: true, passive: false });
 
     window.addEventListener('keyup', (event) => {
+      if (computerMode) return;
       const action = controlKey(event);
       if (!action) return;
       consume(event);
@@ -187,6 +217,7 @@
       lastFrame = now;
 
       if (state?.player) {
+        syncComputerModeInput(state);
         const player = state.player;
         const grounded = isGrounded(player);
         if (grounded) lastGroundedAt = now;
