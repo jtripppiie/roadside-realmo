@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.9.1 - Continuous Road Progression And Computer Player Cleanup
+
+- Shipped **Hockey Smash v0.9.1** with visible build badge `Build 2026-06-29.12`.
+- Added `js/games/hockey-smash-v091.js` as a focused gameplay override.
+- Hid the DOM Daniel overlay during Computer Play so the canvas-controlled computer player is not duplicated.
+- Added continuous road-section progression: when Daniel reaches the right edge, the game advances to the next Soldotna background section and places Daniel back on the left.
+- Added backtracking support from the left edge to the previous road section.
+- Added final-section looping so Daniel is no longer hard-stopped at the first background.
+- Updated package metadata, README, static verification, and browser tests.
+
 ## 0.9.0 - Character Overlays, Fullscreen, And Mobile Playability
 
 - Shipped **Hockey Smash v0.9.0** with visible build badge `Build 2026-06-29.11`.
@@ -61,50 +71,3 @@
 - Kept the overlay synced to the real game-state player position and facing.
 - Updated the runtime visible badge and `getVersion()` reporting to match the latest visible checkpoint.
 - Updated browser and static verification to fail if the latest badge or player overlay is missing.
-
-## 0.5.3 - Normal Mode Polish Follow-up
-
-- Kept visible versioning only in the top-right build badge.
-- Removed the duplicate splash/footer version label and the duplicate HUD version label.
-- Added a normal-mode polish layer that hides the debug overlay unless `?computerMode=1` is active.
-- Added a normal-mode victory overlay after the final challenge is cleared.
-- Added verification coverage for the new polish CSS/script and top-right-only versioning.
-
-## 0.5.3 - Sidewalk Ground Alignment
-
-- Shipped **Hockey Smash v0.5.3** with visible build badge `Build 2026-06-28.8`.
-- Moved the shared invisible ground line from `0.60` to `0.82` of canvas height so Daniel, bears, moose, family characters, and Dad stand on the visible sidewalk instead of floating over the storefronts.
-- Replaced the old sister insult interruption with `Daniel, heads up!`.
-
-## 0.5.2 - Player Visibility Marker
-
-- Shipped **Hockey Smash v0.5.2** with visible build badge `Build 2026-06-28.7`.
-- Moved the player debug marker after sprite drawing so the art cannot cover it.
-- Enlarged the marker into a bright box with `PLAYER HERE` text for unmistakable visibility while testing.
-
-## 0.5.1 - Player Sprite, Debug, And Obstacle Stabilization
-
-- Shipped **Hockey Smash v0.5.1** with visible build badge `Build 2026-06-28.6`.
-- Added the new `hockey-player.png` as the moving player sprite.
-- Fixed processed player sprite rendering so the player is visible on canvas.
-- Enlarged the player and added a temporary `PLAYER` marker/ring for movement debugging.
-- Added in-game debug readout for position, velocity, facing, active keys, sprite load state, and computer test results.
-- Added `?computerMode=1` to automatically test right, left, jump, slide, stick swing, and obstacle clearing.
-- Changed touch action buttons to compact `J`, `S`, and hockey stick labels.
-- Removed code-drawn gray sidewalk/ground, fallback green mountains, and fallback sun.
-- Made bear and moose obstacles larger, earlier, labeled, and clearable with the hockey stick.
-
-## 0.5.0 - Hockey Smash Prototype Pivot
-
-- Pivoted the public launch experience to **Hockey Smash v0.5.0** inside the existing repo.
-- Reused the existing static GitHub Pages workflow instead of creating a new repository.
-- Added Hockey Smash splash screen, Play button, and short "Entering Hockey Smash..." transition.
-- Added full browser-viewport gameplay screen with a 1024x576 landscape-first canvas layout.
-- Added fixed-screen side-scroller gameplay with Daniel as the player.
-- Added left/right movement, jump, hold-to-slide speed boost, and hockey stick combo attack.
-- Added Daniel health bar, invincibility after damage, and Try Again flow.
-- Added summer Soldotna-inspired background rendering and sidewalk/ground tile layer.
-- Added asset fallback placeholders for missing sprites and scenery.
-- Added salmon hazards, a major salmon run sequence, bears, moose, Mom/Sister interruption bubbles, a major salmon run, and Dad boss concept with dad-joke attacks.
-- Added temporary mobile portrait rotate hint and no-scroll gameplay controls.
-- Added Hockey Smash design, workflow, and dev checklist documentation.
