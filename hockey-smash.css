@@ -1,0 +1,16 @@
+/*
+ * Hockey Smash CSS manifest.
+ *
+ * Keep index.html simple: load this one file only.
+ * If a layer is retired later, remove it here instead of stacking more links in HTML.
+ * Current cache key: 0.12.6-20260629.41
+ */
+
+@import url("style.css?v=0.12.6-20260629.41");
+@import url("hockey-smash-polish.css?v=0.12.6-20260629.41");
+@import url("hockey-smash-touch.css?v=0.12.6-20260629.41");
+@import url("hockey-smash-custom.css?v=0.12.6-20260629.41");
+@import url("hockey-smash-v09.css?v=0.12.6-20260629.41");
+@import url("hockey-smash-v094.css?v=0.12.6-20260629.41");
+@import url("hockey-smash-v095.css?v=0.12.6-20260629.41");
+@import url("hockey-smash-v0111.css?v=0.12.6-20260629.41");
