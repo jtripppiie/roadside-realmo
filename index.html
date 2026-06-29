@@ -8,33 +8,50 @@
     <link rel="preload" as="image" href="assets/hockey-smash/backgrounds/soldotna_cityscape_background_01_1280x720.webp">
     <link rel="preload" as="image" href="assets/hockey-smash/sprites/hockey-player-sliding.webp">
     <link rel="preload" as="image" href="assets/hockey-smash/sprites/sister-spinning.webp">
-    <link rel="stylesheet" href="style.css?v=0.12.2-20260629.37">
-    <link rel="stylesheet" href="hockey-smash-polish.css?v=0.12.2-20260629.37">
-    <link rel="stylesheet" href="hockey-smash-touch.css?v=0.12.2-20260629.37">
-    <link rel="stylesheet" href="hockey-smash-v09.css?v=0.12.2-20260629.37">
-    <link rel="stylesheet" href="hockey-smash-v094.css?v=0.12.2-20260629.37">
-    <link rel="stylesheet" href="hockey-smash-v095.css?v=0.12.2-20260629.37">
-    <link rel="stylesheet" href="hockey-smash-v0111.css?v=0.12.2-20260629.37">
+    <link rel="preload" as="image" href="assets/hockey-smash/sprites/dancer-player.webp">
+    <link rel="stylesheet" href="style.css?v=0.12.3-20260629.38">
+    <link rel="stylesheet" href="hockey-smash-polish.css?v=0.12.3-20260629.38">
+    <link rel="stylesheet" href="hockey-smash-touch.css?v=0.12.3-20260629.38">
+    <link rel="stylesheet" href="hockey-smash-custom.css?v=0.12.3-20260629.38">
+    <link rel="stylesheet" href="hockey-smash-v09.css?v=0.12.3-20260629.38">
+    <link rel="stylesheet" href="hockey-smash-v094.css?v=0.12.3-20260629.38">
+    <link rel="stylesheet" href="hockey-smash-v095.css?v=0.12.3-20260629.38">
+    <link rel="stylesheet" href="hockey-smash-v0111.css?v=0.12.3-20260629.38">
   </head>
   <body>
     <main id="app" class="app-shell hockey-app">
       <section id="hockey-smash" class="hockey-shell" aria-labelledby="hockey-title">
         <div id="hockey-build-badge" class="hockey-build-badge" aria-label="Current deployed build">
-          Hockey Smash v0.12.2 · Build 2026-06-29.37
+          Hockey Smash v0.12.3 · Build 2026-06-29.38
         </div>
         <section id="hockey-splash" class="hockey-splash">
           <div class="hockey-splash__content">
             <p class="hockey-eyebrow">Sidewalk survival</p>
             <img
+              id="splash-hero"
               class="hockey-splash__hero"
               src="assets/hockey-smash/sprites/splash.webp"
               alt="Daniel returns for Hockey Slash 2"
             >
             <h1 id="hockey-title">Hockey Slash 2</h1>
-            <p class="hockey-splash__tagline">He's back with a vengance!</p>
-            <p class="hockey-splash__copy">Play it yourself, or watch the computer take Daniel through the sidewalk survival run.</p>
+            <p class="hockey-splash__tagline">Customize your runner!</p>
+            <p class="hockey-splash__copy">Pick your character, name your player, then survive the sidewalk salmon run.</p>
+
+            <div class="hockey-character-select" aria-label="Choose a Hockey Smash character">
+              <span class="hockey-character-select__label">Choose character</span>
+              <div class="hockey-character-select__buttons">
+                <button class="hockey-character-button is-active" type="button" data-character="daniel" aria-pressed="true">Daniel</button>
+                <button class="hockey-character-button" type="button" data-character="sofie" aria-pressed="false">Sofie the Dancer</button>
+              </div>
+            </div>
+
+            <div class="hockey-name-input-group">
+              <label for="player-name">Player name</label>
+              <input id="player-name" name="player-name" type="text" maxlength="12" value="Daniel" placeholder="Daniel" autocomplete="off" spellcheck="false">
+            </div>
+
             <div class="hockey-mode-actions" aria-label="Choose how to play Hockey Smash">
-              <button id="hockey-play" class="hockey-button hockey-button--primary" type="button">Play Hockey Smash</button>
+              <button id="hockey-play" class="hockey-button hockey-button--primary" type="button">Start Game</button>
               <button class="hockey-button hockey-button--secondary hockey-fullscreen-button" type="button" data-fullscreen-toggle>Fullscreen</button>
               <a id="hockey-watch" class="hockey-button hockey-button--secondary" href="?computerMode=1">Watch Computer Play</a>
             </div>
@@ -84,8 +101,8 @@
               <strong>Hockey Smash</strong>
               <span>Survive the salmon run</span>
             </div>
-            <div class="hockey-health" aria-label="Daniel health">
-              <span>Daniel</span>
+            <div class="hockey-health" aria-label="Player health">
+              <span id="hockey-player-health-label">Daniel</span>
               <meter id="hockey-health" min="0" max="100" value="100">100 health</meter>
             </div>
             <div id="hockey-score" class="hockey-score">Distance 0m | Score 0</div>
@@ -120,17 +137,18 @@
       </section>
     </main>
 
-    <script src="js/games/hockey-smash.js?v=0.12.2-20260629.37"></script>
-    <script src="js/games/hockey-smash-polish.js?v=0.12.2-20260629.37"></script>
-    <script src="js/games/hockey-smash-v091.js?v=0.12.2-20260629.37"></script>
-    <script src="script.js?v=0.12.2-20260629.37"></script>
-    <script src="js/games/hockey-smash-v095.js?v=0.12.2-20260629.37"></script>
-    <script src="js/games/hockey-smash-v096.js?v=0.12.2-20260629.37"></script>
-    <script src="js/games/hockey-smash-v099.js?v=0.12.2-20260629.37"></script>
-    <script src="js/games/hockey-smash-v0100.js?v=0.12.2-20260629.37"></script>
-    <script src="js/games/hockey-smash-v0102.js?v=0.12.2-20260629.37"></script>
-    <script src="js/games/hockey-smash-v0103.js?v=0.12.2-20260629.37"></script>
-    <script src="js/games/hockey-smash-v0104.js?v=0.12.2-20260629.37"></script>
-    <script src="js/games/hockey-smash-v0105.js?v=0.12.2-20260629.37"></script>
+    <script src="js/games/hockey-smash.js?v=0.12.3-20260629.38"></script>
+    <script src="js/games/hockey-smash-polish.js?v=0.12.3-20260629.38"></script>
+    <script src="js/games/hockey-smash-v091.js?v=0.12.3-20260629.38"></script>
+    <script src="script.js?v=0.12.3-20260629.38"></script>
+    <script src="js/games/hockey-smash-v095.js?v=0.12.3-20260629.38"></script>
+    <script src="js/games/hockey-smash-v096.js?v=0.12.3-20260629.38"></script>
+    <script src="js/games/hockey-smash-v099.js?v=0.12.3-20260629.38"></script>
+    <script src="js/games/hockey-smash-v0100.js?v=0.12.3-20260629.38"></script>
+    <script src="js/games/hockey-smash-v0102.js?v=0.12.3-20260629.38"></script>
+    <script src="js/games/hockey-smash-v0103.js?v=0.12.3-20260629.38"></script>
+    <script src="js/games/hockey-smash-v0104.js?v=0.12.3-20260629.38"></script>
+    <script src="js/games/hockey-smash-v0105.js?v=0.12.3-20260629.38"></script>
+    <script src="js/games/hockey-smash-v0106.js?v=0.12.3-20260629.38"></script>
   </body>
 </html>
