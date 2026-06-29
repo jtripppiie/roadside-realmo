@@ -1,6 +1,6 @@
 # Hockey Smash
 
-Current playable version: **Hockey Smash v0.9.1**
+Current playable version: **Hockey Smash v0.11.8**
 
 Live GitHub Pages preview:
 
@@ -8,45 +8,70 @@ Live GitHub Pages preview:
 https://jtripppiie.github.io/hockey-smash/
 ```
 
+Computer Play / Watch Mode:
+
+```text
+https://jtripppiie.github.io/hockey-smash/?computerMode=1
+```
+
 ## Current Status
 
-Hockey Smash is now the primary public playable mode in this repo. The project uses static GitHub Pages infrastructure, a canvas runtime, local assets, mobile controls, fullscreen support, continuous road progression, and verification scripts centered on Hockey Smash.
+Hockey Smash is the primary public playable mode in this repo. It is a static GitHub Pages canvas game with local assets, fullscreen support, mobile controls, continuous road progression, smooth side-scroller movement, moving wildlife/family/fish encounters, puck gameplay, health, and Try Again flow.
 
 ## Latest Visible Build
 
 The top-right badge should read:
 
 ```text
-Hockey Smash v0.9.1 · Build 2026-06-29.12
+Hockey Smash v0.11.8 · Build 2026-06-29.33
 ```
 
-Use that badge to confirm GitHub Pages is serving the latest checkpoint.
+Use that badge to confirm GitHub Pages is serving the latest checkpoint. The package version is also `0.11.8`.
 
-## What v0.9.1 Includes
+## What v0.11.8 Includes
 
-- v0.9.0 character overlay, fullscreen, jump, and mobile-scale milestone.
-- Computer Play duplicate-player guard: Computer Play hides the DOM Daniel overlay so the canvas-controlled Daniel is not doubled.
-- Continuous road progression: when Daniel reaches the right edge, he advances to the next road section/background and re-enters from the left.
-- Five road sections mapped to the existing Soldotna background progression.
-- Left-edge backtracking between road sections.
-- Final road looping so the player is no longer hard-stopped at the first screen.
+- Smooth left/right movement through the newer movement controller in `js/games/hockey-smash-v096.js`.
+- Jump buffer, coyote-time forgiveness, early-release jump cut-off, and timed slide/crouch state.
+- Computer Mode now feeds its autoplay phases into that same smooth movement controller instead of skipping it.
+- Moving encounter pass in `js/games/hockey-smash-v0102.js` now runs in normal play and Computer Mode.
+- Fish/salmon fly across the road and require a duck/slide or jump dodge.
+- Bears and moose move toward Daniel and can be cleared with the stick/puck gameplay.
+- Mom and Sister can enter as moving interruptions with speech bubbles.
+- Hockey puck layer in `js/games/hockey-smash-v0103.js` launches pucks from stick input and can hit bears/moose.
+- Try Again flow appears when Daniel's health reaches zero.
+- Current cache key: `0.11.8-20260629.33`.
 
-## Core v0.9 Features
+## Controls
 
-- Play button, Watch Computer Play button, and Fullscreen button.
-- Fullscreen support for mobile so browser bars can be hidden where the browser allows it.
-- Daniel as a visible DOM overlay synced to the live player state.
-- Smaller Daniel scaling on compact phone layouts.
-- Visible jump impulse for the mobile `J` button.
-- Direct D-pad movement fallback for touch/click controls.
-- DOM character overlays synced to the live game state for salmon/fish, bears, moose, Mom, Sister, Dad, and Dad jokes.
-- Bears and moose as stick-clearable obstacles.
-- Salmon hazards and major salmon run sequence.
-- Mom/Sister interruption bubbles.
-- Dad boss and Dad joke attacks.
-- Mobile portrait layout compaction.
-- Mobile landscape-phone layout overrides through `hockey-smash-v09.css`.
-- Debug overlay hidden by default and available through `?computerMode=1&debug=1`.
+Keyboard:
+
+- Move left: `ArrowLeft` or `A`
+- Move right: `ArrowRight` or `D`
+- Jump: `ArrowUp`, `W`, or `Space`
+- Slide / duck: `Shift` or `S`
+- Hockey stick and puck action: `F` or `Enter`
+
+Touch:
+
+- Bottom-left D-pad: left/right movement.
+- Bottom-right buttons: `J` for jump, `S` for slide/duck, hockey stick for stick/puck action.
+- Fullscreen button: requests fullscreen for the game shell when supported by the mobile browser.
+
+## Computer Play / Watch Mode
+
+Open the game with:
+
+```text
+http://localhost:8080/?computerMode=1
+```
+
+Computer Play starts the game automatically and cycles through right, left, jump, slide, and stick actions. As of v0.11.8, it is closer to normal gameplay because the newer smooth movement layer and moving encounter layer also run in Computer Mode. The difference should now be the driver: a human controls normal mode, and the computer controls Watch Mode.
+
+For diagnostics, use:
+
+```text
+http://localhost:8080/?computerMode=1&debug=1
+```
 
 ## How To Run Locally
 
@@ -62,49 +87,23 @@ Then open:
 http://localhost:8080/
 ```
 
-## Controls
-
-Keyboard:
-
-- Move left: `ArrowLeft` or `A`
-- Move right: `ArrowRight` or `D`
-- Jump: `ArrowUp`, `W`, or `Space`
-- Slide/speed boost: `Shift` or `S`
-- Hockey stick: `F` or `Enter`
-
-Touch:
-
-- Bottom-left D-pad: left/right movement.
-- Bottom-right buttons: `J` for jump, `S` for slide, hockey stick for attack.
-- Fullscreen button: requests fullscreen for the game shell when supported by the mobile browser.
-
-## Computer Play / Watch Mode
-
-Open the game with:
-
-```text
-http://localhost:8080/?computerMode=1
-```
-
-Computer Play is treated as a player-facing watch/autoplay mode. It starts the game and cycles through movement, jump, slide, and stick actions so the game can be watched without manual input. In v0.9.1, the DOM Daniel overlay is hidden during Computer Play to avoid duplicate player sprites.
-
-For diagnostics, use:
-
-```text
-http://localhost:8080/?computerMode=1&debug=1
-```
-
 ## Main Files
 
-- `index.html`: Hockey Smash public shell.
+- `index.html`: Hockey Smash public shell, visible build badge, controls, and script/css loading order.
 - `style.css`: full-screen layout, splash, HUD, canvas scaling, and mobile controls.
-- `hockey-smash-polish.css`: normal-mode presentation polish, player overlay, debug hiding, portrait mobile layout, and victory overlay styles.
-- `hockey-smash-v09.css`: v0.9 fullscreen, entity overlay, and landscape-phone layout overrides.
+- `hockey-smash-polish.css`: presentation polish, player overlay, debug hiding, portrait mobile layout, and victory overlay styles.
+- `hockey-smash-v09.css`: fullscreen, entity overlay, and landscape-phone layout overrides.
+- `hockey-smash-v094.css`, `hockey-smash-v095.css`, `hockey-smash-v0111.css`: later layout and HUD polish layers.
 - `script.js`: app bootstrap.
-- `js/games/hockey-smash.js`: Hockey Smash runtime, state machine, player movement, hazards, Dad boss, rendering, and asset fallbacks.
-- `js/games/hockey-smash-polish.js`: player-facing polish layer, fullscreen handling, D-pad fallback, jump fallback, visible player overlay, and entity overlays.
-- `js/games/hockey-smash-v091.js`: v0.9.1 road-section progression and Computer Play duplicate-player guard.
-- `assets/`: expected Hockey Smash sprite/background files.
+- `js/games/hockey-smash.js`: original core runtime, state machine, spawns, collision, rendering, and asset fallbacks.
+- `js/games/hockey-smash-polish.js`: polish layer, fullscreen handling, and legacy D-pad helper behavior.
+- `js/games/hockey-smash-v091.js`: road-section progression and Computer Play duplicate-player guard.
+- `js/games/hockey-smash-v096.js`: smooth movement controller for normal play and Computer Mode.
+- `js/games/hockey-smash-v099.js`: Computer Mode entity sizing pass.
+- `js/games/hockey-smash-v0100.js`: Game Over / Try Again flow.
+- `js/games/hockey-smash-v0102.js`: moving gameplay encounter pass for fish, bear, moose, Mom, and Sister.
+- `js/games/hockey-smash-v0103.js`: puck action layer and fish dodge rules.
+- `assets/hockey-smash/`: expected Hockey Smash sprite/background files.
 
 ## Verification
 
@@ -121,3 +120,11 @@ npm install
 npm run test:browser:install
 npm run test:browser
 ```
+
+Manual smoke checks before calling a checkpoint good:
+
+- Open `/` and confirm the visible badge says `Hockey Smash v0.11.8 · Build 2026-06-29.33`.
+- Start normal Play and confirm Daniel moves left/right, jumps, slides/ducks, and uses stick/puck action.
+- Confirm fish fly in and require a jump or slide/duck.
+- Confirm bear/moose move toward Daniel and can be cleared.
+- Open `?computerMode=1` and confirm the same movement and encounter systems are visible under autoplay.
