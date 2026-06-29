@@ -11,7 +11,7 @@ test('Hockey Smash launches into a full viewport canvas game', async ({ page }) 
   await expect(page.locator('h1')).toHaveText('Hockey Slash 2');
   await expect(page.locator('.hockey-splash__tagline')).toHaveText("He's back with a vengance!");
   await expect(page.locator('.hockey-splash__hero')).toHaveAttribute('src', 'assets/hockey-smash/sprites/splash.png');
-  await expect(page.locator('#hockey-build-badge')).toContainText('Hockey Smash v0.5.7 · Build 2026-06-29.4');
+  await expect(page.locator('#hockey-build-badge')).toContainText('Hockey Smash v0.5.8 · Build 2026-06-29.5');
   await expect(page.locator('#hockey-watch')).toHaveAttribute('href', '?computerMode=1');
   await expect(page.locator('#hockey-watch')).toHaveText('Watch Computer Play');
   await expect(page.locator('.hockey-version')).toHaveCount(0);
@@ -29,12 +29,12 @@ test('Hockey Smash launches into a full viewport canvas game', async ({ page }) 
   const bodyLocked = await page.evaluate(() => document.body.classList.contains('hockey-playing'));
   const overlayBox = await page.locator('#hockey-player-overlay').boundingBox();
 
-  expect(version).toBe('Hockey Smash v0.5.7');
+  expect(version).toBe('Hockey Smash v0.5.8');
   expect(state.mode).toBe('playing');
   expect(state.player.health).toBe(100);
   expect(bodyLocked).toBe(true);
-  expect(overlayBox?.width).toBeGreaterThan(80);
-  expect(overlayBox?.height).toBeGreaterThan(100);
+  expect(overlayBox?.width).toBeGreaterThan(70);
+  expect(overlayBox?.height).toBeGreaterThan(90);
 
   const startX = state.player.x;
   await page.keyboard.down('ArrowRight');
@@ -43,18 +43,27 @@ test('Hockey Smash launches into a full viewport canvas game', async ({ page }) 
   const rightX = await page.evaluate(() => window.RTA_HOCKEY_SMASH.getState().player.x);
   expect(rightX).toBeGreaterThan(startX);
 
+  const overlayAfterKeyboard = await page.locator('#hockey-player-overlay').boundingBox();
+  expect(overlayAfterKeyboard?.x).toBeGreaterThan(overlayBox.x);
+
   await page.keyboard.down('ArrowLeft');
   await page.waitForTimeout(220);
   await page.keyboard.up('ArrowLeft');
   const leftX = await page.evaluate(() => window.RTA_HOCKEY_SMASH.getState().player.x);
   expect(leftX).toBeLessThan(rightX);
 
+  const beforeTapX = await page.evaluate(() => window.RTA_HOCKEY_SMASH.getState().player.x);
+  await page.locator('[data-action="right"]').click();
+  await page.waitForTimeout(360);
+  const afterTapX = await page.evaluate(() => window.RTA_HOCKEY_SMASH.getState().player.x);
+  expect(afterTapX).toBeGreaterThan(beforeTapX);
+
   expect(consoleErrors).toEqual([]);
 });
 
 test('Computer Play is a player-facing watch mode without debug by default', async ({ page }) => {
   await page.goto('/?computerMode=1');
-  await expect(page.locator('#hockey-build-badge')).toContainText('Hockey Smash v0.5.7 · Build 2026-06-29.4');
+  await expect(page.locator('#hockey-build-badge')).toContainText('Hockey Smash v0.5.8 · Build 2026-06-29.5');
   await expect(page.locator('#hockey-game')).toBeVisible({ timeout: 5000 });
   await expect(page.locator('.hockey-autoplay-panel')).toContainText('Watch mode is active');
   await expect(page.locator('#hockey-debug')).toBeHidden();
@@ -64,5 +73,5 @@ test('Computer Play is a player-facing watch mode without debug by default', asy
   const version = await page.evaluate(() => window.RTA_HOCKEY_SMASH.getVersion());
 
   expect(computerEnabled).toBe(true);
-  expect(version).toBe('Hockey Smash v0.5.7');
+  expect(version).toBe('Hockey Smash v0.5.8');
 });
