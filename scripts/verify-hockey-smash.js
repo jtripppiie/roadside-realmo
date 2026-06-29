@@ -15,20 +15,20 @@ const requiredFiles = [
 ];
 
 const requiredAssetPaths = [
+  'assets/roadside-realm/backgrounds/soldotna_cityscape_background_01_1920x1080.png',
+  'assets/roadside-realm/backgrounds/soldotna_cityscape_background_02_1920x1080.png',
+  'assets/roadside-realm/backgrounds/soldotna_cityscape_background_03_1920x1080.png',
+  'assets/roadside-realm/backgrounds/soldotna_cityscape_background_04_1920x1080.png',
+  'assets/roadside-realm/backgrounds/soldotna_cityscape_background_05_1920x1080.png',
   'assets/player_hockey_sprite_96x96.png',
-  'assets/salmon_sprite_96x96.png',
-  'assets/bear_sprite_96x96.png',
-  'assets/moose_sprite_96x96.png',
-  'assets/dad_mower_sprite_96x96.png',
-  'assets/dad_sprite_96x96.png',
-  'assets/mom_sprite_96x96.png',
-  'assets/mom_sprite_text_96x96.png',
-  'assets/sister_sprite_96x96.png',
-  'assets/sister_sprite_text_96x96.png',
-  'assets/soldotna_background_01.png',
-  'assets/sidewalk_tile_96x32.png',
-  'assets/soldotna_background_placeholder.png',
-  'assets/soldotna_sidewalk_placeholder.png',
+  'assets/roadside-realm/sprites/salmon.png',
+  'assets/roadside-realm/sprites/bear.png',
+  'assets/roadside-realm/sprites/moose.png',
+  'assets/roadside-realm/sprites/dad.png',
+  'assets/roadside-realm/sprites/mom.png',
+  'assets/roadside-realm/sprites/mom_text.png',
+  'assets/roadside-realm/sprites/sister.png',
+  'assets/roadside-realm/sprites/sister_text.png',
 ];
 
 const errors = [];
@@ -57,6 +57,7 @@ const changelog = read('CHANGELOG.md');
 });
 
 if (!html.includes('Entering Hockey Smash')) errors.push('Transition text is missing.');
+if (!html.includes('Loading...')) errors.push('Black loading splash text is missing.');
 if (!html.includes('Rotate for the best gaming experience.')) errors.push('Rotate guidance is missing from the public UI.');
 if (!html.includes('Hockey Smash v0.5.0 · Build 2026-06-28.5')) errors.push('Visible build overlay is missing or stale.');
 if (!html.includes('id="hockey-canvas"')) errors.push('Hockey canvas is missing.');

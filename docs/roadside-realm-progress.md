@@ -58,6 +58,14 @@ Follow-up stabilization after the v0.5.0 pivot:
 - The badge appears on splash, transition, gameplay, and retry screens so GitHub Pages cache state is visible without opening devtools.
 - Updated static verification to fail if the visible build badge is missing or stale.
 
+## 2026-06-28 Checkpoint: Black Loading Splash And Soldotna Backgrounds
+
+- Replaced the fragile illustrated splash with a black loading screen that says `Loading...`.
+- Kept the Play button on the loading screen so the prototype still starts intentionally.
+- Wired the real 1920x1080 Soldotna cityscape backgrounds into the canvas.
+- Background sequence starts with `soldotna_cityscape_background_01_1920x1080.png`, then advances through `02`, `03`, `04`, and `05` during later play/boss phases.
+- Updated Hockey Smash docs and static verification to use the actual asset paths under `assets/roadside-realm/`.
+
 ## Current Branch
 
 `codex/roadside-realm-plan-assets`

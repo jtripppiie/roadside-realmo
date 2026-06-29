@@ -68,14 +68,14 @@ button {
 .hockey-try-again {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: minmax(300px, 1fr) minmax(300px, 0.9fr);
-  gap: clamp(1rem, 4vw, 4rem);
+  grid-template-columns: 1fr;
+  gap: clamp(1rem, 4vw, 2rem);
   align-items: center;
+  justify-items: center;
   padding: clamp(1rem, 5vw, 4rem);
   background:
-    linear-gradient(180deg, rgba(255,212,90,0.12), transparent 44%),
-    radial-gradient(circle at 70% 20%, rgba(156,231,255,0.22), transparent 30rem),
-    linear-gradient(135deg, #1a3447, #071019 64%);
+    radial-gradient(circle at 50% 42%, rgba(255,255,255,0.06), transparent 14rem),
+    #000;
 }
 
 .hockey-transition,
@@ -83,64 +83,6 @@ button {
   grid-template-columns: 1fr;
   place-items: center;
   text-align: center;
-}
-
-.hockey-splash__scene {
-  position: relative;
-  min-height: min(62vh, 620px);
-  overflow: hidden;
-  border: 5px solid #05080d;
-  border-radius: 12px;
-  background:
-    linear-gradient(#80cff3 0 54%, #3d744e 54% 64%, #6a6b64 64% 100%);
-  box-shadow: 0 28px 90px rgba(0,0,0,0.38);
-}
-
-.hockey-splash__sun {
-  position: absolute;
-  right: 14%;
-  top: 10%;
-  width: 86px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--hockey-sun);
-  box-shadow: 0 0 40px rgba(255,212,90,0.58);
-}
-
-.hockey-splash__mountains {
-  position: absolute;
-  left: -8%;
-  right: -8%;
-  bottom: 35%;
-  height: 36%;
-  background:
-    linear-gradient(140deg, transparent 0 22%, #314f68 22% 34%, transparent 34%),
-    linear-gradient(38deg, transparent 0 18%, #456d76 18% 31%, transparent 31%),
-    linear-gradient(150deg, transparent 0 42%, #263e56 42% 55%, transparent 55%);
-}
-
-.hockey-splash__road {
-  position: absolute;
-  left: -5%;
-  right: -5%;
-  bottom: 0;
-  height: 35%;
-  background:
-    repeating-linear-gradient(90deg, transparent 0 70px, rgba(255,255,255,0.18) 70px 74px),
-    #5f635d;
-}
-
-.hockey-splash__daniel {
-  position: absolute;
-  left: 18%;
-  bottom: 26%;
-  width: 92px;
-  aspect-ratio: 1;
-  border: 4px solid #101923;
-  background:
-    linear-gradient(90deg, transparent 0 28%, #101923 28% 34%, transparent 34%),
-    linear-gradient(#f1cf72 0 30%, #254e8f 30% 68%, #1b1e29 68%);
-  box-shadow: 12px 18px 0 rgba(0,0,0,0.2);
 }
 
 .hockey-eyebrow {
@@ -154,11 +96,12 @@ button {
 
 .hockey-splash h1 {
   margin: 0;
-  max-width: 9ch;
+  max-width: 12ch;
   color: #fff8df;
-  font-size: clamp(3.4rem, 10vw, 8rem);
-  line-height: 0.85;
+  font-size: clamp(3.2rem, 11vw, 8rem);
+  line-height: 0.95;
   letter-spacing: 0;
+  text-align: center;
 }
 
 .hockey-splash__copy {
@@ -166,6 +109,13 @@ button {
   color: rgba(255,242,207,0.86);
   font-size: clamp(1rem, 2vw, 1.3rem);
   line-height: 1.55;
+  text-align: center;
+}
+
+.hockey-splash__content {
+  display: grid;
+  justify-items: center;
+  gap: 0.9rem;
 }
 
 .hockey-button,
@@ -364,11 +314,6 @@ button {
     font-size: clamp(3rem, 17vw, 5rem);
   }
 
-  .hockey-splash__scene {
-    order: 2;
-    min-height: min(38svh, 300px);
-  }
-
   .hockey-hud {
     grid-template-columns: 1fr;
     top: 0.5rem;
@@ -424,15 +369,5 @@ button {
 @media (max-width: 760px) {
   .hockey-splash {
     grid-template-columns: 1fr;
-  }
-
-  .hockey-splash__scene {
-    min-height: 300px;
-  }
-}
-
-@media (orientation: portrait) and (max-width: 760px) {
-  .hockey-splash__scene {
-    min-height: min(38svh, 300px);
   }
 }

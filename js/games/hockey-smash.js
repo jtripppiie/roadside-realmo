@@ -4,21 +4,23 @@
   const DESIGN_HEIGHT = 576;
   const TRANSITION_MS = 2400;
   const ASSETS = {
-    background: 'assets/soldotna_background_01.png',
-    backgroundPlaceholder: 'assets/soldotna_background_placeholder.png',
-    sidewalk: 'assets/sidewalk_tile_96x32.png',
-    sidewalkPlaceholder: 'assets/soldotna_sidewalk_placeholder.png',
+    background01: 'assets/roadside-realm/backgrounds/soldotna_cityscape_background_01_1920x1080.png',
+    background02: 'assets/roadside-realm/backgrounds/soldotna_cityscape_background_02_1920x1080.png',
+    background03: 'assets/roadside-realm/backgrounds/soldotna_cityscape_background_03_1920x1080.png',
+    background04: 'assets/roadside-realm/backgrounds/soldotna_cityscape_background_04_1920x1080.png',
+    background05: 'assets/roadside-realm/backgrounds/soldotna_cityscape_background_05_1920x1080.png',
     daniel: 'assets/player_hockey_sprite_96x96.png',
-    salmon: 'assets/salmon_sprite_96x96.png',
-    bear: 'assets/bear_sprite_96x96.png',
-    moose: 'assets/moose_sprite_96x96.png',
-    dadMower: 'assets/dad_mower_sprite_96x96.png',
-    dad: 'assets/dad_sprite_96x96.png',
-    mom: 'assets/mom_sprite_96x96.png',
-    momText: 'assets/mom_sprite_text_96x96.png',
-    sister: 'assets/sister_sprite_96x96.png',
-    sisterText: 'assets/sister_sprite_text_96x96.png',
+    salmon: 'assets/roadside-realm/sprites/salmon.png',
+    bear: 'assets/roadside-realm/sprites/bear.png',
+    moose: 'assets/roadside-realm/sprites/moose.png',
+    dadMower: 'assets/roadside-realm/sprites/dad.png',
+    dad: 'assets/roadside-realm/sprites/dad.png',
+    mom: 'assets/roadside-realm/sprites/mom.png',
+    momText: 'assets/roadside-realm/sprites/mom_text.png',
+    sister: 'assets/roadside-realm/sprites/sister.png',
+    sisterText: 'assets/roadside-realm/sprites/sister_text.png',
   };
+  const BACKGROUND_SEQUENCE = ['background01', 'background02', 'background03', 'background04', 'background05'];
 
   const TUNING = {
     walkSpeed: 285,
@@ -483,9 +485,10 @@
   }
 
   function drawBackground(ctx) {
-    const bg = images.background?.complete && images.background.naturalWidth ? images.background : images.backgroundPlaceholder;
+    const key = backgroundKeyForState();
+    const bg = images[key];
     if (bg?.complete && bg.naturalWidth) {
-      ctx.drawImage(bg, 0, 0, DESIGN_WIDTH, DESIGN_HEIGHT);
+      drawCoverImage(ctx, bg, 0, 0, DESIGN_WIDTH, DESIGN_HEIGHT);
       return;
     }
     ctx.fillStyle = '#7ec9f2';
@@ -507,19 +510,33 @@
     ctx.fill();
   }
 
+  function backgroundKeyForState() {
+    if (!state || state.mode === STATE.SPLASH || state.mode === STATE.TRANSITION) return BACKGROUND_SEQUENCE[0];
+    if (state.mode === STATE.BOSS_FIGHT || state.dad) return 'background05';
+    if (state.mode === STATE.BOSS_INTRO) return 'background04';
+    if (state.salmonRunStarted) return 'background03';
+    const index = Math.min(BACKGROUND_SEQUENCE.length - 1, Math.floor(state.time / 10));
+    return BACKGROUND_SEQUENCE[index];
+  }
+
+  function drawCoverImage(ctx, image, x, y, width, height) {
+    const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
+    const sw = width / scale;
+    const sh = height / scale;
+    const sx = (image.naturalWidth - sw) / 2;
+    const sy = (image.naturalHeight - sh) / 2;
+    ctx.drawImage(image, sx, sy, sw, sh, x, y, width, height);
+  }
+
   function drawGround(ctx) {
     const groundY = DESIGN_HEIGHT * TUNING.groundRatio;
     ctx.fillStyle = '#56606a';
     ctx.fillRect(0, groundY, DESIGN_WIDTH, DESIGN_HEIGHT - groundY);
-    const tile = images.sidewalk?.complete && images.sidewalk.naturalWidth ? images.sidewalk : images.sidewalkPlaceholder;
     for (let x = 0; x < DESIGN_WIDTH; x += 96) {
-      if (tile?.complete && tile.naturalWidth) ctx.drawImage(tile, x, groundY, 96, 32);
-      else {
-        ctx.fillStyle = x % 192 ? '#a6a89e' : '#b8baae';
-        ctx.fillRect(x, groundY, 96, 32);
-        ctx.strokeStyle = '#74776f';
-        ctx.strokeRect(x, groundY, 96, 32);
-      }
+      ctx.fillStyle = x % 192 ? '#a6a89e' : '#b8baae';
+      ctx.fillRect(x, groundY, 96, 32);
+      ctx.strokeStyle = '#74776f';
+      ctx.strokeRect(x, groundY, 96, 32);
     }
   }
 
