@@ -2,9 +2,9 @@
 
 ## Current Checkpoint
 
-- [ ] Confirm visible version says `Hockey Smash v0.12.0 · Build 2026-06-29.35`.
-- [ ] Confirm `package.json` version is `0.12.0`.
-- [ ] Confirm `index.html` cache keys use `0.12.0-20260629.35`.
+- [ ] Confirm visible version says `Hockey Smash v0.12.1 · Build 2026-06-29.36`.
+- [ ] Confirm `package.json` version is `0.12.1`.
+- [ ] Confirm `index.html` cache keys use `0.12.1-20260629.36`.
 - [ ] Confirm README, CHANGELOG, QA, workflow, and checklist docs are updated when behavior changes.
 
 ## Local Run
@@ -27,6 +27,15 @@
 - [ ] Confirm mobile landscape layout works.
 - [ ] Confirm the rotate overlay appears temporarily in portrait.
 
+## Puck And Feedback Polish
+
+- [ ] Confirm a normal stick action fires the standard puck.
+- [ ] Confirm a slide stick action fires the low blue puck.
+- [ ] Confirm an airborne stick action fires the stronger gold aerial puck.
+- [ ] Confirm puck hits show floating text.
+- [ ] Confirm fish dodges show floating text.
+- [ ] Confirm damage shows floating text and resets combo.
+
 ## Score And Replay
 
 - [ ] Confirm distance and score appear in the HUD.
@@ -35,6 +44,7 @@
 - [ ] Confirm combo resets when Daniel loses health.
 - [ ] Confirm the high score persists after refresh.
 - [ ] Confirm the canvas briefly shakes during impact feedback.
+- [ ] Confirm the Try Again screen shows distance, score, best combo, puck hits, and fish dodges.
 
 ## Gameplay Encounters
 
