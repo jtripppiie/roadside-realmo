@@ -1,6 +1,6 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.14.14 Arena Mode';
-  const BUILD_LABEL = 'Hockey Smash v0.14.14 · Build 2026-06-30.70';
+  const DISPLAY_VERSION = 'Hockey Smash v0.14.15 Arena Mode';
+  const BUILD_LABEL = 'Hockey Smash v0.14.15 · Build 2026-06-30.71';
   const DESIGN_WIDTH = 1024;
   const ARENA_EDGE_PADDING = 22;
   const ARENA_CENTER_X = 440;
