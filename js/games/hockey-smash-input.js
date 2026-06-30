@@ -159,7 +159,7 @@
       if (key === 'ArrowLeft' || key === 'a' || key === 'A') return 'left';
       if (key === 'ArrowRight' || key === 'd' || key === 'D') return 'right';
       if (key === 'ArrowUp' || key === 'w' || key === 'W' || key === 'j' || key === 'J') return 'jump';
-      if (key === 'Shift' || key === 's' || key === 'S') return 'slide';
+      if (key === 'ArrowDown' || key === 'Shift' || key === 's' || key === 'S') return 'slide';
       return null;
     }
 

@@ -92,6 +92,13 @@ body:not(.hockey-debug-enabled) .hockey-debug {
   display: none;
 }
 
+body.hockey-canvas-player-only .hockey-player-overlay,
+body.hockey-canvas-player-only #hockey-player-overlay {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 .hockey-player-overlay__sprite {
   display: block;
   width: 100%;

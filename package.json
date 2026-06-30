@@ -1,11 +1,11 @@
 {
   "name": "hockey-smash",
-  "version": "0.14.4",
+  "version": "0.14.28",
   "private": true,
   "description": "Static Hockey Smash browser game verification helpers.",
   "scripts": {
     "verify": "npm run verify:syntax && npm run verify:hockey && npm run verify:actions",
-    "verify:syntax": "node --check script.js && node --check js/games/hockey-smash.js && node --check js/games/hockey-smash-polish.js && node --check js/games/hockey-smash-backgrounds.js && node --check js/games/hockey-smash-mobile-flow.js && node --check js/games/hockey-smash-input.js && node --check js/games/hockey-smash-computer-balance.js && node --check js/games/hockey-smash-game-over.js && node --check js/games/hockey-smash-encounters.js && node --check js/games/hockey-smash-projectiles.js && node --check js/games/hockey-smash-powerups.js && node --check js/games/hockey-smash-score.js && node --check js/games/hockey-smash-characters.js && node --check js/games/hockey-smash-weather.js && node --check js/games/hockey-smash-safety.js && node --check js/games/hockey-smash-family-combat.js && node --check js/games/hockey-smash-pacing.js && node --check js/games/hockey-smash-spotlight.js && node --check js/games/hockey-smash-stage-flow.js && node --check js/games/hockey-smash-release.js && node --check scripts/verify-hockey-smash.js && node --check scripts/verify-hockey-smash-actions.js",
+    "verify:syntax": "node --check script.js && node --check js/games/hockey-smash.js && node --check js/games/hockey-smash-polish.js && node --check js/games/hockey-smash-backgrounds.js && node --check js/games/hockey-smash-mobile-flow.js && node --check js/games/hockey-smash-input.js && node --check js/games/hockey-smash-computer-balance.js && node --check js/games/hockey-smash-game-over.js && node --check js/games/hockey-smash-encounters.js && node --check js/games/hockey-smash-projectiles.js && node --check js/games/hockey-smash-score.js && node --check js/games/hockey-smash-characters.js && node --check js/games/hockey-smash-weather.js && node --check js/games/hockey-smash-safety.js && node --check js/games/hockey-smash-family-combat.js && node --check js/games/hockey-smash-pacing.js && node --check js/games/hockey-smash-spotlight.js && node --check js/games/hockey-smash-stage-flow.js && node --check js/games/hockey-smash-release.js && node --check scripts/verify-hockey-smash.js && node --check scripts/verify-hockey-smash-actions.js",
     "verify:hockey": "node scripts/verify-hockey-smash.js",
     "verify:actions": "node scripts/verify-hockey-smash-actions.js",
     "test:browser": "playwright test",

@@ -23,6 +23,8 @@ body:not(.hockey-playing) .hockey-fullscreen-chip {
 
 .hockey-stage-background {
   position: fixed;
+  display: none !important;
+  visibility: hidden !important;
   z-index: 1;
   pointer-events: none;
   background-position: center center;
@@ -44,6 +46,13 @@ body.hockey-stage-background-active .hockey-canvas {
   inset: 0;
   z-index: 8;
   pointer-events: none;
+}
+
+body.hockey-canvas-player-only .hockey-entity-layer,
+body.hockey-canvas-player-only .hockey-entity-overlay {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .hockey-entity-overlay {

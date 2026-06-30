@@ -17,34 +17,34 @@
   // this same encounter pass so watch mode and normal play stay close together.
   const WAVE = [
     {
-      type: 'salmon', x: 260, y: -72, width: 74, height: 42,
+      type: 'salmon', x: 260, y: -72, width: 54, height: 31,
       vx: -45, vy: 440, hp: 1, damage: 0, dodgeDamage: 8, flip: -1,
       variant: 'rain', fallingFish: true, message: 'Fish raining down — dodge the splash zone!'
     },
     {
-      type: 'bear', x: DESIGN_WIDTH + 90, y: GROUND_Y - 104, width: 122, height: 104,
-      vx: -245, hp: 2, maxHp: 2, damage: 12,
+      type: 'bear', x: DESIGN_WIDTH + 90, y: GROUND_Y - 84, width: 96, height: 84,
+      vx: -190, hp: 2, maxHp: 2, damage: 12,
       message: 'Bear moving in — use the stick and puck!'
     },
     {
-      type: 'salmon', x: 500, y: -84, width: 80, height: 45,
+      type: 'salmon', x: 500, y: -84, width: 58, height: 33,
       vx: 35, vy: 510, hp: 1, damage: 0, dodgeDamage: 8, flip: -1,
       variant: 'heavyRain', fallingFish: true, message: 'Heavy salmon drop — move out from under it!'
     },
     {
-      type: 'salmon', x: 740, y: -64, width: 70, height: 38,
+      type: 'salmon', x: 740, y: -64, width: 50, height: 29,
       vx: -20, vy: 560, hp: 1, damage: 0, dodgeDamage: 8, flip: -1,
       variant: 'fastRain', fallingFish: true, message: 'Fast fish drop — sidestep it!'
     },
     {
-      type: 'salmon', x: 430, y: -92, width: 120, height: 50,
+      type: 'salmon', x: 430, y: -92, width: 72, height: 34,
       vx: 55, vy: 470, hp: 1, damage: 0, dodgeDamage: 12, flip: -1,
       variant: 'schoolRain', fallingFish: true, message: 'Salmon SCHOOL raining down!'
     },
     {
       type: 'adultCoach', x: DESIGN_WIDTH + 40, y: GROUND_Y - 96, width: 90, height: 96,
-      vx: -145, hp: 2, damage: 5, bubble: 'Eyes on the puck!',
-      message: 'Teacher challenge moving in!'
+      vx: -145, hp: 2, damage: 5, bubble: 'Point those toes!',
+      message: 'Dance instructor challenge moving in!'
     },
     {
       type: 'sister', x: DESIGN_WIDTH + 70, y: GROUND_Y - 94, width: 84, height: 94,
@@ -52,19 +52,14 @@
       message: 'Sister spinning in!'
     },
     {
-      type: 'moose', x: DESIGN_WIDTH + 120, y: GROUND_Y - 118, width: 146, height: 118,
-      vx: -195, hp: 3, maxHp: 3, damage: 16,
+      type: 'moose', x: DESIGN_WIDTH + 120, y: GROUND_Y - 92, width: 112, height: 92,
+      vx: -160, hp: 3, maxHp: 3, damage: 16,
       message: 'Moose moving in — use the stick and puck!'
     },
     {
-      type: 'bird', x: DESIGN_WIDTH + 100, y: 140, width: 68, height: 52,
-      vx: -520, vy: 40, hp: 1, maxHp: 1, damage: 6,
-      message: 'Diving bird incoming!'
-    },
-    {
-      type: 'icePatch', x: DESIGN_WIDTH + 80, y: GROUND_Y - 30, width: 140, height: 40,
-      vx: -180, hp: 1, isHazard: true, damage: 0,
-      message: 'Slippery ice!'
+      type: 'bird', x: DESIGN_WIDTH + 100, y: 132, width: 68, height: 52,
+      vx: -360, vy: 0, hp: 1, maxHp: 1, damage: 6,
+      message: 'Eagle flying across!'
     },
     {
       type: 'chargingMoose', x: DESIGN_WIDTH + 150, y: GROUND_Y - 118, width: 160, height: 118,
@@ -131,11 +126,12 @@
     function resolveModeEntity(entity) {
       if (entity.type !== 'adultCoach') return entity;
       const danceMode = currentCharacter() === 'sofie';
+      if (!danceMode) return null;
       return {
         ...entity,
-        type: danceMode ? 'danceInstructor' : 'teacher',
-        bubble: danceMode ? 'Point those toes!' : 'Eyes on the puck!',
-        message: danceMode ? 'Dance instructor challenge moving in!' : 'Teacher challenge moving in!',
+        type: 'danceInstructor',
+        bubble: 'Point those toes!',
+        message: 'Dance instructor challenge moving in!',
       };
     }
 
@@ -149,8 +145,8 @@
         if (entity.variant === 'heavyRain' || entity.variant === 'fastRain' || entity.variant === 'schoolRain') return entity;
         if (roll < 0.3 + difficulty * 0.4) {
           entity.variant = 'schoolRain';
-          entity.width *= 1.6;
-          entity.height = Math.max(entity.height || 42, 48);
+          entity.width = Math.min(entity.width * 1.25, 90);
+          entity.height = Math.max(entity.height || 31, 36);
           entity.dodgeDamage = 12;
           entity.message = 'Salmon SCHOOL raining down!';
           return entity;
@@ -178,19 +174,11 @@
       }
 
       if (entity.type === 'bird') {
-        entity.vy += difficulty * 90;
-        if (roll < 0.45 + difficulty * 0.25) {
-          entity.variant = 'diver';
-          entity.vy = 150 + difficulty * 90;
-          entity.message = 'Diving bird incoming!';
-        }
-        return entity;
-      }
-
-      if (entity.type === 'icePatch') {
-        entity.variant = 'hazard';
-        entity.damage = 0;
-        entity.isHazard = true;
+        entity.variant = 'flyby';
+        entity.vy = 0;
+        entity.y = Math.max(84, Math.min(185, entity.y || 132));
+        entity.vx = -Math.abs(entity.vx || 360) * (1 + difficulty * 0.18);
+        entity.message = 'Eagle flying across!';
         return entity;
       }
 
@@ -211,15 +199,20 @@
     }
 
     function spawnMovingEncounter(state, difficulty, options = {}) {
-      const template = WAVE[waveIndex % WAVE.length];
+      const fishIntro = document.body.dataset.hockeyStagePhase === 'fish';
+      const template = fishIntro
+        ? WAVE.find((entry) => entry.type === 'salmon')
+        : WAVE[waveIndex % WAVE.length];
       waveIndex += 1;
-      const entity = applyVariant(resolveModeEntity({
+      const resolved = resolveModeEntity({
         ...template,
         key: `moving-${template.type}-${Date.now()}-${waveIndex}`,
         fromMovingGameplayPass: true,
         fromComputerMode: computerMode,
         comboSpawn: Boolean(options.comboSpawn)
-      }), difficulty);
+      });
+      if (!resolved) return;
+      const entity = applyVariant(resolved, difficulty);
       state.entities.push(entity);
       state.message = entity.message || template.message;
       if (status) status.textContent = state.message;

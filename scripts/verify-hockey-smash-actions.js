@@ -220,7 +220,7 @@ harness.frame();
 let state = api.getState();
 assert(api.getVersion() === 'Hockey Smash v0.5.3', 'Version should be Hockey Smash v0.5.3.');
 assert(state.mode === 'playing', 'Clicking Play should enter playing mode.');
-assert(state.player.width === 144 && state.player.height === 152, 'Player should use the larger visible size.');
+assert(state.player.width === 104 && state.player.height === 108, 'Player should use the normal arena-play size.');
 assert(api.tuning.groundRatio === 0.82, `Ground ratio should align actors to sidewalk: ${api.tuning.groundRatio}.`);
 
 const groundY = api.tuning.groundRatio * 576;
@@ -258,6 +258,14 @@ harness.frame();
 state = api.getState();
 assert(state.player.vx === api.tuning.slideSpeed, `Slide failed: vx=${state.player.vx}, expected=${api.tuning.slideSpeed}.`);
 harness.dispatchKey('keyup', 'Shift');
+harness.dispatchKey('keyup', 'ArrowRight');
+
+harness.dispatchKey('keydown', 'ArrowRight');
+harness.dispatchKey('keydown', 'ArrowDown');
+harness.frame();
+state = api.getState();
+assert(state.player.vx === api.tuning.slideSpeed, `ArrowDown duck/slide failed: vx=${state.player.vx}, expected=${api.tuning.slideSpeed}.`);
+harness.dispatchKey('keyup', 'ArrowDown');
 harness.dispatchKey('keyup', 'ArrowRight');
 
 state.player.facing = 1;

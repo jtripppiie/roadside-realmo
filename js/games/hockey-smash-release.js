@@ -1,12 +1,9 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.14.22';
-  const DISPLAY_BUILD = 'Build 2026-06-30.78';
+  const DISPLAY_VERSION = 'Hockey Smash v0.14.28';
+  const DISPLAY_BUILD = 'Build 2026-06-30.84';
   const BEAR_START_SPEED = 82;
   const BEAR_LATE_SPEED = 132;
   const GROUND_Y = 576 * 0.82;
-  const CAST_BASE_MS = 1650;
-  const CAST_MIN_MS = 760;
-  const computerMode = new URLSearchParams(window.location.search).get('computerMode') === '1';
   const CAMEO_ASSETS = {
     daniel: {
       src: 'assets/hockey-smash/sprites/alaskan_girl.webp',
@@ -17,8 +14,8 @@
       label: "Hey, you're cute",
     },
   };
-  let nextCastAt = 0;
   let castIndex = 0;
+  let dadRideInDone = false;
   let castDebugButton = null;
   let cameoNode = null;
   let cameoSprite = null;
@@ -33,6 +30,7 @@
   function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
   function difficultyFor(state) { return clamp(Number(state?.difficulty) || ((state?.time || 0) / 140), 0, 1); }
   function character() { return api()?.getPlayerConfig?.()?.character || getState()?.playerCharacter || 'daniel'; }
+  function playerName() { return api()?.getPlayerConfig?.()?.name || (character() === 'sofie' ? 'Sofie' : 'Daniel'); }
 
   function syncFinalReleaseState() {
     const badge = document.getElementById('hockey-build-badge');
@@ -41,7 +39,6 @@
     }
     if (api()?.getVersion) api().getVersion = () => DISPLAY_VERSION;
 
-    if (!computerMode) return;
     const overlay = document.getElementById('hockey-player-overlay');
     if (!overlay) return;
     overlay.hidden = true;
@@ -62,21 +59,15 @@
 
   function castForCurrentCharacter() {
     const shared = [
-      { type: 'mom', bubble: 'Keep going!', message: 'Mom cheering from the sidewalk!', width: 88, height: 96, speed: 92, hp: 3 },
-      { type: 'dad', bubble: 'You got this!', message: 'Dad joins the sideline!', width: 92, height: 96, speed: 88, hp: 4 },
-      { type: 'teacher', bubble: 'Eyes on the puck!', message: 'Teacher challenge moving in!', width: 90, height: 96, speed: 104, hp: 4 },
+      { type: 'dad', bubble: '', message: '', width: 92, height: 96, speed: 88, hp: 4 },
     ];
     if (character() === 'sofie') {
       return [
-        { type: 'alaskanBoy', bubble: "Hey, you're cute", message: 'Alaskan boy cheers the dance run!', width: 84, height: 96, speed: 118, hp: 3 },
         ...shared,
         { type: 'danceInstructor', bubble: 'Point those toes!', message: 'Dance instructor challenge moving in!', width: 92, height: 100, speed: 126, hp: 4 },
       ];
     }
-    return [
-      { type: 'alaskanGirl', bubble: "Hey, you're cute", message: 'Alaskan girl cheers the hockey run!', width: 84, height: 96, speed: 118, hp: 3 },
-      ...shared,
-    ];
+    return shared;
   }
 
   function devModeActive() {
@@ -86,6 +77,7 @@
 
   function spawnCastEncounter(state, options = {}) {
     if (!Array.isArray(state?.entities)) return null;
+    if (!options.force && !wildlifeStageHasStarted(state)) return null;
     const activeCast = state.entities.filter((entity) => entity && !entity.dead && entity.fromFinalCastPass);
     const difficulty = difficultyFor(state);
     const activeLimit = difficulty > 0.55 ? 2 : 1;
@@ -95,8 +87,11 @@
     const template = cast.find((entry) => entry.type === requestedType) || cast[castIndex % cast.length];
     castIndex += 1;
     const speedBoost = 1 + difficulty * 0.28;
+    const dadLine = `${playerName()}, do your homework!`;
     const entity = {
       ...template,
+      bubble: template.type === 'dad' ? dadLine : template.bubble,
+      message: template.type === 'dad' ? `Dad rides in: ${dadLine}` : template.message,
       key: `final-cast-${template.type}-${Date.now()}-${castIndex}`,
       x: 1024 + 60 + Math.random() * 100,
       y: GROUND_Y - template.height,
@@ -116,12 +111,9 @@
   }
 
   function runCastLogic(state) {
-    const now = performance.now();
-    if (!nextCastAt) nextCastAt = now + 900;
-    if (now < nextCastAt) return;
-    spawnCastEncounter(state);
-    const difficulty = difficultyFor(state);
-    nextCastAt = now + Math.max(CAST_MIN_MS, CAST_BASE_MS * (1 - difficulty * 0.45)) + Math.random() * 260;
+    if (dadRideInDone || !wildlifeStageHasStarted(state)) return;
+    dadRideInDone = true;
+    spawnCastEncounter(state, { type: 'dad' });
   }
 
   function wildlifeStageHasStarted(state) {
@@ -139,7 +131,7 @@
 
     cameoNode = document.createElement('div');
     cameoNode.className = 'hockey-sideline-cameo';
-    cameoNode.dataset.hockeySidelineCameo = 'v0.14.22';
+    cameoNode.dataset.hockeySidelineCameo = 'v0.14.28';
     cameoNode.setAttribute('aria-hidden', 'true');
     Object.assign(cameoNode.style, {
       position: 'absolute',
@@ -263,11 +255,11 @@
     const badge = document.getElementById('hockey-build-badge');
     if (badge) badge.textContent = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
     if (api()?.getVersion) api().getVersion = () => DISPLAY_VERSION;
-    document.body.dataset.hockeyButtonDebug = 'v0.14.22';
+    document.body.dataset.hockeyButtonDebug = 'v0.14.28';
     syncFinalReleaseState();
     exposeCastDebugApi();
     ensureCastDebugButton();
-    window.HOCKEY_BOOT_LOG?.log?.('release', 'v0.14.22 syncs the release badge with the current arena build.');
+    window.HOCKEY_BOOT_LOG?.log?.('release', 'v0.14.28 separates normal arena play from computer/debug visuals.');
     window.requestAnimationFrame(loop);
   }
 

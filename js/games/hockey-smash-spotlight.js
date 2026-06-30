@@ -29,7 +29,6 @@
     const s = getState();
     if (!s) return;
     calmBoostUntil = performance.now() + Math.min(Math.max(Number(duration) || POWERUP_MS, 2500), 9000);
-    document.body.classList.remove('hockey-earthquake-active');
     resetCamera();
     s.message = 'Spotlight boost! Clear shot, no screen shake.';
     effect(s, s.player.x + s.player.width / 2, s.player.y - 20, 'SPOTLIGHT!', 0.6);
@@ -43,16 +42,6 @@
   function resetCamera() {
     const canvas = document.getElementById('hockey-canvas');
     if (canvas && canvas.style.transform) canvas.style.transform = '';
-    document.querySelectorAll('[data-earthquake-flash], .hockey-earthquake-flash').forEach((node) => node.remove());
-  }
-
-  function overrideEarthquake() {
-    window.activateEarthquake = activateCalmBoost;
-    window.RTA_HOCKEY_SMASH_EARTHQUAKE = {
-      activate: activateCalmBoost,
-      isActive: calmBoostActive,
-      remainingMs: () => Math.max(0, calmBoostUntil - performance.now()),
-    };
   }
 
   function slowBears(s) {
@@ -124,7 +113,6 @@
   }
 
   function loop() {
-    overrideEarthquake();
     resetCamera();
     const s = getState();
     if (s) {
@@ -141,8 +129,7 @@
     if (badge) badge.textContent = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
     if (api()?.getVersion) api().getVersion = () => DISPLAY_VERSION;
     document.body.dataset.hockeyButtonDebug = 'v0.14.1';
-    overrideEarthquake();
-    window.HOCKEY_BOOT_LOG?.log?.('spotlight', 'Removes earthquake shake, slows bears more, and adds Sofie cute-boy dance cameo.');
+    window.HOCKEY_BOOT_LOG?.log?.('spotlight', 'Locks camera shake, slows bears more, and adds Sofie cute-boy dance cameo.');
     window.requestAnimationFrame(loop);
   }
 

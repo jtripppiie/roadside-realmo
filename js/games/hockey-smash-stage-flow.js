@@ -4,8 +4,8 @@
   const FISH_TARGET = 5;
   const FISH_MAX_SECONDS = 28;
   const FISH_TYPES = new Set(['salmon']);
-  const WILDLIFE_TYPES = new Set(['bear', 'moose', 'chargingMoose', 'bird', 'icePatch']);
-  const PEOPLE_TYPES = new Set(['teacher', 'danceInstructor', 'sister', 'adultCoach', 'mom', 'dad', 'alaskanBoy', 'alaskanGirl']);
+  const WILDLIFE_TYPES = new Set(['bear', 'moose', 'chargingMoose', 'bird']);
+  const PEOPLE_TYPES = new Set(['teacher', 'danceInstructor', 'sister', 'adultCoach', 'dad']);
   const BOSS_TYPES = new Set(['dadJoke']);
   const phaseByState = new WeakMap();
   let wrappedScoreHooks = false;
@@ -72,22 +72,21 @@
       });
       if (s.spawn) {
         s.spawn.wildlife = Math.max(s.spawn.wildlife || 0, 3.5);
-        s.spawn.family = Math.max(s.spawn.family || 0, 9);
+        s.spawn.family = Math.max(s.spawn.family || 0, 12);
         s.spawn.dadJoke = Math.max(s.spawn.dadJoke || 0, 9);
         s.spawn.salmon = Math.min(Math.max(s.spawn.salmon || 0.55, 0.35), 1.0);
       }
       return;
     }
 
-    // Wildlife stage: keep bears/moose/birds/ice/fish, but suppress people/cast and boss bits.
-    // Cast cameos are DOM-only in the release layer so they cannot chase, damage, or block the player.
+    // Wildlife stage: keep wildlife, fish, and the family/cast encounters in the arena.
     s.entities = s.entities.filter((entity) => {
       if (!entity || entity.dead) return false;
-      if (PEOPLE_TYPES.has(entity.type) || BOSS_TYPES.has(entity.type)) return false;
-      return WILDLIFE_TYPES.has(entity.type) || FISH_TYPES.has(entity.type);
+      if (BOSS_TYPES.has(entity.type)) return false;
+      return WILDLIFE_TYPES.has(entity.type) || FISH_TYPES.has(entity.type) || PEOPLE_TYPES.has(entity.type);
     });
     if (s.spawn) {
-      s.spawn.family = Math.max(s.spawn.family || 0, 12);
+      s.spawn.family = Math.min(Math.max(s.spawn.family || 2.5, 1.8), 4.5);
       s.spawn.dadJoke = Math.max(s.spawn.dadJoke || 0, 12);
       s.spawn.wildlife = Math.min(Math.max(s.spawn.wildlife || 0.85, 0.65), 1.6);
       s.spawn.salmon = Math.max(s.spawn.salmon || 0, 1.8);
@@ -109,7 +108,7 @@
     if (s.spawn) {
       s.spawn.wildlife = 0.8;
       s.spawn.salmon = 2.2;
-      s.spawn.family = 12;
+      s.spawn.family = 2.4;
       s.spawn.dadJoke = 12;
     }
     s.message = 'Level 2: Moose and bears incoming!';
@@ -123,6 +122,7 @@
     if (!s) return;
     const info = phaseInfo(s);
     holdOldTimeline(s);
+    document.body.dataset.hockeyStagePhase = info.phase;
 
     if (info.phase === 'fish') {
       removeEntitiesForPhase(s, info);

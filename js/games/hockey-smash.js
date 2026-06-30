@@ -14,11 +14,11 @@
   // it easy to verify assets and swap art without hunting through drawing code.
   const ASSETS = {
     splash: 'assets/hockey-smash/sprites/splash.webp',
-    background01: 'assets/hockey-smash/backgrounds/soldotna_cityscape_background_01_1280x720.webp',
-    background02: 'assets/hockey-smash/backgrounds/soldotna_cityscape_background_02_1280x720.webp',
-    background03: 'assets/hockey-smash/backgrounds/soldotna_cityscape_background_03_1280x720.webp',
-    background04: 'assets/hockey-smash/backgrounds/soldotna_cityscape_background_04_1280x720.webp',
-    background05: 'assets/hockey-smash/backgrounds/soldotna_cityscape_background_05_1280x720.webp',
+    background01: 'assets/hockey-smash/backgrounds/soldotna_cityscape_background_01_1280x720.webp?v=20260630.84',
+    background02: 'assets/hockey-smash/backgrounds/soldotna_cityscape_background_01_1280x720.webp?v=20260630.84',
+    background03: 'assets/hockey-smash/backgrounds/soldotna_cityscape_background_01_1280x720.webp?v=20260630.84',
+    background04: 'assets/hockey-smash/backgrounds/soldotna_cityscape_background_01_1280x720.webp?v=20260630.84',
+    background05: 'assets/hockey-smash/backgrounds/soldotna_cityscape_background_01_1280x720.webp?v=20260630.84',
     daniel: 'assets/hockey-smash/sprites/hockey-player.webp',
     salmon: 'assets/hockey-smash/sprites/salmon.webp',
     bird: 'assets/hockey-smash/sprites/eagle_mid_flap.webp',
@@ -32,16 +32,11 @@
     dadMower: 'assets/hockey-smash/sprites/dad.webp',
     dad: 'assets/hockey-smash/sprites/dad.webp',
     mom: 'assets/hockey-smash/sprites/mom.webp',
-    momText: 'assets/hockey-smash/sprites/mom_text.png',
-    sister: 'assets/hockey-smash/sprites/sister.png',
-    sisterText: 'assets/hockey-smash/sprites/sister_text.png',
-    alaskanBoy: 'assets/hockey-smash/sprites/alaskan_boy.webp',
-    alaskanGirl: 'assets/hockey-smash/sprites/alaskan_girl.webp',
-    teacher: 'assets/hockey-smash/sprites/teacher.png',
+    sister: 'assets/hockey-smash/sprites/sister-spinning.webp',
     danceInstructor: 'assets/hockey-smash/sprites/dance_instructor.webp',
   };
   const BACKGROUND_SEQUENCE = ['background01', 'background02', 'background03', 'background04', 'background05'];
-  const DEFERRED_ASSETS = new Set(['background02', 'background03', 'background04', 'background05']);
+  const DEFERRED_ASSETS = new Set();
   const WALK_FRAME_KEYS = {
     bear: ['bearWalk1', 'bearWalk2'],
     moose: ['mooseWalk1', 'mooseWalk2', 'mooseWalk3'],
@@ -93,7 +88,6 @@
   const keys = new Set();
   const pointers = new Map();
   const images = {};
-  const processedImages = {};
   const missingAssets = [];
   let lastReadyBackgroundKey = 'background01';
 
@@ -139,9 +133,6 @@
     const image = new Image();
     image.decoding = 'async';
     image.onload = () => {
-      // The hockey-player sprite came with a white background. This turns
-      // white pixels transparent so the character sits naturally on the scene.
-      if (key === 'daniel') processedImages[key] = makeWhiteTransparent(image);
       render();
     };
     image.onerror = () => {
@@ -223,6 +214,7 @@
       W: 'jump',
       j: 'jump',
       J: 'jump',
+      ArrowDown: 'slide',
       Shift: 'slide',
       s: 'slide',
       S: 'slide',
@@ -296,12 +288,12 @@
       salmonRunStarted: false,
       salmonRunTimer: 0,
       bossIntroTimer: 0,
-      spawn: { wildlife: 0.35, salmon: 4.0, family: 5.5, dadJoke: 1.5 },
+      spawn: { wildlife: 4.0, salmon: 0.35, family: 12.0, dadJoke: 12.0 },
       player: {
         x: 132,
-        y: groundY - 152,
-        width: 144,
-        height: 152,
+        y: groundY - 108,
+        width: 104,
+        height: 108,
         vx: 0,
         vy: 0,
         facing: 1,
@@ -551,15 +543,15 @@
     // Bears and moose are the first true stick obstacles: they come from the
     // right, have HP, and should be cleared by swinging.
     const type = Math.random() > 0.55 ? 'moose' : 'bear';
-    const width = type === 'moose' ? 150 : 132;
-    const height = type === 'moose' ? 120 : 112;
+    const width = type === 'moose' ? 112 : 96;
+    const height = type === 'moose' ? 92 : 84;
     state.entities.push({
       type,
       x: DESIGN_WIDTH + 40,
       y: DESIGN_HEIGHT * TUNING.groundRatio - height,
       width,
       height,
-      vx: type === 'moose' ? -190 : -245,
+      vx: type === 'moose' ? -160 : -190,
       hp: type === 'moose' ? 3 : 2,
       maxHp: type === 'moose' ? 3 : 2,
       damage: type === 'moose' ? 16 : 12,
@@ -568,8 +560,8 @@
   }
 
   function spawnSalmon() {
-    const width = 74;
-    const height = 42;
+    const width = 54;
+    const height = 31;
     state.entities.push({
       type: 'salmon',
       x: 36 + Math.random() * (DESIGN_WIDTH - width - 72),
@@ -589,7 +581,17 @@
 
   function spawnFamily() {
     const type = modeAdultType();
-    const label = type === 'danceInstructor' ? 'Dance instructor' : 'Teacher';
+    if (type === 'mom') {
+      state.effects.push({
+        x: DESIGN_WIDTH - 190,
+        y: DESIGN_HEIGHT * TUNING.groundRatio - 132,
+        text: 'Clean your room!',
+        life: 2.2,
+      });
+      state.message = 'Mom says: Clean your room!';
+      return;
+    }
+    const label = type === 'danceInstructor' ? 'Dance instructor' : 'Mom';
     state.entities.push({
       type,
       x: DESIGN_WIDTH - 160,
@@ -599,7 +601,7 @@
       vx: -80,
       hp: 3,
       damage: 6,
-      bubble: type === 'danceInstructor' ? 'Point those toes!' : 'Eyes on the puck!',
+      bubble: 'Point those toes!',
     });
     state.message = `${label} challenge incoming. Keep moving!`;
   }
@@ -607,7 +609,7 @@
   function modeAdultType() {
     const config = window.RTA_HOCKEY_SMASH?.getPlayerConfig?.();
     const character = config?.character || state?.playerCharacter || state?.player?.character || 'daniel';
-    return character === 'sofie' ? 'danceInstructor' : 'teacher';
+    return character === 'sofie' ? 'danceInstructor' : 'mom';
   }
 
   function spawnDadJoke() {
@@ -636,12 +638,8 @@
       }
       entity.x += (entity.vx || 0) * dt;
       entity.y += (entity.vy || 0) * dt;
-      if (entity.type === 'salmon' || entity.type === 'bird') entity.vy += 460 * dt;
-      if (entity.type === 'icePatch' && !entity.dead && rectsOverlap(entity, state.player)) {
-        state.player.vx *= 0.4;
-        state.player.iceSlipTimer = 0.35;
-        state.message = 'Slippery ice!';
-      } else if (!entity.dead && rectsOverlap(entity, state.player)) {
+      if (entity.type === 'salmon') entity.vy += 460 * dt;
+      if (!entity.dead && rectsOverlap(entity, state.player)) {
         damagePlayer(entity.damage ?? 8);
       }
     });
@@ -700,14 +698,7 @@
   }
 
   function backgroundKeyForState() {
-    // The background changes as time passes and special events start. This gives
-    // the one-screen prototype a feeling of progression.
-    if (!state || state.mode === STATE.SPLASH || state.mode === STATE.TRANSITION) return BACKGROUND_SEQUENCE[0];
-    if (state.mode === STATE.BOSS_FIGHT || state.dad) return 'background05';
-    if (state.mode === STATE.BOSS_INTRO) return 'background04';
-    if (state.salmonRunStarted) return 'background03';
-    const index = Math.min(BACKGROUND_SEQUENCE.length - 1, Math.floor(state.time / 10));
-    return BACKGROUND_SEQUENCE[index];
+    return BACKGROUND_SEQUENCE[0];
   }
 
   function drawCoverImage(ctx, image, x, y, width, height) {
@@ -739,49 +730,22 @@
       drawSpriteOrPlaceholder(ctx, 'daniel', p.x, p.y, p.width, p.height, 'DANIEL');
     }
     ctx.restore();
-    drawPlayerMarker(ctx, p);
-    if (p.attackTimer > 0) {
+    if (isComputerMode() && p.attackTimer > 0) {
       const box = attackBox();
       ctx.fillStyle = 'rgba(255, 242, 120, 0.45)';
       ctx.fillRect(box.x, box.y, box.width, box.height);
     }
   }
 
-  function drawPlayerMarker(ctx, player) {
-    // Temporary teaching/debug marker. It makes the player easy to find while
-    // we stabilize movement and sprite scale.
-    ctx.save();
-    ctx.globalAlpha = 0.95;
-    ctx.fillStyle = 'rgba(255, 242, 122, 0.24)';
-    ctx.fillRect(player.x - 8, player.y - 8, player.width + 16, player.height + 16);
-    ctx.strokeStyle = '#fff27a';
-    ctx.lineWidth = 5;
-    ctx.strokeRect(player.x - 8, player.y - 8, player.width + 16, player.height + 16);
-    ctx.beginPath();
-    ctx.ellipse(player.x + player.width / 2, player.y + player.height - 9, player.width * 0.42, 13, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.fillStyle = 'rgba(5, 8, 13, 0.76)';
-    ctx.fillRect(player.x + player.width / 2 - 60, player.y - 34, 120, 26);
-    ctx.fillStyle = '#fff2cf';
-    ctx.font = 'bold 16px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('PLAYER HERE', player.x + player.width / 2, player.y - 15);
-    ctx.restore();
-  }
-
   function drawEntity(ctx, entity) {
     // Different entity types can draw differently. Dad jokes are speech bubbles;
-    // wildlife and family use sprites; bears/moose also get labels and HP bars.
+    // wildlife and family use sprites.
     if (entity.type === 'dadJoke') {
       drawBubble(ctx, entity.x, entity.y, entity.width, entity.height, entity.bubble, '#fff7d6');
       return;
     }
-    if (entity.type === 'icePatch') {
-      drawIcePatch(ctx, entity);
-      return;
-    }
     drawSpriteOrPlaceholder(ctx, entityAssetKey(entity), entity.x, entity.y, entity.width, entity.height, entity.type.toUpperCase());
-    if (entity.type === 'bear' || entity.type === 'moose' || entity.type === 'chargingMoose') drawObstacleLabel(ctx, entity);
+    if (isComputerMode() && (entity.type === 'bear' || entity.type === 'moose' || entity.type === 'chargingMoose')) drawObstacleLabel(ctx, entity);
     if (entity.bubble) drawBubble(ctx, entity.x - 178, entity.y - 26, 210, 58, entity.bubble, '#fff7d6');
   }
 
@@ -807,26 +771,6 @@
     ctx.fillRect(entity.x + 8, entity.y - 6, (entity.width - 16) * (entity.hp / (entity.maxHp || entity.hp || 1)), 6);
   }
 
-  function drawIcePatch(ctx, entity) {
-    ctx.save();
-    ctx.globalAlpha = 0.9;
-    const gradient = ctx.createLinearGradient(entity.x, entity.y, entity.x + entity.width, entity.y + entity.height);
-    gradient.addColorStop(0, 'rgba(219, 234, 254, 0.72)');
-    gradient.addColorStop(0.5, 'rgba(125, 211, 252, 0.86)');
-    gradient.addColorStop(1, 'rgba(240, 249, 255, 0.72)');
-    ctx.fillStyle = gradient;
-    roundRect(ctx, entity.x, entity.y, entity.width, entity.height, 16);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,.9)';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    ctx.fillStyle = 'rgba(8,47,73,.76)';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('ICE', entity.x + entity.width / 2, entity.y + entity.height / 2 + 5);
-    ctx.restore();
-  }
-
   function drawDad(ctx) {
     drawSpriteOrPlaceholder(ctx, 'dad', state.dad.x, state.dad.y, 96, 96, 'DAD');
     ctx.fillStyle = '#111';
@@ -838,7 +782,7 @@
   function drawSpriteOrPlaceholder(ctx, key, x, y, width, height, label) {
     // If art is loaded, draw it. If not, draw a labeled box so missing images do
     // not make the game crash or become invisible.
-    const image = processedImages[key] || images[key];
+    const image = images[key];
     const drawableWidth = image?.naturalWidth || image?.width || 0;
     const drawableHeight = image?.naturalHeight || image?.height || 0;
     if (drawableWidth && drawableHeight && (image.complete !== false)) {
@@ -854,27 +798,6 @@
     ctx.font = 'bold 13px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(label, x + width / 2, y + height / 2);
-  }
-
-  function makeWhiteTransparent(image) {
-    // Beginner-friendly image processing: copy the image to a hidden canvas,
-    // inspect every pixel, and make near-white pixels transparent.
-    const canvas = document.createElement('canvas');
-    canvas.width = image.naturalWidth;
-    canvas.height = image.naturalHeight;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    ctx.drawImage(image, 0, 0);
-    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    // Pixel data is stored as red, green, blue, alpha, then repeats.
-    // index += 4 moves to the next pixel.
-    for (let index = 0; index < pixels.data.length; index += 4) {
-      const red = pixels.data[index];
-      const green = pixels.data[index + 1];
-      const blue = pixels.data[index + 2];
-      if (red > 238 && green > 238 && blue > 238) pixels.data[index + 3] = 0;
-    }
-    ctx.putImageData(pixels, 0, 0);
-    return canvas;
   }
 
   function drawBubble(ctx, x, y, width, height, text, color) {

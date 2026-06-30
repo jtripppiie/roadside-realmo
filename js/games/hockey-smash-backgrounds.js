@@ -1,8 +1,8 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.14.18 Single Background';
-  const DISPLAY_BUILD = 'Build 2026-06-30.74';
+  const DISPLAY_VERSION = 'Hockey Smash v0.14.28';
+  const DISPLAY_BUILD = 'Build 2026-06-30.84';
   const FIRST_BACKGROUND = 'assets/hockey-smash/backgrounds/soldotna_cityscape_background_01_1280x720.webp';
-  const FIRST_BACKGROUND_CACHE = `${FIRST_BACKGROUND}?v=20260630-upload-3`;
+  const FIRST_BACKGROUND_CACHE = `${FIRST_BACKGROUND}?v=20260630.84`;
   const LOCKED_BACKGROUND_KEYS = ['background01', 'background02', 'background03', 'background04', 'background05'];
   const params = new URLSearchParams(window.location.search);
   const computerMode = params.get('computerMode') === '1';
@@ -13,10 +13,6 @@
 
   function lockEngineBackgroundAssets(api) {
     if (!api?.assets) return;
-
-    // Keep this visual/config-only. The main engine may still ask for later
-    // background keys during salmon runs or dad moments, but every key now
-    // resolves to the uploaded first arena background.
     LOCKED_BACKGROUND_KEYS.forEach((key) => {
       api.assets[key] = FIRST_BACKGROUND_CACHE;
     });
@@ -45,7 +41,6 @@
     }
 
     function keepSingleBackground() {
-      // Visual/config-only lock: do not mutate gameplay state here.
       lockEngineBackgroundAssets(api);
       removeLegacyStageBackground();
       document.body.dataset.hockeySingleBackgroundReady = firstBackgroundImage.complete && firstBackgroundImage.naturalWidth ? 'true' : 'loading';

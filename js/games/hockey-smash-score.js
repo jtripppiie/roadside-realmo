@@ -301,7 +301,6 @@
 
   function clearScreenShake() {
     if (!canvas) return;
-    if (document.body.classList.contains('hockey-earthquake-active')) return;
     canvas.style.transform = originalCanvasTransform;
     delete canvas.dataset.shaking;
     metrics.shake = 0;

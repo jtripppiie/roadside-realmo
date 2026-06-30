@@ -5,8 +5,7 @@
   const H = 576;
   const GROUND_Y = H * 0.82;
   const BIG = new Set(['bear', 'moose', 'chargingMoose']);
-  const FAMILY = new Set(['teacher', 'danceInstructor', 'sister', 'adultCoach', 'alaskanBoy', 'alaskanGirl', 'mom', 'dad']);
-  const SALMON_POINTS = 67;
+  const FAMILY = new Set(['teacher', 'danceInstructor', 'sister', 'adultCoach', 'dad']);
   let eid = 0;
   let order = 0;
 
@@ -62,7 +61,7 @@
     if (!FAMILY.has(e?.type) || e.dead) return;
     ord(e);
     e._dodgeLayerResolved = true;
-    if (e.type === 'adultCoach') e.type = 'teacher';
+    if (e.type === 'adultCoach') e.type = 'danceInstructor';
     if (!e._v139family) {
       e._v139family = true;
       const hp = e.type === 'sister' ? 3 : 4;
@@ -70,10 +69,7 @@
       e.maxHp = Math.max(Number(e.maxHp) || 0, hp);
     }
     if (e.type === 'danceInstructor') e.bubble = e.bubble || 'Point those toes!';
-    if (e.type === 'teacher') e.bubble = e.bubble || 'Eyes on the puck!';
-    if (e.type === 'alaskanBoy') e.bubble = e.bubble || "Hey, you're cute";
-    if (e.type === 'alaskanGirl') e.bubble = e.bubble || "Hey, you're cute";
-    if (e.type === 'mom') e.bubble = e.bubble || 'Keep going!';
+    if (e.type === 'teacher') e.bubble = e.bubble || 'Keep skating!';
     if (e.type === 'dad') e.bubble = e.bubble || 'You got this!';
     const delta = s.player.x + s.player.width / 2 - (e.x + e.width / 2);
     const speed = e.type === 'danceInstructor' ? 170 : 145;
@@ -110,7 +106,7 @@
         effect(s, e.x + e.width / 2, e.y - 12, node.dataset.projectileType === 'pointe-shoe' ? 'SHOE HIT!' : 'PUCK HIT!');
         if (e.hp <= 0) {
           e.dead = true;
-          s.message = `${e.type === 'danceInstructor' ? 'Dance instructor' : e.type === 'teacher' ? 'Teacher' : e.type === 'alaskanBoy' ? 'Alaskan boy' : e.type === 'alaskanGirl' ? 'Alaskan girl' : e.type === 'mom' ? 'Mom' : e.type === 'dad' ? 'Dad' : 'Sister'} cleared by the shot!`;
+          s.message = `${e.type === 'danceInstructor' ? 'Dance instructor' : e.type === 'teacher' ? 'Teacher' : e.type === 'dad' ? 'Dad' : 'Sister'} cleared by the shot!`;
         } else {
           s.message = `Dance challenge HP ${e.hp}/${e.maxHp || 4}.`;
         }

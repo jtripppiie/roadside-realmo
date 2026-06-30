@@ -2,7 +2,7 @@
   const DISPLAY_VERSION = 'Hockey Smash v0.14.0';
   const DISPLAY_BUILD = 'Build 2026-06-29.56';
   const BIG_TYPES = new Set(['bear', 'moose', 'chargingMoose']);
-  const PERSON_TYPES = new Set(['teacher', 'danceInstructor', 'sister', 'adultCoach', 'alaskanBoy', 'alaskanGirl', 'mom', 'dad']);
+  const PERSON_TYPES = new Set(['teacher', 'danceInstructor', 'sister', 'adultCoach', 'dad']);
   const TUNING = {
     introSeconds: 20,
     fullRampSeconds: 115,
@@ -46,15 +46,14 @@
     if (entity.type === 'chargingMoose') return entity.charging ? 390 : 210;
     if (entity.type === 'danceInstructor') return 118;
     if (entity.type === 'teacher' || entity.type === 'adultCoach') return 108;
-    if (entity.type === 'alaskanBoy' || entity.type === 'alaskanGirl') return 112;
-    if (entity.type === 'mom' || entity.type === 'dad') return 104;
+    if (entity.type === 'dad') return 104;
     if (entity.type === 'sister') return 132;
     if (entity.type === 'salmon') return Math.abs(entity.vy || 260);
     return Math.abs(entity.vx || 120);
   }
 
   function signFor(entity, fallback = -1) {
-    if (entity.type === 'danceInstructor' || entity.type === 'teacher' || entity.type === 'adultCoach' || entity.type === 'sister' || entity.type === 'alaskanBoy' || entity.type === 'alaskanGirl' || entity.type === 'mom' || entity.type === 'dad') {
+    if (entity.type === 'danceInstructor' || entity.type === 'teacher' || entity.type === 'adultCoach' || entity.type === 'sister' || entity.type === 'dad') {
       const state = getState();
       const player = state?.player;
       if (player) return player.x + player.width / 2 >= entity.x + entity.width / 2 ? 1 : -1;

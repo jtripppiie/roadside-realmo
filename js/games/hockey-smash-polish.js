@@ -19,11 +19,7 @@
     salmon: 'assets/hockey-smash/sprites/salmon.webp',
     bear: 'assets/hockey-smash/sprites/bear.webp',
     moose: 'assets/hockey-smash/sprites/moose.webp',
-    mom: 'assets/hockey-smash/sprites/mom.webp',
     sister: 'assets/hockey-smash/sprites/sister-spinning.webp',
-    alaskanBoy: 'assets/hockey-smash/sprites/alaskan_boy.webp',
-    alaskanGirl: 'assets/hockey-smash/sprites/alaskan_girl.webp',
-    teacher: 'assets/hockey-smash/sprites/teacher.png',
     danceInstructor: 'assets/hockey-smash/sprites/dance_instructor.webp',
     dad: 'assets/hockey-smash/sprites/dad.webp',
     dadJoke: 'assets/hockey-smash/sprites/dad.webp',
@@ -78,10 +74,14 @@
       playerOverlay.appendChild(playerLabel);
       game.appendChild(playerOverlay);
     }
+    playerOverlay.hidden = true;
+    playerOverlay.style.display = 'none';
+    document.body.classList.add('hockey-canvas-player-only');
 
     const entityLayer = document.createElement('div');
     entityLayer.className = 'hockey-entity-layer';
     entityLayer.setAttribute('aria-hidden', 'true');
+    entityLayer.hidden = true;
     game.appendChild(entityLayer);
     const entityNodes = new Map();
 
@@ -373,46 +373,10 @@
       }, { capture: true });
     }
 
-    function syncPlayerOverlay(state) {
-      if (!canvas) return;
-      if (!state?.player || state.mode === 'tryAgain') return;
-
-      const rect = canvas.getBoundingClientRect();
-      if (!rect.width || !rect.height) return;
-
-      const player = state.player;
-      const scaleX = rect.width / DESIGN_WIDTH;
-      const scaleY = rect.height / DESIGN_HEIGHT;
-      const compact = isCompactViewport();
-      const playerScale = compact ? 0.56 : 0.72;
-      const minWidth = compact ? 48 : 72;
-      const minHeight = compact ? 62 : 90;
-      const displayWidth = Math.max(minWidth, player.width * scaleX * playerScale);
-      const displayHeight = Math.max(minHeight, player.height * scaleY * playerScale);
-      const coreGroundY = DESIGN_HEIGHT * CORE_GROUND_RATIO;
-      const playerFeetY = player.y + player.height;
-      const stateJumpLift = Math.max(0, (coreGroundY - playerFeetY) * scaleY);
-      const remainingJump = Math.max(0, manualJumpUntil - performance.now());
-      const manualLift = remainingJump ? manualJumpLift * Math.sin((remainingJump / JUMP_VISIBLE_MS) * Math.PI) : 0;
-      const jumpLift = stateJumpLift + manualLift;
-      const visualFeetY = rect.top + rect.height * VISUAL_GROUND_RATIO - jumpLift;
-      const visualCenterX = rect.left + (player.x + player.width / 2) * scaleX;
-
-      playerOverlay.hidden = false;
-      playerOverlay.style.display = 'block';
-      playerOverlay.style.left = `${visualCenterX - displayWidth / 2}px`;
-      playerOverlay.style.top = `${visualFeetY - displayHeight}px`;
-      playerOverlay.style.width = `${displayWidth}px`;
-      playerOverlay.style.height = `${displayHeight}px`;
-      playerOverlay.style.zIndex = '9';
-      playerOverlay.dataset.facing = player.facing < 0 ? 'left' : 'right';
-      playerOverlay.dataset.x = String(Math.round(player.x));
-
-      const playerSprite = playerOverlay.querySelector('.hockey-player-overlay__sprite');
-      if (playerSprite) {
-        const sliding = playerOverlay.dataset.sliding === 'true' || document.body.classList.contains('hockey-slide-active');
-        const nextSrc = sliding ? PLAYER_ASSETS.sliding : PLAYER_ASSETS.normal;
-        if (!playerSprite.src.endsWith(nextSrc)) playerSprite.src = nextSrc;
+    function syncPlayerOverlay() {
+      if (playerOverlay) {
+        playerOverlay.hidden = true;
+        playerOverlay.style.display = 'none';
       }
     }
 
@@ -421,10 +385,7 @@
         salmon: 'SALMON',
         bear: 'BEAR',
         moose: 'MOOSE',
-        mom: 'MOM',
         sister: 'SISTER',
-        alaskanBoy: 'ALASKAN BOY',
-        alaskanGirl: 'ALASKAN GIRL',
         teacher: 'TEACHER',
         danceInstructor: 'DANCE INSTRUCTOR',
         dad: 'DAD',
@@ -433,10 +394,15 @@
     }
 
     function entityIsGrounded(type) {
-      return ['bear', 'moose', 'mom', 'sister', 'alaskanBoy', 'alaskanGirl', 'teacher', 'danceInstructor', 'dad'].includes(type);
+      return ['bear', 'moose', 'sister', 'teacher', 'danceInstructor', 'dad'].includes(type);
     }
 
     function syncEntityOverlays(state) {
+      entityLayer.hidden = true;
+      entityLayer.style.display = 'none';
+      entityNodes.forEach((node) => node.remove());
+      entityNodes.clear();
+      return;
       if (!canvas || !state || state.mode === 'tryAgain') return;
       const rect = canvas.getBoundingClientRect();
       if (!rect.width || !rect.height) return;

@@ -5,16 +5,14 @@
   const DESIGN_HEIGHT = 576;
   const GROUND_Y = DESIGN_HEIGHT * 0.82;
 
-  // Puck / pointe-shoe tuning.
-  // The shot now travels mostly straight, like a hockey pass/slapshot or a direct shoe throw.
-  // Charge affects speed and impact, but no longer creates a big lob.
+  // Puck / pointe-shoe tuning. Charge affects speed and impact, but normal
+  // shots stay horizontal instead of lobbing upward.
   const PUCK_BASE_SPEED = 760;
   const PUCK_MIN_SPEED = PUCK_BASE_SPEED * 0.72;
   const PUCK_MAX_CHARGE_MS = 720;
   const PUCK_DAMAGE = 2;
   const PUCK_COOLDOWN_MS = 180;
-  const PUCK_FLAT_GRAVITY = 90;
-  const PUCK_MAX_DROP_SPEED = 120;
+  const PUCK_BOUNCE_GRAVITY = 680;
   const FISH_DODGE_DAMAGE = 8;
   const POWERUP_DURATION_MS = 6500;
   const PUCK_SPEED_POWERUP_CHANCE = 0.3;
@@ -130,10 +128,6 @@
     return performance.now() < puckSpeedBoostUntil;
   }
 
-  function earthquakeActive() {
-    return window.RTA_HOCKEY_SMASH_EARTHQUAKE?.isActive?.() === true;
-  }
-
   function projectileHitLabel(payload = {}) {
     if (payload.projectileType === 'pointe-shoe') {
       if (payload.destroyed) return 'SHOE KO!';
@@ -199,11 +193,12 @@
     const state = getPlayableState();
     if (!state) return;
     const now = performance.now();
-    const cooldown = earthquakeActive() ? Math.round(PUCK_COOLDOWN_MS * 0.55) : PUCK_COOLDOWN_MS;
+    const cooldown = PUCK_COOLDOWN_MS;
     if (now - lastPuckAt < cooldown) return;
     lastPuckAt = now;
 
     const player = state.player;
+    const shotDirection = 1;
     const chargeFactor = Math.min(1, Math.max(0, chargeTime / PUCK_MAX_CHARGE_MS));
     const speedMultiplier = speedBoostActive() ? 1.25 : 1;
     const speed = (PUCK_MIN_SPEED + (PUCK_BASE_SPEED * 0.7 * chargeFactor)) * speedMultiplier;
@@ -216,8 +211,8 @@
       y: player.y + player.height * 0.46 + straightLift,
       width: puckStats.width,
       height: puckStats.height,
-      vx: speed * (puckType === 'fire' ? 1.25 : 1),
-      vy: puckType === 'bounce' ? -150 : -18 + chargeFactor * -12,
+      vx: speed * shotDirection * (puckType === 'fire' ? 1.25 : 1),
+      vy: puckType === 'bounce' ? -150 : 0,
       life: 2.2,
       damage: puckStats.damage + (puckType === 'fire' ? 1 : 0),
       type: puckType,
@@ -246,7 +241,7 @@
       background: puckStats.background, boxShadow: puckStats.boxShadow,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontSize: puckStats.charged ? '24px' : '20px', lineHeight: '1',
-      transform: puckStats.projectileType === 'pointe-shoe' ? 'rotate(-8deg)' : '',
+      transform: puckStats.projectileType === 'pointe-shoe' ? 'rotate(-6deg)' : 'rotate(0deg)',
     });
     document.body.appendChild(node);
     return node;
@@ -301,11 +296,15 @@
     });
   }
 
+  function fallingFishReachedPlayer(player, entity) {
+    return Boolean(player && entity && entity.fallingFish && entity.y + entity.height >= player.y);
+  }
+
   function updatePucks(state, dt) {
     pucks.forEach((puck) => {
       puck.x += puck.vx * dt;
       puck.y += (puck.vy || 0) * dt;
-      puck.vy = Math.min(PUCK_MAX_DROP_SPEED, (puck.vy || 0) + PUCK_FLAT_GRAVITY * dt);
+      if (puck.type === 'bounce') puck.vy = (puck.vy || 0) + PUCK_BOUNCE_GRAVITY * dt;
       puck.life -= dt;
       if (puck.type === 'bounce') maybeBouncePuck(puck);
 
@@ -434,15 +433,12 @@
     const scaleY = rect.height / DESIGN_HEIGHT;
     pucks.forEach((puck) => {
       decorateProjectileNode(puck);
-      const angle = puck.projectileType === 'pointe-shoe'
-        ? (puck.variant === 'slide' ? -4 : -8)
-        : Math.max(-8, Math.min(8, (puck.vy || 0) * 0.05));
       Object.assign(puck.node.style, {
         left: `${rect.left + puck.x * scaleX}px`,
         top: `${rect.top + puck.y * scaleY}px`,
         width: `${Math.max(14, puck.width * scaleX)}px`,
         height: `${Math.max(7, puck.height * scaleY)}px`,
-        transform: `rotate(${angle}deg)`,
+        transform: puck.projectileType === 'pointe-shoe' ? 'rotate(-6deg)' : 'rotate(0deg)',
       });
       puck.node.hidden = false;
     });

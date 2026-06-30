@@ -23,7 +23,7 @@
 
   // These are the things that can hurt or distract the player. During the
   // countdown, we remove these so the player has a safe practice moment.
-  const HAZARD_TYPES = new Set(['salmon', 'bear', 'moose', 'mom', 'dad', 'sister', 'alaskanBoy', 'alaskanGirl', 'teacher', 'danceInstructor', 'dadJoke']);
+  const HAZARD_TYPES = new Set(['salmon', 'bear', 'moose', 'dad', 'sister', 'teacher', 'danceInstructor', 'dadJoke']);
 
   // WeakMap lets us remember "when did this exact run start?" without writing a
   // permanent global variable into the core game state. New run = new state object.
@@ -76,7 +76,6 @@
     // is intentional. This removes accidental leftover transforms every frame.
     const canvas = document.getElementById('hockey-canvas');
     if (!canvas) return;
-    if (document.body.classList.contains('hockey-earthquake-active')) return;
     if (canvas.dataset.shaking === 'true' || canvas.style.transform) {
       canvas.style.transform = '';
       delete canvas.dataset.shaking;
