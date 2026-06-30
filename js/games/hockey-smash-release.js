@@ -10,6 +10,10 @@
   const MOM_WIDTH = 92;
   const MOM_HEIGHT = 100;
   const MOM_VISIBLE_MS = 4800;
+  const CAMEO_ASSETS = {
+    daniel: 'assets/hockey-smash/sprites/alaskan_girl.webp',
+    sofie: 'assets/hockey-smash/sprites/alaskan_boy.webp',
+  };
   const BUBBLE_LINES = {
     dad: [],
     daniel: [
@@ -39,6 +43,9 @@
   let lastBubbleLine = '';
   let castDebugButton = null;
   let bubbleLayer = null;
+  let cameoNode = null;
+  let cameoSprite = null;
+  let cameoLabel = null;
   const bubbleNodes = new Map();
   const stationaryMomByState = new WeakSet();
 
@@ -279,6 +286,93 @@
     document.querySelectorAll('.hockey-sideline-cameo').forEach((node) => node.remove());
   }
 
+  function hideReleaseCameo() {
+    if (!cameoNode) return;
+    cameoNode.hidden = true;
+    cameoNode.style.display = 'none';
+  }
+
+  function ensureReleaseCameo() {
+    if (cameoNode?.isConnected) return cameoNode;
+    const game = document.getElementById('hockey-game');
+    if (!game) return null;
+    if (getComputedStyle(game).position === 'static') game.style.position = 'relative';
+
+    cameoNode = document.createElement('div');
+    cameoNode.className = 'hockey-release-cameo';
+    cameoNode.dataset.hockeyReleaseCameo = 'v0.14.49';
+    cameoNode.setAttribute('aria-hidden', 'true');
+    Object.assign(cameoNode.style, {
+      position: 'fixed',
+      left: '0',
+      top: '0',
+      width: '84px',
+      height: '96px',
+      zIndex: '31',
+      pointerEvents: 'none',
+      filter: 'drop-shadow(0 10px 14px rgba(0,0,0,.34))',
+    });
+
+    cameoSprite = document.createElement('img');
+    cameoSprite.alt = '';
+    Object.assign(cameoSprite.style, {
+      display: 'block',
+      width: '100%',
+      height: '100%',
+      objectFit: 'contain',
+    });
+
+    cameoLabel = document.createElement('span');
+    Object.assign(cameoLabel.style, {
+      position: 'absolute',
+      left: '50%',
+      bottom: 'calc(100% + 8px)',
+      transform: 'translateX(-50%)',
+      padding: '.26rem .52rem',
+      border: '2px solid rgba(255,255,255,.92)',
+      borderRadius: '999px',
+      background: 'rgba(15,23,42,.88)',
+      color: '#fff7d6',
+      font: '900 12px/1.05 system-ui,sans-serif',
+      whiteSpace: 'nowrap',
+      boxShadow: '0 8px 18px rgba(0,0,0,.28)',
+    });
+    cameoLabel.textContent = "Hey, you're cute";
+
+    cameoNode.appendChild(cameoSprite);
+    cameoNode.appendChild(cameoLabel);
+    document.body.appendChild(cameoNode);
+    return cameoNode;
+  }
+
+  function syncReleaseCameo(state) {
+    const canvas = document.getElementById('hockey-canvas');
+    const rect = canvas?.getBoundingClientRect?.();
+    const node = ensureReleaseCameo();
+    if (!node || !state || !rect?.width || !rect?.height) {
+      hideReleaseCameo();
+      return;
+    }
+
+    const current = character() === 'sofie' ? 'sofie' : 'daniel';
+    const src = CAMEO_ASSETS[current];
+    if (cameoSprite && !cameoSprite.src.endsWith(src)) cameoSprite.src = src;
+
+    const sx = rect.width / 1024;
+    const sy = rect.height / 576;
+    const width = Math.max(62, 84 * sx);
+    const height = Math.max(72, 96 * sy);
+    node.hidden = false;
+    Object.assign(node.style, {
+      display: 'block',
+      left: `${rect.left + 720 * sx}px`,
+      top: `${rect.top + (GROUND_Y - 96) * sy}px`,
+      width: `${width}px`,
+      height: `${height}px`,
+      opacity: '1',
+    });
+  }
+
   function ensureBubbleLayer() {
     if (bubbleLayer?.isConnected) return bubbleLayer;
     bubbleLayer = document.createElement('div');
@@ -428,8 +522,10 @@
       slowBearsAgain(state);
       runCastLogic(state);
       syncPrettyBubbles(state);
+      syncReleaseCameo(state);
     } else {
       syncPrettyBubbles(null);
+      hideReleaseCameo();
     }
     window.requestAnimationFrame(loop);
   }

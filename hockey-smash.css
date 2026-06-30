@@ -3,16 +3,16 @@
  *
  * Keep index.html simple: load this one file only.
  * If a layer is retired later, remove it here instead of stacking more links in HTML.
- * Current cache key: 0.14.28-20260630.84
+ * Current cache key: 0.14.49-20260630.105
  */
 
-@import url("style.css?v=0.14.28-20260630.84");
-@import url("hockey-smash-polish.css?v=0.14.28-20260630.84");
-@import url("hockey-smash-touch.css?v=0.14.28-20260630.84");
-@import url("hockey-smash-custom.css?v=0.14.28-20260630.84");
-@import url("hockey-smash-overlays.css?v=0.14.28-20260630.84");
-@import url("hockey-smash-rotate.css?v=0.14.28-20260630.84");
-@import url("hockey-smash-hud.css?v=0.14.28-20260630.84");
+@import url("style.css?v=0.14.49-20260630.105");
+@import url("hockey-smash-polish.css?v=0.14.49-20260630.105");
+@import url("hockey-smash-touch.css?v=0.14.49-20260630.105");
+@import url("hockey-smash-custom.css?v=0.14.49-20260630.105");
+@import url("hockey-smash-overlays.css?v=0.14.49-20260630.105");
+@import url("hockey-smash-rotate.css?v=0.14.49-20260630.105");
+@import url("hockey-smash-hud.css?v=0.14.49-20260630.105");
 
 /*
  * Critical repair:
