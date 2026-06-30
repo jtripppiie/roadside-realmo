@@ -26,11 +26,16 @@
   function isStationaryMom(entity) {
     return entity && !entity.dead && entity.type === 'mom' && entity.stationarySupport;
   }
+  function isAllowedEncounter(entity) {
+    if (!entity || entity.dead) return false;
+    if (BOSS_TYPES.has(entity.type)) return false;
+    return WILDLIFE_TYPES.has(entity.type) || FISH_TYPES.has(entity.type) || PEOPLE_TYPES.has(entity.type) || isStationaryMom(entity);
+  }
 
   function phaseInfo(s) {
     let info = phaseByState.get(s);
     if (!info) {
-      info = { phase: 'fish', startedAt: performance.now(), fishDodges: 0, announcedWildlife: false };
+      info = { phase: 'mixed', startedAt: performance.now(), fishDodges: 0, announcedWildlife: false };
       phaseByState.set(s, info);
     }
     return info;
@@ -45,13 +50,13 @@
       const s = payload.state || getState();
       if (s && payload.entity?.type === 'salmon') {
         const info = phaseInfo(s);
-        if (info.phase === 'fish') info.fishDodges += 1;
+        info.fishDodges += 1;
       }
       return originalDodge(payload);
     };
   }
 
-  function fishPhaseComplete(s, info) {
+  function mixedPhaseComplete(s, info) {
     const elapsed = (performance.now() - info.startedAt) / 1000;
     return info.fishDodges >= FISH_TARGET || elapsed >= FISH_MAX_SECONDS;
   }
@@ -64,38 +69,20 @@
     s.dad = null;
   }
 
-  function removeEntitiesForPhase(s, info) {
-    if (info.phase === 'fish') {
-      s.entities = s.entities.filter((entity) => {
-        if (!entity || entity.dead) return false;
-        return FISH_TYPES.has(entity.type) || isStationaryMom(entity);
-      });
-      if (s.spawn) {
-        s.spawn.wildlife = Math.max(s.spawn.wildlife || 0, 3.5);
-        s.spawn.family = Math.max(s.spawn.family || 0, 12);
-        s.spawn.dadJoke = Math.max(s.spawn.dadJoke || 0, 9);
-        s.spawn.salmon = Math.min(Math.max(s.spawn.salmon || 0.55, 0.35), 1.0);
-      }
-      return;
-    }
-
-    s.entities = s.entities.filter((entity) => {
-      if (!entity || entity.dead) return false;
-      if (BOSS_TYPES.has(entity.type)) return false;
-      return WILDLIFE_TYPES.has(entity.type) || FISH_TYPES.has(entity.type) || PEOPLE_TYPES.has(entity.type) || isStationaryMom(entity);
-    });
+  function keepAllowedEncounters(s) {
+    s.entities = s.entities.filter(isAllowedEncounter);
     if (s.spawn) {
-      s.spawn.family = Math.min(Math.max(s.spawn.family || 2.5, 1.8), 4.5);
+      s.spawn.family = Math.min(Math.max(s.spawn.family || 2.2, 1.6), 4.5);
       s.spawn.dadJoke = Math.max(s.spawn.dadJoke || 0, 12);
-      s.spawn.wildlife = Math.min(Math.max(s.spawn.wildlife || 0.85, 0.65), 1.6);
-      s.spawn.salmon = Math.max(s.spawn.salmon || 0, 1.8);
+      s.spawn.wildlife = Math.min(Math.max(s.spawn.wildlife || 0.8, 0.6), 1.6);
+      s.spawn.salmon = Math.min(Math.max(s.spawn.salmon || 0.7, 0.45), 1.8);
     }
   }
 
-  function updateFishPhaseMessage(s, info) {
+  function updateMixedPhaseMessage(s, info) {
     const elapsed = (performance.now() - info.startedAt) / 1000;
     const remaining = Math.max(0, Math.ceil(FISH_MAX_SECONDS - elapsed));
-    const text = `Fish Dodge Level: ${Math.min(info.fishDodges, FISH_TARGET)}/${FISH_TARGET} dodges · ${remaining}s`;
+    const text = `Survive: salmon, moose, bears, and family incoming · ${remaining}s`;
     s.message = text;
     status(text);
   }
@@ -103,14 +90,14 @@
   function enterWildlifePhase(s, info) {
     info.phase = 'wildlife';
     info.announcedWildlife = true;
-    s.entities = s.entities.filter((entity) => (entity?.type === 'salmon' || isStationaryMom(entity)) && !entity.dead);
+    keepAllowedEncounters(s);
     if (s.spawn) {
       s.spawn.wildlife = 0.8;
-      s.spawn.salmon = 2.2;
-      s.spawn.family = 2.4;
+      s.spawn.salmon = 1.8;
+      s.spawn.family = 2.2;
       s.spawn.dadJoke = 12;
     }
-    s.message = 'Level 2: Moose and bears incoming!';
+    s.message = 'Level 2: Moose, bears, and family are active!';
     effect(s, s.player.x + s.player.width / 2, s.player.y - 26, 'LEVEL 2!', 0.85);
     status(s.message);
   }
@@ -123,17 +110,16 @@
     holdOldTimeline(s);
     document.body.dataset.hockeyStagePhase = info.phase;
 
-    if (info.phase === 'fish') {
-      removeEntitiesForPhase(s, info);
-      updateFishPhaseMessage(s, info);
-      if (fishPhaseComplete(s, info)) enterWildlifePhase(s, info);
+    keepAllowedEncounters(s);
+    if (info.phase === 'mixed') {
+      updateMixedPhaseMessage(s, info);
+      if (mixedPhaseComplete(s, info)) enterWildlifePhase(s, info);
       return;
     }
 
-    removeEntitiesForPhase(s, info);
     if (!info.lastWildlifeStatusAt || performance.now() - info.lastWildlifeStatusAt > 3500) {
       info.lastWildlifeStatusAt = performance.now();
-      s.message = 'Level 2: Clear the moose and bears!';
+      s.message = 'Clear the moose, bears, and family challenges!';
       status(s.message);
     }
   }
@@ -144,8 +130,8 @@
   }
 
   function ready() {
-    document.body.dataset.hockeyStageFlow = 'v0.14.44';
-    window.HOCKEY_BOOT_LOG?.log?.('stage-flow', 'Staged run preserves stationary Mom support during fish and wildlife phases.');
+    document.body.dataset.hockeyStageFlow = 'v0.14.45';
+    window.HOCKEY_BOOT_LOG?.log?.('stage-flow', 'Stage flow no longer deletes wildlife/cast during the opening phase.');
     window.requestAnimationFrame(loop);
   }
 
