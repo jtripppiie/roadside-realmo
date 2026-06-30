@@ -4,6 +4,8 @@
   const GROUND_Y = DESIGN_HEIGHT * 0.82;
   const BASE_SPAWN_MS = 3600;
   const MIN_SPAWN_MS = 2100;
+  const SALMON_RUN_SPAWN_MS = 780;
+  const SALMON_RUN_JITTER_MS = 320;
   const SPAWN_JITTER_MS = 850;
   const COMBO_SPAWN_DELAY_MS = 1350;
   const RECENT_TYPE_LIMIT = 3;
@@ -34,6 +36,7 @@
 
     let nextSpawnAt = 0;
     let waveIndex = 0;
+    let salmonRunIndex = 0;
     let firstPlayableAt = 0;
     let comboSpawnQueued = false;
     let lastBubbleLine = '';
@@ -46,7 +49,16 @@
       return state;
     }
 
+    function stagePhase() {
+      return document.body.dataset.hockeyStagePhase || 'salmonRun';
+    }
+
+    function salmonRunActive() {
+      return stagePhase() === 'salmonRun';
+    }
+
     function activeCrowdEntities(state) {
+      if (salmonRunActive()) return [];
       return state.entities.filter((entity) => {
         if (!entity || entity.dead) return false;
         if (entity.safeCollectible || entity.collectibleSalmon || entity.stationarySupport || entity.nonContact) return false;
@@ -88,7 +100,15 @@
       return null;
     }
 
+    function pickSalmonTemplate() {
+      const salmonTemplates = WAVE.filter((entry) => entry.type === 'salmon');
+      const template = salmonTemplates[salmonRunIndex % salmonTemplates.length] || WAVE[0];
+      salmonRunIndex += 1;
+      return template;
+    }
+
     function pickWaveTemplate() {
+      if (salmonRunActive()) return pickSalmonTemplate();
       for (let attempts = 0; attempts < WAVE.length; attempts += 1) {
         const template = WAVE[waveIndex % WAVE.length];
         const resolvedType = template.type === 'adultCoach' ? (currentCharacter() === 'sofie' ? 'danceInstructor' : 'skip') : template.type;
@@ -120,6 +140,11 @@
 
       if (entity.type === 'salmon') {
         rainFishFromTop(entity, difficulty);
+        if (salmonRunActive()) {
+          entity.message = 'Salmon run — catch 20 before the road opens!';
+          entity.vy *= 1.08;
+          return entity;
+        }
         if (entity.variant === 'heavyRain' || entity.variant === 'fastRain' || entity.variant === 'schoolRain') return entity;
         if (roll < 0.18 + difficulty * 0.26) {
           entity.variant = 'schoolRain';
@@ -180,7 +205,7 @@
       if (!template) return;
       const resolved = resolveModeEntity({
         ...template,
-        key: `moving-${template.type}-${Date.now()}-${waveIndex}`,
+        key: `moving-${template.type}-${Date.now()}-${waveIndex}-${salmonRunIndex}`,
         fromMovingGameplayPass: true,
         fromComputerMode: computerMode,
         comboSpawn: Boolean(options.comboSpawn)
@@ -191,7 +216,7 @@
       state.entities.push(entity);
       state.message = entity.message || template.message;
       if (status) status.textContent = state.message;
-      maybeQueueComboSpawn(difficulty);
+      if (!salmonRunActive()) maybeQueueComboSpawn(difficulty);
     }
 
     function maybeQueueComboSpawn(difficulty) {
@@ -201,7 +226,7 @@
       window.setTimeout(() => {
         comboSpawnQueued = false;
         const state = getPlayableState();
-        if (!state) return;
+        if (!state || salmonRunActive()) return;
         const activeLimit = difficulty > 0.82 ? 2 : 1;
         if (activeCrowdEntities(state).length >= activeLimit) return;
         spawnMovingEncounter(state, difficulty * 0.75, { comboSpawn: true });
@@ -214,16 +239,20 @@
         const now = performance.now();
         if (!firstPlayableAt) {
           firstPlayableAt = now;
-          nextSpawnAt = now + 1200;
+          nextSpawnAt = now + 500;
         }
         const difficulty = difficultyFor(state, now);
         state.difficulty = difficulty;
         const activeLimit = difficulty > 0.82 ? 2 : 1;
         if (now >= nextSpawnAt && activeCrowdEntities(state).length < activeLimit) {
           spawnMovingEncounter(state, difficulty);
-          const spawnInterval = Math.max(MIN_SPAWN_MS, BASE_SPAWN_MS * (1 - difficulty * 0.35));
-          const jitter = Math.random() * SPAWN_JITTER_MS - SPAWN_JITTER_MS / 2;
-          nextSpawnAt = now + spawnInterval + jitter;
+          if (salmonRunActive()) {
+            nextSpawnAt = now + SALMON_RUN_SPAWN_MS + Math.random() * SALMON_RUN_JITTER_MS;
+          } else {
+            const spawnInterval = Math.max(MIN_SPAWN_MS, BASE_SPAWN_MS * (1 - difficulty * 0.35));
+            const jitter = Math.random() * SPAWN_JITTER_MS - SPAWN_JITTER_MS / 2;
+            nextSpawnAt = now + spawnInterval + jitter;
+          }
         }
       }
       window.requestAnimationFrame(runMovingGameplay);
