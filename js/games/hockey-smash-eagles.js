@@ -1,6 +1,6 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.14.35';
-  const DISPLAY_BUILD = 'Build 2026-06-30.91';
+  const DISPLAY_VERSION = 'Hockey Smash v0.14.37';
+  const DISPLAY_BUILD = 'Build 2026-06-30.93';
   const W = 1024;
   const H = 576;
   const GROUND_Y = H * 0.82;
@@ -96,8 +96,8 @@
   }
 
   function bindDuckKey() {
-    if (document.body.dataset.hockeyDuckKeyBound === 'v0.14.35') return;
-    document.body.dataset.hockeyDuckKeyBound = 'v0.14.35';
+    if (document.body.dataset.hockeyDuckKeyBound === 'v0.14.37') return;
+    document.body.dataset.hockeyDuckKeyBound = 'v0.14.37';
 
     window.addEventListener('keydown', (event) => {
       if (event.key !== 'ArrowDown') return;
@@ -322,7 +322,7 @@
 
   function ready() {
     lockBuildBadge();
-    document.body.dataset.hockeyEagles = 'v0.14.35';
+    document.body.dataset.hockeyEagles = 'v0.14.37';
     preloadEagleFrames();
     bindDuckKey();
     window.HOCKEY_BOOT_LOG?.log?.('eagles', 'Low eagle fly-bys loaded. Down Arrow squashes the real canvas player; eagle frames flap when present, and the single-frame fallback pulses.');
