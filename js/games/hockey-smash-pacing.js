@@ -1,19 +1,19 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.14.0';
-  const DISPLAY_BUILD = 'Build 2026-06-29.56';
+  const DISPLAY_VERSION = 'Hockey Smash v0.14.29 Pacing';
+  const DISPLAY_BUILD = 'Build 2026-06-30.85';
   const BIG_TYPES = new Set(['bear', 'moose', 'chargingMoose']);
-  const PERSON_TYPES = new Set(['teacher', 'danceInstructor', 'sister', 'adultCoach', 'dad']);
+  const PERSON_TYPES = new Set(['teacher', 'danceInstructor', 'sister', 'adultCoach', 'dad', 'mom']);
   const TUNING = {
-    introSeconds: 20,
-    fullRampSeconds: 115,
-    bigStart: 0.58,
-    bigEnd: 1.08,
-    personStart: 0.62,
-    personEnd: 1.12,
-    chargeStart: 0.5,
-    chargeEnd: 1.02,
-    salmonStart: 0.82,
-    salmonEnd: 1.12,
+    introSeconds: 24,
+    fullRampSeconds: 140,
+    bigStart: 0.46,
+    bigEnd: 0.96,
+    personStart: 0.44,
+    personEnd: 0.98,
+    chargeStart: 0.42,
+    chargeEnd: 0.92,
+    salmonStart: 0.72,
+    salmonEnd: 1.04,
   };
 
   function api() {
@@ -33,7 +33,7 @@
   function difficultyFor(state) {
     const byClock = clamp(((state.time || 0) - TUNING.introSeconds) / TUNING.fullRampSeconds, 0, 1);
     const byScoreLayer = clamp(Number(state.difficulty) || 0, 0, 1);
-    return Math.max(byClock, byScoreLayer * 0.85);
+    return Math.max(byClock, byScoreLayer * 0.75);
   }
 
   function lerp(start, end, amount) {
@@ -41,19 +41,20 @@
   }
 
   function baseSpeedFor(entity) {
-    if (entity.type === 'bear') return 205;
-    if (entity.type === 'moose') return 165;
-    if (entity.type === 'chargingMoose') return entity.charging ? 390 : 210;
-    if (entity.type === 'danceInstructor') return 118;
-    if (entity.type === 'teacher' || entity.type === 'adultCoach') return 108;
-    if (entity.type === 'dad') return 104;
-    if (entity.type === 'sister') return 132;
-    if (entity.type === 'salmon') return Math.abs(entity.vy || 260);
-    return Math.abs(entity.vx || 120);
+    if (entity.type === 'bear') return 190;
+    if (entity.type === 'moose') return 155;
+    if (entity.type === 'chargingMoose') return entity.charging ? 360 : 190;
+    if (entity.type === 'danceInstructor') return 108;
+    if (entity.type === 'teacher' || entity.type === 'adultCoach') return 98;
+    if (entity.type === 'mom') return 92;
+    if (entity.type === 'dad') return 94;
+    if (entity.type === 'sister') return 118;
+    if (entity.type === 'salmon') return Math.abs(entity.vy || 240);
+    return Math.abs(entity.vx || 110);
   }
 
   function signFor(entity, fallback = -1) {
-    if (entity.type === 'danceInstructor' || entity.type === 'teacher' || entity.type === 'adultCoach' || entity.type === 'sister' || entity.type === 'dad') {
+    if (entity.type === 'danceInstructor' || entity.type === 'teacher' || entity.type === 'adultCoach' || entity.type === 'sister' || entity.type === 'dad' || entity.type === 'mom') {
       const state = getState();
       const player = state?.player;
       if (player) return player.x + player.width / 2 >= entity.x + entity.width / 2 ? 1 : -1;
@@ -70,7 +71,7 @@
     const target = baseSpeedFor(entity) * lerp(start, end, difficulty);
     entity.vx = -target;
     if (entity.type === 'chargingMoose') {
-      entity.chargeSpeed = 390 * lerp(TUNING.chargeStart, TUNING.chargeEnd, difficulty);
+      entity.chargeSpeed = 360 * lerp(TUNING.chargeStart, TUNING.chargeEnd, difficulty);
     }
   }
 
@@ -107,8 +108,8 @@
     const badge = document.getElementById('hockey-build-badge');
     if (badge) badge.textContent = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
     if (api()?.getVersion) api().getVersion = () => DISPLAY_VERSION;
-    document.body.dataset.hockeyButtonDebug = 'v0.14.0';
-    window.HOCKEY_BOOT_LOG?.log?.('pacing', 'Progressive pacing loaded: slower early bears/moose/people, harder late run.');
+    document.body.dataset.hockeyButtonDebug = 'v0.14.29';
+    window.HOCKEY_BOOT_LOG?.log?.('pacing', 'Progressive pacing loaded: wider timing gaps, slower early hazards, and Mom included in person tuning.');
     window.requestAnimationFrame(loop);
   }
 
