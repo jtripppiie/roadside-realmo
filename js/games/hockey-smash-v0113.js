@@ -79,14 +79,15 @@
       return;
     }
 
-    // Wildlife stage: keep bears/moose/birds/ice/fish and the character cast, but suppress boss bits for now.
+    // Wildlife stage: keep bears/moose/birds/ice/fish, but suppress people/cast and boss bits.
+    // Cast cameos are DOM-only in v0114 so they cannot chase, damage, or block the player.
     s.entities = s.entities.filter((entity) => {
       if (!entity || entity.dead) return false;
-      if (BOSS_TYPES.has(entity.type)) return false;
-      return WILDLIFE_TYPES.has(entity.type) || FISH_TYPES.has(entity.type) || PEOPLE_TYPES.has(entity.type);
+      if (PEOPLE_TYPES.has(entity.type) || BOSS_TYPES.has(entity.type)) return false;
+      return WILDLIFE_TYPES.has(entity.type) || FISH_TYPES.has(entity.type);
     });
     if (s.spawn) {
-      s.spawn.family = Math.min(Math.max(s.spawn.family || 0, 1.4), 3.2);
+      s.spawn.family = Math.max(s.spawn.family || 0, 12);
       s.spawn.dadJoke = Math.max(s.spawn.dadJoke || 0, 12);
       s.spawn.wildlife = Math.min(Math.max(s.spawn.wildlife || 0.85, 0.65), 1.6);
       s.spawn.salmon = Math.max(s.spawn.salmon || 0, 1.8);
@@ -108,7 +109,7 @@
     if (s.spawn) {
       s.spawn.wildlife = 0.8;
       s.spawn.salmon = 2.2;
-      s.spawn.family = 1.2;
+      s.spawn.family = 12;
       s.spawn.dadJoke = 12;
     }
     s.message = 'Level 2: Moose and bears incoming!';
@@ -148,7 +149,7 @@
     if (badge) badge.textContent = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
     if (api()?.getVersion) api().getVersion = () => DISPLAY_VERSION;
     document.body.dataset.hockeyButtonDebug = 'v0.14.2';
-    window.HOCKEY_BOOT_LOG?.log?.('v0113', 'v0.14.2 staged run loaded: fish dodge level first, then moose/bear level; character cast allowed.');
+    window.HOCKEY_BOOT_LOG?.log?.('v0113', 'v0.14.2 staged run loaded: fish dodge level first, then moose/bear level; people/cast suppressed as hazards.');
     window.requestAnimationFrame(loop);
   }
 
