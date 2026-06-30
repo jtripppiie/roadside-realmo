@@ -5,7 +5,7 @@
 
   // These design constants are the "virtual screen" size. The canvas can scale
   // up or down with CSS, but all game math happens in this 1024x576 world.
-  const VERSION = 'Hockey Smash v0.5.3';
+  const VERSION = 'Hockey Smash v0.14.47';
   const DESIGN_WIDTH = 1024;
   const DESIGN_HEIGHT = 576;
   const TRANSITION_MS = 2400;
@@ -401,6 +401,10 @@
 
     if (phase.name === 'jump' && !computer.jumpFired && state.player.grounded) {
       jump();
+    }
+
+    if (phase.name === 'jump' && !computer.jumpFired && state.player.grounded) {
+      jump();
       computer.jumpFired = true;
     }
     if (phase.name === 'stick' && !computer.jumpFired) {
@@ -484,10 +488,30 @@
     };
   }
 
+  function stagedPhase() {
+    return document.body.dataset.hockeyStagePhase || '';
+  }
+
+  function readyCountdownActive() {
+    return Boolean(state?.readyCountdownActive || (typeof state?.readyCountdownSeconds === 'number' && state.readyCountdownSeconds > 0.1));
+  }
+
   function updateSpawns(dt) {
     // Spawn timers count down to zero. When a timer reaches zero, we create a
     // new obstacle and reset that timer.
     if (state.mode === STATE.BOSS_FIGHT) return;
+    const phase = stagedPhase();
+    if (readyCountdownActive()) return;
+
+    if (phase === 'salmonRun') {
+      state.spawn.salmon -= dt;
+      if (state.spawn.salmon <= 0) {
+        spawnSalmon();
+        state.spawn.salmon = 0.34 + Math.random() * 0.28;
+      }
+      return;
+    }
+
     state.spawn.wildlife -= dt;
     state.spawn.salmon -= dt;
     state.spawn.family -= dt;
@@ -498,20 +522,20 @@
     }
     if (state.spawn.salmon <= 0) {
       spawnSalmon();
-      state.spawn.salmon = state.salmonRunStarted ? 0.16 : 1.1 + Math.random() * 1.2;
+      state.spawn.salmon = 1.1 + Math.random() * 1.2;
     }
     if (state.spawn.family <= 0) {
       spawnFamily();
       state.spawn.family = 6 + Math.random() * 4;
     }
 
-    if (state.time > 26 && !state.salmonRunStarted) {
+    if (!phase && state.time > 26 && !state.salmonRunStarted) {
       state.salmonRunStarted = true;
       state.salmonRunTimer = 6.5;
       state.message = 'Major salmon run!';
     }
 
-    if (state.salmonRunStarted) {
+    if (!phase && state.salmonRunStarted) {
       state.salmonRunTimer -= dt;
       if (state.salmonRunTimer <= 0) {
         state.mode = STATE.BOSS_INTRO;
@@ -523,6 +547,11 @@
   }
 
   function updateBoss(dt) {
+    if (stagedPhase()) {
+      state.dad = null;
+      if (state.mode === STATE.BOSS_INTRO || state.mode === STATE.BOSS_FIGHT) state.mode = STATE.PLAYING;
+      return;
+    }
     if (state.mode === STATE.BOSS_INTRO) {
       state.bossIntroTimer -= dt;
       if (state.bossIntroTimer <= 0) {
@@ -580,6 +609,7 @@
   }
 
   function spawnFamily() {
+    if (stagedPhase() === 'salmonRun') return;
     const type = modeAdultType();
     if (type === 'mom') {
       state.effects.push({
@@ -666,7 +696,7 @@
     drawGround(ctx);
     if (!state || state.mode === STATE.SPLASH || state.mode === STATE.TRANSITION) return;
     state.entities.forEach((entity) => drawEntity(ctx, entity));
-    if (state.mode === STATE.BOSS_INTRO) drawSpriteOrPlaceholder(ctx, 'dadMower', DESIGN_WIDTH - 168, DESIGN_HEIGHT * TUNING.groundRatio - 96, 96, 96, 'DAD MOWER');
+    if (!stagedPhase() && state.mode === STATE.BOSS_INTRO) drawSpriteOrPlaceholder(ctx, 'dadMower', DESIGN_WIDTH - 168, DESIGN_HEIGHT * TUNING.groundRatio - 96, 96, 96, 'DAD MOWER');
     if (state.dad && !state.dad.dead) drawDad(ctx);
     drawDaniel(ctx);
     drawEffects(ctx);
@@ -757,180 +787,143 @@
   }
 
   function drawObstacleLabel(ctx, entity) {
-    // Obstacles teach the player what to do: "HIT IT" plus a small HP bar.
-    const label = entity.type === 'chargingMoose' ? 'CHARGING MOOSE' : entity.type === 'moose' ? 'MOOSE - HIT IT' : 'BEAR - HIT IT';
-    ctx.fillStyle = 'rgba(5, 8, 13, 0.78)';
-    ctx.fillRect(entity.x + 8, entity.y - 29, entity.width - 16, 22);
-    ctx.fillStyle = '#fff2cf';
-    ctx.font = 'bold 13px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(label, entity.x + entity.width / 2, entity.y - 13);
-    ctx.fillStyle = '#111';
-    ctx.fillRect(entity.x + 8, entity.y - 6, entity.width - 16, 6);
-    ctx.fillStyle = '#ffcf5a';
-    ctx.fillRect(entity.x + 8, entity.y - 6, (entity.width - 16) * (entity.hp / (entity.maxHp || entity.hp || 1)), 6);
+    // Obstacles teach the player what to do: "HIT IT" plus a small HP bar. Make
+    // this visible in computer mode so debugging never depends on guessing.
+    const hp = Math.max(0, entity.hp || 0);
+    const max = Math.max(1, entity.maxHp || hp || 1);
+    const barW = entity.width;
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,.55)';
+    ctx.fillRect(entity.x, entity.y - 26, barW, 18);
+    ctx.fillStyle = '#fff27a';
+    ctx.fillRect(entity.x + 3, entity.y - 23, Math.max(0, (barW - 6) * (hp / max)), 12);
+    ctx.fillStyle = '#111827';
+    ctx.font = '700 11px system-ui, sans-serif';
+    ctx.fillText('HIT IT', entity.x + 8, entity.y - 13);
   }
 
   function drawDad(ctx) {
-    drawSpriteOrPlaceholder(ctx, 'dad', state.dad.x, state.dad.y, 96, 96, 'DAD');
-    ctx.fillStyle = '#111';
-    ctx.fillRect(state.dad.x, state.dad.y - 14, 96, 8);
-    ctx.fillStyle = '#8dff7a';
-    ctx.fillRect(state.dad.x, state.dad.y - 14, 96 * (state.dad.hp / state.dad.maxHp), 8);
-  }
-
-  function drawSpriteOrPlaceholder(ctx, key, x, y, width, height, label) {
-    // If art is loaded, draw it. If not, draw a labeled box so missing images do
-    // not make the game crash or become invisible.
-    const image = images[key];
-    const drawableWidth = image?.naturalWidth || image?.width || 0;
-    const drawableHeight = image?.naturalHeight || image?.height || 0;
-    if (drawableWidth && drawableHeight && (image.complete !== false)) {
-      ctx.drawImage(image, x, y, width, height);
-      return;
-    }
-    ctx.fillStyle = '#f2d27a';
-    ctx.fillRect(x, y, width, height);
-    ctx.strokeStyle = '#18202a';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(x, y, width, height);
-    ctx.fillStyle = '#18202a';
-    ctx.font = 'bold 13px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(label, x + width / 2, y + height / 2);
-  }
-
-  function drawBubble(ctx, x, y, width, height, text, color) {
-    ctx.fillStyle = color;
-    ctx.strokeStyle = '#15202c';
-    ctx.lineWidth = 3;
-    roundRect(ctx, x, y, width, height, 10);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = '#15202c';
-    ctx.font = 'bold 16px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(text, x + width / 2, y + height / 2 + 5);
+    drawSpriteOrPlaceholder(ctx, 'dad', state.dad.x, state.dad.y, state.dad.width, state.dad.height, 'DAD');
+    drawBubble(ctx, state.dad.x - 210, state.dad.y - 24, 220, 58, 'Dad joke boss!', '#fff7d6');
   }
 
   function drawEffects(ctx) {
     state.effects.forEach((effect) => {
+      ctx.save();
+      ctx.globalAlpha = clamp(effect.life / 0.6, 0, 1);
       ctx.fillStyle = '#fff27a';
-      ctx.font = 'bold 20px sans-serif';
+      ctx.font = '700 20px system-ui, sans-serif';
       ctx.fillText(effect.text, effect.x, effect.y);
+      ctx.restore();
     });
   }
 
-  function updateHud() {
-    // Keep HTML UI in sync with canvas state. Important game info should not
-    // live only inside the canvas.
-    elements.health.value = state.player.health;
-    elements.health.textContent = `${state.player.health} health`;
-    elements.status.textContent = state.message;
-    updateDebugPanel();
-  }
-
-  function updateDebugPanel() {
-    // Debug text answers "is input broken or is movement blocked?" by showing
-    // position, velocity, active keys, and computer-mode pass flags.
-    if (!elements.debug || !state) return;
-    const p = state.player;
-    const spriteLoaded = images.daniel?.complete && images.daniel.naturalWidth ? 'loaded' : 'placeholder';
-    const keyList = Array.from(keys).sort().join('+') || 'none';
-    const computer = state.computer?.enabled
-      ? ` computer=${state.computer.phaseName} results=${formatComputerResults(state.computer.results)}`
-      : ' computer=off';
-    elements.debug.textContent = [
-      `mode=${state.mode}`,
-      `x=${Math.round(p.x)}`,
-      `y=${Math.round(p.y)}`,
-      `vx=${Math.round(p.vx)}`,
-      `vy=${Math.round(p.vy)}`,
-      `facing=${p.facing < 0 ? 'left' : 'right'}`,
-      `grounded=${p.grounded ? 'yes' : 'no'}`,
-      `keys=${keyList}`,
-      `sprite=${spriteLoaded}`,
-      computer,
-    ].join(' | ');
-  }
-
-  function formatComputerResults(results) {
-    // Uppercase means a computer-mode test passed. Lowercase means it has not
-    // passed yet. Example: RLJSHO means all current checks passed.
-    return [
-      results.movedRight ? 'R' : 'r',
-      results.movedLeft ? 'L' : 'l',
-      results.jumped ? 'J' : 'j',
-      results.slid ? 'S' : 's',
-      results.swung ? 'H' : 'h',
-      results.clearedObstacle ? 'O' : 'o',
-    ].join('');
-  }
-
-  function updateRotateHint() {
-    // Portrait phones can still play, but landscape gives much more room.
-    if (!elements.rotate || elements.game.hidden) return;
-    const shouldShow = window.innerHeight > window.innerWidth && window.innerWidth < 760;
-    elements.rotate.hidden = !shouldShow;
-    if (shouldShow) window.setTimeout(() => { if (elements.rotate) elements.rotate.hidden = true; }, 2400);
-  }
-
-  function isGameplayActive() {
-    return state && [STATE.PLAYING, STATE.BOSS_INTRO, STATE.BOSS_FIGHT].includes(state.mode);
-  }
-
-  function rectsOverlap(a, b) {
-    // Axis-aligned rectangle collision. This is one of the most common beginner
-    // game-development tricks.
-    return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
-  }
-
-  function clearMessage(type) {
-    return {
-      salmon: 'Salmon knocked away.',
-      bear: 'Bear backs off.',
-      moose: 'Moose clears the sidewalk.',
-      mom: 'Room-cleaning bubble popped.',
-      sister: 'Teasing bubble popped.',
-      teacher: 'Teacher skates aside.',
-      danceInstructor: 'Dance instructor spins away.',
-      dadJoke: 'Dad joke destroyed.',
-    }[type] || 'Hazard cleared.';
-  }
-
-  function clamp(value, min, max) {
-    // Clamp keeps a number inside a range. Here it stops the player from moving
-    // off the left or right side of the screen.
-    return Math.max(min, Math.min(max, value));
+  function drawBubble(ctx, x, y, width, height, text, fill) {
+    ctx.save();
+    ctx.fillStyle = fill;
+    ctx.strokeStyle = '#1f2937';
+    ctx.lineWidth = 3;
+    roundRect(ctx, x, y, width, height, 12);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#111827';
+    ctx.font = '700 14px system-ui, sans-serif';
+    wrapText(ctx, text, x + 12, y + 24, width - 24, 16);
+    ctx.restore();
   }
 
   function roundRect(ctx, x, y, width, height, radius) {
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.arcTo(x + width, y, x + width, y + height, radius);
+    ctx.arcTo(x + width, y + height, x, y + height, radius);
+    ctx.arcTo(x, y + height, x, y, radius);
+    ctx.arcTo(x, y, x + width, y, radius);
+    ctx.closePath();
   }
 
-  function debugLog(category, details) {
-    console.info(`[HockeySmash:${category}]`, details);
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+    const words = String(text).split(' ');
+    let line = '';
+    words.forEach((word, index) => {
+      const test = `${line}${word} `;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        ctx.fillText(line.trim(), x, y);
+        line = `${word} `;
+        y += lineHeight;
+      } else {
+        line = test;
+      }
+      if (index === words.length - 1) ctx.fillText(line.trim(), x, y);
+    });
+  }
+
+  function rectsOverlap(a, b) {
+    return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+  }
+
+  function updateHud() {
+    if (!elements.health || !state?.player) return;
+    elements.health.value = state.player.health;
+    elements.health.textContent = `${state.player.health} health`;
+    if (elements.status) elements.status.textContent = state.message;
+    if (elements.debug) {
+      const computer = state.computer || {};
+      elements.debug.textContent = [
+        VERSION,
+        `Mode: ${state.mode}`,
+        `Player: ${Math.round(state.player.x)}, ${Math.round(state.player.y)}`,
+        `Entities: ${state.entities.length}`,
+        `Computer: ${computer.enabled ? computer.phaseName : 'off'}`,
+        computer.enabled ? `Checks: R${+computer.results.movedRight} L${+computer.results.movedLeft} J${+computer.results.jumped} S${+computer.results.slid} A${+computer.results.swung} C${+computer.results.clearedObstacle}` : '',
+      ].filter(Boolean).join(' | ');
+    }
+  }
+
+  function clearMessage(type) {
+    return {
+      bear: 'Bear cleared!',
+      moose: 'Moose cleared!',
+      chargingMoose: 'Charging moose stopped!',
+      salmon: 'Salmon swatted away!',
+      mom: 'Mom says she will check later.',
+      danceInstructor: 'Dance instructor gives a dramatic bow.',
+      dadJoke: 'Dad joke blocked!',
+    }[type] || 'Obstacle cleared!';
+  }
+
+  function updateRotateHint() {
+    if (!elements.rotate) return;
+    const narrow = window.innerWidth < 720 && window.innerHeight > window.innerWidth;
+    elements.rotate.hidden = !narrow;
+  }
+
+  function isGameplayActive() {
+    return state?.mode === STATE.PLAYING || state?.mode === STATE.BOSS_INTRO || state?.mode === STATE.BOSS_FIGHT;
   }
 
   function isComputerMode() {
     return new URLSearchParams(window.location.search).get('computerMode') === '1';
   }
 
+  function debugLog(source, message) {
+    if (window.HOCKEY_BOOT_LOG?.log) window.HOCKEY_BOOT_LOG.log(source, message);
+  }
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  // Start once DOM is ready. This works whether the script loaded before or
+  // after the browser finished parsing the document.
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+
+  // Small public API for add-on files and tests. Avoid exposing the whole module.
   window.RTA_HOCKEY_SMASH = {
-    start,
     getState: () => state,
     getVersion: () => VERSION,
-    getMissingAssets: () => missingAssets.slice(),
-    assets: ASSETS,
     tuning: TUNING,
+    assets: ASSETS,
   };
 })();
