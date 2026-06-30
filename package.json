@@ -1,6 +1,6 @@
 {
   "name": "hockey-smash",
-  "version": "0.14.40",
+  "version": "0.14.42",
   "private": true,
   "description": "Static Hockey Smash browser game verification helpers.",
   "scripts": {
