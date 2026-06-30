@@ -2,8 +2,10 @@
   const BEAR_START_SPEED = 78;
   const BEAR_LATE_SPEED = 124;
   const GROUND_Y = 576 * 0.82;
-  const CAST_MIN_GAP_MS = 12000;
-  const CAST_GAP_JITTER_MS = 6500;
+  const CAST_FIRST_DELAY_MS = 1600;
+  const CAST_MIN_GAP_MS = 9000;
+  const CAST_GAP_JITTER_MS = 3500;
+  const CAST_START_TIME = 8;
   const BUBBLE_LINES = {
     mom: [
       'Helmet on, kiddo!',
@@ -31,6 +33,7 @@
       'I call rematch!',
     ],
   };
+
   let castIndex = 0;
   let castStarted = false;
   let nextCastAt = 0;
@@ -41,15 +44,28 @@
   const bubbleNodes = new Map();
 
   function api() { return window.RTA_HOCKEY_SMASH; }
+
   function getState() {
     const state = api()?.getState?.();
     if (!state || !state.player || ['splash', 'transition', 'tryAgain'].includes(state.mode)) return null;
     return state;
   }
-  function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
-  function difficultyFor(state) { return clamp(Number(state?.difficulty) || ((state?.time || 0) / 140), 0, 1); }
-  function character() { return api()?.getPlayerConfig?.()?.character || getState()?.playerCharacter || 'daniel'; }
-  function playerName() { return api()?.getPlayerConfig?.()?.name || (character() === 'sofie' ? 'Sofie' : 'Daniel'); }
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function difficultyFor(state) {
+    return clamp(Number(state?.difficulty) || ((state?.time || 0) / 140), 0, 1);
+  }
+
+  function character() {
+    return api()?.getPlayerConfig?.()?.character || getState()?.playerCharacter || 'daniel';
+  }
+
+  function playerName() {
+    return api()?.getPlayerConfig?.()?.name || (character() === 'sofie' ? 'Sofie' : 'Daniel');
+  }
 
   function syncFinalReleaseState() {
     const overlay = document.getElementById('hockey-player-overlay');
@@ -72,8 +88,8 @@
 
   function castForCurrentCharacter() {
     const shared = [
-      { type: 'mom', width: 92, height: 100, speed: 74, hp: 3, damage: 5 },
-      { type: 'dad', width: 92, height: 96, speed: 70, hp: 4, damage: 6 },
+      { type: 'mom', width: 92, height: 100, speed: 82, hp: 3, damage: 5 },
+      { type: 'dad', width: 92, height: 96, speed: 72, hp: 4, damage: 6 },
     ];
     if (character() === 'sofie') {
       return shared.concat(
@@ -134,7 +150,7 @@
 
   function spawnCastEncounter(state, options = {}) {
     if (!Array.isArray(state?.entities)) return null;
-    if (!options.force && !wildlifeStageHasStarted(state)) return null;
+    if (!options.force && !castStageHasStarted(state)) return null;
     const activeCast = state.entities.filter((entity) => entity && !entity.dead && entity.fromFinalCastPass);
     if (!options.force && activeCast.length >= 1) return null;
 
@@ -169,22 +185,20 @@
   }
 
   function runCastLogic(state) {
-    if (!wildlifeStageHasStarted(state)) return;
+    if (!castStageHasStarted(state)) return;
     const now = performance.now();
     if (!castStarted) {
       castStarted = true;
-      nextCastAt = now + 5000;
+      nextCastAt = now + CAST_FIRST_DELAY_MS;
     }
     if (now < nextCastAt) return;
     const spawned = spawnCastEncounter(state);
     if (spawned) nextCastAt = now + CAST_MIN_GAP_MS + Math.random() * CAST_GAP_JITTER_MS;
   }
 
-  function wildlifeStageHasStarted(state) {
+  function castStageHasStarted(state) {
     if (!state) return false;
-    const time = Number(state.time) || 0;
-    const hasWildlife = Array.isArray(state.entities) && state.entities.some((entity) => entity && !entity.dead && ['bear', 'moose', 'chargingMoose'].includes(entity.type));
-    return hasWildlife || time > 32;
+    return (Number(state.time) || 0) > CAST_START_TIME;
   }
 
   function removeSidelineCameo() {
@@ -346,12 +360,12 @@
   }
 
   function ready() {
-    document.body.dataset.hockeyRelease = 'v0.14.39';
+    document.body.dataset.hockeyRelease = 'v0.14.41';
     syncFinalReleaseState();
     exposeCastDebugApi();
     ensureCastDebugButton();
     removeSidelineCameo();
-    window.HOCKEY_BOOT_LOG?.log?.('release', 'Sofie dancer mode now includes Daniel as the hockey-player brother cast member.');
+    window.HOCKEY_BOOT_LOG?.log?.('release', 'Mom now appears as the first early cast character.');
     window.requestAnimationFrame(loop);
   }
 
