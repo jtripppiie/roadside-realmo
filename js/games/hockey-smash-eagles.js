@@ -1,6 +1,6 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.14.31 Eagles';
-  const DISPLAY_BUILD = 'Build 2026-06-30.87';
+  const DISPLAY_VERSION = 'Hockey Smash v0.14.32';
+  const DISPLAY_BUILD = 'Build 2026-06-30.88';
   const W = 1024;
   const H = 576;
   const GROUND_Y = H * 0.82;
@@ -40,9 +40,15 @@
     if (!Array.isArray(s.effects)) s.effects = [];
     return s;
   }
-  function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
   function overlap(a, b) { return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y; }
   function playerName(s) { return api()?.getPlayerConfig?.()?.name || s?.player?.name || 'Daniel'; }
+
+  function lockBuildBadge() {
+    const badge = document.getElementById('hockey-build-badge');
+    const label = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
+    if (badge && badge.textContent !== label) badge.textContent = label;
+    if (api()?.getVersion) api().getVersion = () => DISPLAY_VERSION;
+  }
 
   function preloadEagleFrames() {
     if (eagleFrames.length) return;
@@ -94,8 +100,8 @@
   }
 
   function bindDuckKey() {
-    if (document.body.dataset.hockeyDuckKeyBound === 'v0.14.31') return;
-    document.body.dataset.hockeyDuckKeyBound = 'v0.14.31';
+    if (document.body.dataset.hockeyDuckKeyBound === 'v0.14.32') return;
+    document.body.dataset.hockeyDuckKeyBound = 'v0.14.32';
 
     window.addEventListener('keydown', (event) => {
       if (event.key !== 'ArrowDown') return;
@@ -302,6 +308,7 @@
   }
 
   function eagleLoop(now) {
+    lockBuildBadge();
     const s = state();
     if (s) {
       applyDuckShape(s);
@@ -318,13 +325,11 @@
   }
 
   function ready() {
-    const badge = document.getElementById('hockey-build-badge');
-    if (badge) badge.textContent = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
-    if (api()?.getVersion) api().getVersion = () => DISPLAY_VERSION;
-    document.body.dataset.hockeyEagles = 'v0.14.31';
+    lockBuildBadge();
+    document.body.dataset.hockeyEagles = 'v0.14.32';
     preloadEagleFrames();
     bindDuckKey();
-    window.HOCKEY_BOOT_LOG?.log?.('eagles', 'Low eagle fly-bys loaded. Down Arrow squashes the real canvas player; eagle frames flap when present, and the single-frame fallback pulses.');
+    window.HOCKEY_BOOT_LOG?.log?.('eagles', 'Low eagle fly-bys loaded. Down Arrow squashes the real canvas player; eagle frames flap when present, and the single-frame fallback pulses. The final layer also locks the visible build badge.');
     window.requestAnimationFrame(eagleLoop);
   }
 
