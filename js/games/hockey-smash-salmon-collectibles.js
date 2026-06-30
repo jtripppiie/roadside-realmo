@@ -1,5 +1,6 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.14.8 Salmon Collectibles';
+  const DISPLAY_VERSION = 'Hockey Smash v0.14.33 Salmon Collectibles';
+  const DISPLAY_BUILD = 'Build 2026-06-30.89';
   const DESIGN_WIDTH = 1024;
   const DESIGN_HEIGHT = 576;
   const GROUND_Y = DESIGN_HEIGHT * 0.82;
@@ -13,9 +14,8 @@
   function onReady() {
     api = window.RTA_HOCKEY_SMASH;
     status = document.getElementById('hockey-status');
-    const badge = document.getElementById('hockey-build-badge');
-    if (badge) badge.textContent = 'Hockey Smash v0.14.8 · Build 2026-06-30.64';
-    if (api?.getVersion) api.getVersion = () => 'Hockey Smash v0.14.8';
+    // Do not write the build badge here. The final release/eagle layer owns the
+    // visible badge so older feature files cannot fight each other.
     window.requestAnimationFrame(loop);
   }
 
@@ -49,6 +49,26 @@
     entity._dodgeLayerResolved = true;
     entity.collectibleSalmon = true;
     entity.safeCollectible = true;
+  }
+
+  function playerCatchBox(player) {
+    const normalHeight = Math.max(player._duckNormalHeight || 0, player.height || 0, 108);
+    const bottom = Math.max((player.y || 0) + (player.height || normalHeight), GROUND_Y);
+    return {
+      x: (player.x || 0) - 22,
+      y: bottom - normalHeight - 34,
+      width: (player.width || 104) + 44,
+      height: normalHeight + 52,
+    };
+  }
+
+  function salmonCatchBox(entity) {
+    return {
+      x: (entity.x || 0) - 10,
+      y: (entity.y || 0) - 10,
+      width: (entity.width || 54) + 20,
+      height: (entity.height || 31) + 20,
+    };
   }
 
   function collectSalmon(s, entity) {
@@ -87,12 +107,12 @@
   }
 
   function handleSalmon(s) {
-    const player = s.player;
+    const playerBox = playerCatchBox(s.player);
     s.entities.forEach((entity) => {
       if (!entity || entity.dead || entity.type !== 'salmon') return;
       neutralizeSalmon(entity);
 
-      if (rectsOverlap(player, entity)) {
+      if (rectsOverlap(playerBox, salmonCatchBox(entity))) {
         collectSalmon(s, entity);
         return;
       }
