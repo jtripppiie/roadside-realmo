@@ -1,11 +1,7 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.14.8';
-  const DISPLAY_BUILD = 'Build 2026-06-30.64';
   const DESIGN_WIDTH = 1024;
   const DESIGN_HEIGHT = 576;
-  const STORAGE_KEY = 'hockeySmashHighScore';
-  const LEGACY_STORAGE_KEY = 'hockeyHighScore';
-  const BASE_DISTANCE_SPEED = 14;
+  const STORAGE_KEY = 'hockeySmashHighScoreNoDistance';
   const COMBO_TIMEOUT = 2.5;
   const SALMON_COLLECT_POINTS = 67;
 
@@ -21,7 +17,6 @@
 
   function createFreshMetrics() {
     return {
-      distance: 0,
       survivalTime: 0,
       bonusScore: 0,
       score: 0,
@@ -42,10 +37,7 @@
 
   function loadHighScore() {
     try {
-      return Math.max(
-        Number(window.localStorage.getItem(STORAGE_KEY) || 0) || 0,
-        Number(window.localStorage.getItem(LEGACY_STORAGE_KEY) || 0) || 0
-      );
+      return Number(window.localStorage.getItem(STORAGE_KEY) || 0) || 0;
     } catch (error) {
       return 0;
     }
@@ -54,7 +46,6 @@
   function saveHighScore(value) {
     try {
       window.localStorage.setItem(STORAGE_KEY, String(value));
-      window.localStorage.setItem(LEGACY_STORAGE_KEY, String(value));
     } catch (error) {
       // localStorage can be unavailable in private browsing or strict contexts.
     }
@@ -64,10 +55,6 @@
     api = window.RTA_HOCKEY_SMASH;
     canvas = document.getElementById('hockey-canvas');
     originalCanvasTransform = canvas?.style?.transform || '';
-
-    const badge = document.getElementById('hockey-build-badge');
-    if (badge) badge.textContent = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
-    if (api?.getVersion) api.getVersion = () => DISPLAY_VERSION;
 
     ensureScoreHud();
     ensureSummaryPanel();
@@ -247,8 +234,6 @@
   }
 
   function updateProgress(state, dt) {
-    // Skip real progression during the 10-second practice countdown.
-    // Keep combo cleanup alive so stale combo state does not carry forward.
     if (
       state?.readyCountdownActive ||
       (typeof state?.readyCountdownSeconds === 'number' && state.readyCountdownSeconds > 0.1)
@@ -260,9 +245,7 @@
       return;
     }
 
-    const player = state.player;
     metrics.survivalTime += dt;
-    metrics.distance += (BASE_DISTANCE_SPEED + Math.abs(player.vx || 0) * 0.018) * dt;
     metrics.difficulty = Math.min(1, metrics.survivalTime / 120);
 
     if (metrics.comboTimer > 0) {
@@ -270,7 +253,7 @@
       if (metrics.comboTimer === 0) metrics.combo = 0;
     }
 
-    const baseScore = Math.floor(metrics.distance * 4) + metrics.bonusScore + metrics.combo * 25;
+    const baseScore = metrics.bonusScore + metrics.combo * 25;
     metrics.score = Math.max(metrics.score, baseScore);
 
     if (metrics.score > metrics.highScore) {
@@ -279,15 +262,14 @@
       saveHighScore(metrics.highScore);
     }
 
-    state.distance = metrics.distance;
     state.score = metrics.score;
     state.difficulty = metrics.difficulty;
     state.peakCombo = metrics.peakCombo;
     state.pucksHit = metrics.pucksHit;
     state.fishDodged = metrics.fishDodged;
     state.salmonCollected = metrics.salmonCollected;
-    player.combo = metrics.combo;
-    player.comboTimer = metrics.comboTimer;
+    state.player.combo = metrics.combo;
+    state.player.comboTimer = metrics.comboTimer;
   }
 
   function detectDamage(state) {
@@ -311,7 +293,7 @@
       const comboText = metrics.combo > 1 ? ` | Combo x${metrics.combo}` : '';
       const highText = metrics.newHighScore ? ' | NEW HIGH!' : ` | High ${metrics.highScore}`;
       const progressionText = progressionLabel(metrics.highScore || metrics.score);
-      scoreEl.textContent = `Distance ${Math.floor(metrics.distance)}m | Score ${metrics.score} | Salmon: ${metrics.salmonCollected}${comboText}${highText} | ${progressionText}`;
+      scoreEl.textContent = `Score ${metrics.score} | Salmon: ${metrics.salmonCollected}${comboText}${highText} | ${progressionText}`;
       scoreEl.dataset.combo = String(metrics.combo);
       scoreEl.style.transform = metrics.combo > 1 ? 'scale(1.045)' : '';
     }
@@ -337,7 +319,6 @@
     summaryEl.hidden = false;
     summaryEl.innerHTML = `
       <strong>Run Summary</strong>
-      <span>Distance: ${Math.floor(metrics.distance)}m</span>
       <span>Score: ${metrics.score}${metrics.newHighScore ? ' — New High!' : ''}</span>
       <span>Best Combo: x${metrics.peakCombo}</span>
       <span>Projectile Hits: ${metrics.pucksHit}</span>
