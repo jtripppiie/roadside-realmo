@@ -1,21 +1,11 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.14.29';
-  const DISPLAY_BUILD = 'Build 2026-06-30.85';
+  const DISPLAY_VERSION = 'Hockey Smash v0.14.35 Release';
+  const DISPLAY_BUILD = 'Build 2026-06-30.91';
   const BEAR_START_SPEED = 78;
   const BEAR_LATE_SPEED = 124;
   const GROUND_Y = 576 * 0.82;
   const CAST_MIN_GAP_MS = 12000;
   const CAST_GAP_JITTER_MS = 6500;
-  const CAMEO_ASSETS = {
-    daniel: {
-      src: 'assets/hockey-smash/sprites/alaskan_girl.webp',
-      label: "Hey, you're cute",
-    },
-    sofie: {
-      src: 'assets/hockey-smash/sprites/alaskan_boy.webp',
-      label: "Hey, you're cute",
-    },
-  };
   const BUBBLE_LINES = {
     mom: [
       'Helmet on, kiddo!',
@@ -23,12 +13,7 @@
       'Use the whole sidewalk!',
       'Water break after this!',
     ],
-    dad: [
-      'Skate like you mean it!',
-      'That was almost a slapshot!',
-      'I packed snacks!',
-      'Watch the moose!',
-    ],
+    dad: [],
     danceInstructor: [
       'Point those toes!',
       'Big finish!',
@@ -49,8 +34,6 @@
   let lastBubbleLine = '';
   let castDebugButton = null;
   let cameoNode = null;
-  let cameoSprite = null;
-  let cameoLabel = null;
   let bubbleLayer = null;
   const bubbleNodes = new Map();
 
@@ -66,12 +49,6 @@
   function playerName() { return api()?.getPlayerConfig?.()?.name || (character() === 'sofie' ? 'Sofie' : 'Daniel'); }
 
   function syncFinalReleaseState() {
-    const badge = document.getElementById('hockey-build-badge');
-    if (badge && badge.textContent !== `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`) {
-      badge.textContent = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
-    }
-    if (api()?.getVersion) api().getVersion = () => DISPLAY_VERSION;
-
     const overlay = document.getElementById('hockey-player-overlay');
     if (!overlay) return;
     overlay.hidden = true;
@@ -109,6 +86,7 @@
   }
 
   function pickLine(type) {
+    if (type === 'dad') return `${playerName()}, do your homework!`;
     const lines = BUBBLE_LINES[type] || [];
     if (!lines.length) return '';
     let line = lines[Math.floor(Math.random() * lines.length)];
@@ -130,7 +108,7 @@
 
   function templateMessage(type, bubble) {
     if (type === 'mom') return `Mom skates in: ${bubble}`;
-    if (type === 'dad') return `Dad rides in: ${bubble}`;
+    if (type === 'dad') return `Dad says: ${bubble}`;
     if (type === 'danceInstructor') return `Dance instructor: ${bubble}`;
     return `${labelFor(type)} challenge incoming.`;
   }
@@ -153,12 +131,12 @@
     castIndex += 1;
     lastCastType = template.type;
     const speedBoost = 1 + difficulty * 0.18;
-    const bubble = pickLine(template.type) || `${playerName()}, keep moving!`;
+    const prettyBubble = pickLine(template.type) || `${playerName()}, keep moving!`;
     const entity = {
       ...template,
-      bubble,
-      prettyBubble: bubble,
-      message: templateMessage(template.type, bubble),
+      bubble: '',
+      prettyBubble,
+      message: templateMessage(template.type, prettyBubble),
       key: `final-cast-${template.type}-${Date.now()}-${castIndex}`,
       x: 1024 + 80 + Math.random() * 120,
       y: GROUND_Y - template.height,
@@ -196,71 +174,9 @@
     return hasWildlife || time > 32;
   }
 
-  function ensureCameoNode() {
-    if (cameoNode?.isConnected) return cameoNode;
-    const game = document.getElementById('hockey-game');
-    if (!game) return null;
-    if (getComputedStyle(game).position === 'static') game.style.position = 'relative';
-
-    cameoNode = document.createElement('div');
-    cameoNode.className = 'hockey-sideline-cameo';
-    cameoNode.dataset.hockeySidelineCameo = 'v0.14.29';
-    cameoNode.setAttribute('aria-hidden', 'true');
-    Object.assign(cameoNode.style, {
-      position: 'absolute',
-      right: '2.2%',
-      bottom: '13.5%',
-      zIndex: '8',
-      width: 'clamp(54px, 8vw, 92px)',
-      pointerEvents: 'none',
-      filter: 'drop-shadow(0 8px 12px rgba(0,0,0,.34))',
-      transform: 'translateY(0)',
-      transition: 'opacity 180ms ease, transform 180ms ease',
-    });
-
-    cameoSprite = document.createElement('img');
-    cameoSprite.alt = '';
-    Object.assign(cameoSprite.style, {
-      display: 'block',
-      width: '100%',
-      height: 'auto',
-      objectFit: 'contain',
-    });
-
-    cameoLabel = document.createElement('span');
-    Object.assign(cameoLabel.style, {
-      position: 'absolute',
-      left: '50%',
-      top: '-1.3rem',
-      transform: 'translateX(-50%)',
-      padding: '.2rem .44rem',
-      border: '2px solid rgba(255,255,255,.92)',
-      borderRadius: '999px',
-      background: 'rgba(15,23,42,.86)',
-      color: '#dbeafe',
-      font: '900 12px/1.05 system-ui,sans-serif',
-      whiteSpace: 'nowrap',
-      textShadow: '0 1px 3px rgba(0,0,0,.65)',
-    });
-
-    cameoNode.appendChild(cameoSprite);
-    cameoNode.appendChild(cameoLabel);
-    game.appendChild(cameoNode);
-    return cameoNode;
-  }
-
-  function syncSidelineCameo(state) {
-    const node = ensureCameoNode();
-    if (!node) return;
-    const shouldShow = Boolean(state && wildlifeStageHasStarted(state));
-    node.hidden = !shouldShow;
-    node.style.opacity = shouldShow ? '1' : '0';
-    node.style.transform = shouldShow ? 'translateY(0)' : 'translateY(8px)';
-    if (!shouldShow) return;
-
-    const config = CAMEO_ASSETS[character() === 'sofie' ? 'sofie' : 'daniel'];
-    if (cameoSprite && cameoSprite.src !== new URL(config.src, window.location.href).href) cameoSprite.src = config.src;
-    if (cameoLabel) cameoLabel.textContent = config.label;
+  function removeSidelineCameo() {
+    document.querySelectorAll('.hockey-sideline-cameo').forEach((node) => node.remove());
+    cameoNode = null;
   }
 
   function ensureBubbleLayer() {
@@ -292,9 +208,11 @@
 
   function normalizeBubble(entity) {
     if (!shouldPrettyBubble(entity)) return '';
+    if (entity.type === 'dad') entity.prettyBubble = `${playerName()}, do your homework!`;
     if (!entity.prettyBubble) entity.prettyBubble = entity.bubble || pickLine(entity.type) || '';
     // The base canvas bubble is one line only. Clear it after saving the text so
-    // the richer DOM bubble can wrap and stay readable.
+    // the richer DOM bubble can wrap and stay readable. This prevents stacked
+    // canvas + DOM speech bubbles.
     entity.bubble = '';
     return entity.prettyBubble;
   }
@@ -406,28 +324,25 @@
     syncFinalReleaseState();
     exposeCastDebugApi();
     ensureCastDebugButton();
+    removeSidelineCameo();
     const state = getState();
     if (state) {
       slowBearsAgain(state);
       runCastLogic(state);
-      syncSidelineCameo(state);
       syncPrettyBubbles(state);
     } else {
-      syncSidelineCameo(null);
       syncPrettyBubbles(null);
     }
     window.requestAnimationFrame(loop);
   }
 
   function ready() {
-    const badge = document.getElementById('hockey-build-badge');
-    if (badge) badge.textContent = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
-    if (api()?.getVersion) api().getVersion = () => DISPLAY_VERSION;
-    document.body.dataset.hockeyButtonDebug = 'v0.14.29';
+    document.body.dataset.hockeyButtonDebug = 'v0.14.35';
     syncFinalReleaseState();
     exposeCastDebugApi();
     ensureCastDebugButton();
-    window.HOCKEY_BOOT_LOG?.log?.('release', 'v0.14.29 spaces cast encounters, restores Mom, and upgrades readable speech bubbles.');
+    removeSidelineCameo();
+    window.HOCKEY_BOOT_LOG?.log?.('release', 'v0.14.35 fixes Dad text at the source and removes stacked sideline/bubble layers.');
     window.requestAnimationFrame(loop);
   }
 
