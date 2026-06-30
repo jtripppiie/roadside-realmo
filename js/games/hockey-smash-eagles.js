@@ -1,6 +1,6 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.14.33';
-  const DISPLAY_BUILD = 'Build 2026-06-30.89';
+  const DISPLAY_VERSION = 'Hockey Smash v0.14.35';
+  const DISPLAY_BUILD = 'Build 2026-06-30.91';
   const W = 1024;
   const H = 576;
   const GROUND_Y = H * 0.82;
@@ -10,8 +10,6 @@
   const EAGLE_DAMAGE = 9;
   const DUCK_HEIGHT = 66;
 
-  // Put any extra eagle photos in this folder with one of these names and the
-  // game will use them automatically. The current repo already has mid flap.
   const EAGLE_FRAME_SOURCES = [
     'assets/hockey-smash/sprites/eagle_wings_up.webp',
     'assets/hockey-smash/sprites/eagle_mid_flap.webp',
@@ -77,8 +75,6 @@
   function flapTransform(entity, now) {
     const frameCount = availableEagleFrames().length;
     if (frameCount > 1) return 'translate(-50%, -50%)';
-    // If only one eagle photo exists, still give it a visible flap by pulsing the
-    // sprite. Once up/down photos are added, real frame animation takes over.
     const flap = Math.sin((now + (entity._eagleOffset || 0)) / 78);
     const scaleY = 1 + flap * 0.09;
     const rotate = flap * 3.5;
@@ -100,8 +96,8 @@
   }
 
   function bindDuckKey() {
-    if (document.body.dataset.hockeyDuckKeyBound === 'v0.14.33') return;
-    document.body.dataset.hockeyDuckKeyBound = 'v0.14.33';
+    if (document.body.dataset.hockeyDuckKeyBound === 'v0.14.35') return;
+    document.body.dataset.hockeyDuckKeyBound = 'v0.14.35';
 
     window.addEventListener('keydown', (event) => {
       if (event.key !== 'ArrowDown') return;
@@ -326,10 +322,10 @@
 
   function ready() {
     lockBuildBadge();
-    document.body.dataset.hockeyEagles = 'v0.14.33';
+    document.body.dataset.hockeyEagles = 'v0.14.35';
     preloadEagleFrames();
     bindDuckKey();
-    window.HOCKEY_BOOT_LOG?.log?.('eagles', 'Low eagle fly-bys loaded. Down Arrow squashes the real canvas player; eagle frames flap when present, and the single-frame fallback pulses. The final layer also locks the visible build badge.');
+    window.HOCKEY_BOOT_LOG?.log?.('eagles', 'Low eagle fly-bys loaded. Down Arrow squashes the real canvas player; eagle frames flap when present, and the single-frame fallback pulses.');
     window.requestAnimationFrame(eagleLoop);
   }
 
