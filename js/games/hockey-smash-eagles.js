@@ -1,6 +1,6 @@
 (function () {
-  const DISPLAY_VERSION = 'Hockey Smash v0.14.30 Eagles';
-  const DISPLAY_BUILD = 'Build 2026-06-30.86';
+  const DISPLAY_VERSION = 'Hockey Smash v0.14.31 Eagles';
+  const DISPLAY_BUILD = 'Build 2026-06-30.87';
   const W = 1024;
   const H = 576;
   const GROUND_Y = H * 0.82;
@@ -8,15 +8,26 @@
   const EAGLE_WIDTH = 88;
   const EAGLE_HEIGHT = 58;
   const EAGLE_DAMAGE = 9;
-  const DUCK_TRANSFORM = 'translate(-50%, 0) scaleX(1.12) scaleY(0.58)';
+  const DUCK_HEIGHT = 66;
+
+  // Put any extra eagle photos in this folder with one of these names and the
+  // game will use them automatically. The current repo already has mid flap.
   const EAGLE_FRAME_SOURCES = [
     'assets/hockey-smash/sprites/eagle_wings_up.webp',
     'assets/hockey-smash/sprites/eagle_mid_flap.webp',
     'assets/hockey-smash/sprites/eagle_wings_down.webp',
+    'assets/hockey-smash/sprites/eagle-up-flap.webp',
+    'assets/hockey-smash/sprites/eagle-mid-flap.webp',
+    'assets/hockey-smash/sprites/eagle-down-flap.webp',
+    'assets/hockey-smash/sprites/eagle-up.webp',
+    'assets/hockey-smash/sprites/eagle.webp',
+    'assets/hockey-smash/sprites/eagle-down.webp',
+    'assets/hockey-smash/sprites/eagle-1.webp',
+    'assets/hockey-smash/sprites/eagle-2.webp',
+    'assets/hockey-smash/sprites/eagle-3.webp',
   ];
 
   let duckHeld = false;
-  let duckOverlay = null;
   let eagleLayer = null;
   const eagleNodes = new Map();
   const eagleFrames = [];
@@ -54,7 +65,18 @@
   function currentEagleFrame(now) {
     const frames = availableEagleFrames();
     if (!frames.length) return EAGLE_FRAME_SOURCES[1];
-    return frames[Math.floor(now / 115) % frames.length].src;
+    return frames[Math.floor(now / 105) % frames.length].src;
+  }
+
+  function flapTransform(entity, now) {
+    const frameCount = availableEagleFrames().length;
+    if (frameCount > 1) return 'translate(-50%, -50%)';
+    // If only one eagle photo exists, still give it a visible flap by pulsing the
+    // sprite. Once up/down photos are added, real frame animation takes over.
+    const flap = Math.sin((now + (entity._eagleOffset || 0)) / 78);
+    const scaleY = 1 + flap * 0.09;
+    const rotate = flap * 3.5;
+    return `translate(-50%, -50%) rotate(${rotate.toFixed(2)}deg) scaleY(${scaleY.toFixed(3)})`;
   }
 
   function setDuckHeld(active) {
@@ -72,8 +94,8 @@
   }
 
   function bindDuckKey() {
-    if (document.body.dataset.hockeyDuckKeyBound === 'v0.14.30') return;
-    document.body.dataset.hockeyDuckKeyBound = 'v0.14.30';
+    if (document.body.dataset.hockeyDuckKeyBound === 'v0.14.31') return;
+    document.body.dataset.hockeyDuckKeyBound = 'v0.14.31';
 
     window.addEventListener('keydown', (event) => {
       if (event.key !== 'ArrowDown') return;
@@ -97,21 +119,54 @@
     });
   }
 
+  function normalPlayerHeight(player) {
+    if (!player._duckNormalHeight || player._duckNormalHeight < 90) {
+      player._duckNormalHeight = Math.max(104, player.height || 108);
+    }
+    return player._duckNormalHeight;
+  }
+
+  function applyDuckShape(s) {
+    const player = s?.player;
+    if (!player) return;
+    const normalHeight = normalPlayerHeight(player);
+    const bottom = player.y + player.height;
+    const grounded = Boolean(player.grounded) || bottom >= GROUND_Y - 5;
+
+    if (duckHeld && grounded) {
+      player.ducking = true;
+      player.isDucking = true;
+      if (player.height !== DUCK_HEIGHT) {
+        player.height = DUCK_HEIGHT;
+        player.y = Math.min(GROUND_Y - DUCK_HEIGHT, bottom - DUCK_HEIGHT);
+      }
+      return;
+    }
+
+    player.ducking = false;
+    player.isDucking = false;
+    if (player.height !== normalHeight) {
+      player.y = Math.min(GROUND_Y - normalHeight, bottom - normalHeight);
+      player.height = normalHeight;
+    }
+  }
+
   function playerStandingBox(player) {
+    const normalHeight = normalPlayerHeight(player);
     return {
       x: player.x + 18,
-      y: player.y + 10,
+      y: GROUND_Y - normalHeight + 10,
       width: player.width - 36,
-      height: player.height - 18,
+      height: normalHeight - 18,
     };
   }
 
   function playerDuckBox(player) {
     return {
       x: player.x + 18,
-      y: player.y + 74,
+      y: player.y + 8,
       width: player.width - 36,
-      height: Math.max(24, player.height - 76),
+      height: Math.max(22, player.height - 10),
     };
   }
 
@@ -126,14 +181,14 @@
 
   function tuneEagle(entity, now) {
     if (!entity || entity.dead || entity.type !== 'bird') return;
-    entity.y = EAGLE_Y + Math.sin((now + (entity._eagleOffset || 0)) / 280) * 7;
+    if (!entity._eagleOffset) entity._eagleOffset = Math.random() * 800;
+    entity.y = EAGLE_Y + Math.sin((now + entity._eagleOffset) / 280) * 7;
     entity.width = Math.max(entity.width || 0, EAGLE_WIDTH);
     entity.height = Math.max(entity.height || 0, EAGLE_HEIGHT);
     entity.vx = -Math.max(300, Math.abs(entity.vx || 330));
     entity.damage = 0;
     entity.maxHp = Math.max(entity.maxHp || 1, entity.hp || 1);
     entity._eagleManaged = true;
-    if (!entity._eagleOffset) entity._eagleOffset = Math.random() * 800;
   }
 
   function damageFromEagle(s, entity) {
@@ -144,20 +199,17 @@
     const ducked = playerDuckBox(p);
 
     if (ducking) {
-      p.ducking = true;
-      p.isDucking = true;
       if (overlap(bird, standing) && !overlap(bird, ducked) && !entity._duckClearShown) {
         entity._duckClearShown = true;
         s.effects.push({ x: p.x + p.width / 2, y: p.y - 14, text: 'DUCKED!', life: 0.55 });
         s.message = `${playerName(s)} ducked under the eagle!`;
-        document.getElementById('hockey-status')?.replaceChildren(document.createTextNode(s.message));
+        const status = document.getElementById('hockey-status');
+        if (status) status.textContent = s.message;
         window.RTA_HOCKEY_SMASH_SCORE?.recordDodge?.({ state: s, entity });
       }
       return;
     }
 
-    p.ducking = false;
-    p.isDucking = false;
     if (!overlap(bird, standing) || p.invincible > 0) return;
 
     p.health = Math.max(0, p.health - EAGLE_DAMAGE);
@@ -173,51 +225,6 @@
     const status = document.getElementById('hockey-status');
     if (status) status.textContent = s.message;
     window.RTA_HOCKEY_SMASH_SCORE?.recordDamage?.({ state: s, amount: EAGLE_DAMAGE, source: 'eagle' });
-  }
-
-  function ensureDuckOverlay() {
-    if (duckOverlay?.isConnected) return duckOverlay;
-    duckOverlay = document.createElement('img');
-    duckOverlay.className = 'hockey-duck-overlay';
-    duckOverlay.alt = '';
-    duckOverlay.setAttribute('aria-hidden', 'true');
-    Object.assign(duckOverlay.style, {
-      position: 'fixed',
-      left: '0',
-      top: '0',
-      width: '0',
-      height: '0',
-      zIndex: '16',
-      pointerEvents: 'none',
-      objectFit: 'contain',
-      filter: 'drop-shadow(0 8px 10px rgba(0,0,0,.32))',
-      transformOrigin: 'bottom center',
-      display: 'none',
-    });
-    document.body.appendChild(duckOverlay);
-    return duckOverlay;
-  }
-
-  function syncDuckOverlay(s) {
-    const overlay = ensureDuckOverlay();
-    const canvas = document.getElementById('hockey-canvas');
-    const rect = canvas?.getBoundingClientRect?.();
-    if (!overlay || !rect?.width || !rect?.height || !s?.player || !duckHeld) {
-      if (overlay) overlay.style.display = 'none';
-      return;
-    }
-    const config = api()?.getPlayerConfig?.();
-    const src = config?.slideSprite || (config?.character === 'sofie' ? 'assets/hockey-smash/sprites/sister-spinning.webp' : 'assets/hockey-smash/sprites/hockey-player-sliding.webp');
-    if (!overlay.src.endsWith(src)) overlay.src = src;
-    const p = s.player;
-    const sx = rect.width / W;
-    const sy = rect.height / H;
-    overlay.style.display = 'block';
-    overlay.style.left = `${rect.left + (p.x + p.width / 2) * sx}px`;
-    overlay.style.top = `${rect.top + (p.y + 32) * sy}px`;
-    overlay.style.width = `${p.width * sx}px`;
-    overlay.style.height = `${p.height * sy}px`;
-    overlay.style.transform = DUCK_TRANSFORM;
   }
 
   function ensureEagleLayer() {
@@ -272,7 +279,7 @@
           pointerEvents: 'none',
           objectFit: 'contain',
           filter: 'drop-shadow(0 6px 8px rgba(0,0,0,.32))',
-          transform: 'translate(-50%, -50%)',
+          transformOrigin: '50% 50%',
         });
         layer.appendChild(node);
         eagleNodes.set(id, node);
@@ -283,6 +290,7 @@
       node.style.width = `${entity.width * sx}px`;
       node.style.height = `${entity.height * sy}px`;
       node.style.opacity = entity.x > W || entity.x + entity.width < 0 ? '0' : '1';
+      node.style.transform = flapTransform(entity, now);
     });
 
     eagleNodes.forEach((node, id) => {
@@ -296,17 +304,14 @@
   function eagleLoop(now) {
     const s = state();
     if (s) {
-      s.player.ducking = duckHeld;
-      s.player.isDucking = duckHeld;
+      applyDuckShape(s);
       s.entities.forEach((entity) => {
         tuneEagle(entity, now);
         if (entity?.type === 'bird' && !entity.dead) damageFromEagle(s, entity);
       });
-      syncDuckOverlay(s);
       syncEagleSprites(s, now);
     } else {
       setDuckHeld(false);
-      syncDuckOverlay(null);
       syncEagleSprites(null, now || performance.now());
     }
     window.requestAnimationFrame(eagleLoop);
@@ -316,10 +321,10 @@
     const badge = document.getElementById('hockey-build-badge');
     if (badge) badge.textContent = `${DISPLAY_VERSION} · ${DISPLAY_BUILD}`;
     if (api()?.getVersion) api().getVersion = () => DISPLAY_VERSION;
-    document.body.dataset.hockeyEagles = 'v0.14.30';
+    document.body.dataset.hockeyEagles = 'v0.14.31';
     preloadEagleFrames();
     bindDuckKey();
-    window.HOCKEY_BOOT_LOG?.log?.('eagles', 'Low eagle fly-bys loaded. Down Arrow ducks under eagle collision. Optional up/mid/down eagle frames animate when present.');
+    window.HOCKEY_BOOT_LOG?.log?.('eagles', 'Low eagle fly-bys loaded. Down Arrow squashes the real canvas player; eagle frames flap when present, and the single-frame fallback pulses.');
     window.requestAnimationFrame(eagleLoop);
   }
 
