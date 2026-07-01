@@ -125,6 +125,9 @@
             <button type="button" data-action="slide">Slide</button>
           </div>
 
+          <strong>Salmon loop test</strong>
+          <p>After the dev countdown, salmon spawn in v2 world units, fall through the canvas, and collect when the player overlaps them. This does not touch the live salmon run.</p>
+
           <strong>World readout</strong>
           <div class="dev-readout" id="v2-readout">Waiting for v2 world...</div>
 
@@ -138,6 +141,9 @@
     <script src="../js/games/hockey-smash-renderer-v2.js"></script>
     <script>
       (function () {
+        const DESIGN_WIDTH = 1024;
+        const DESIGN_HEIGHT = 576;
+        const GROUND_Y = DESIGN_HEIGHT * 0.82;
         const canvas = document.getElementById('v2-canvas');
         const ctx = canvas.getContext('2d');
         const readout = document.getElementById('v2-readout');
@@ -155,6 +161,7 @@
 
         function resetWorld(character) {
           world = World.createWorld({ character, name: character === 'sofie' ? 'Sofie' : 'Daniel' });
+          world.timers.salmon = 0.18;
           imageCache = Renderer.createImageCache({
             ...prefixSprites(World.SPRITES),
             background: '../assets/hockey-smash/backgrounds/soldotna_cityscape_background_01_1280x720.webp?v=20260630.84',
@@ -232,6 +239,22 @@
 
         function updateHarnessWorld(dt) {
           if (!world?.player) return;
+          updatePlayer(dt);
+          updateSalmonLoop(dt);
+          updateEffects(dt);
+          world.elapsed += dt;
+
+          if (world.phase === World.PHASES.COUNTDOWN) {
+            world.countdownRemaining = Math.max(0, world.countdownRemaining - dt);
+            world.message = `Dev countdown: ${Math.ceil(world.countdownRemaining)} seconds.`;
+            if (world.countdownRemaining <= 0) {
+              World.advancePhase(world, World.PHASES.SALMON_RUN);
+              world.timers.salmon = 0.1;
+            }
+          }
+        }
+
+        function updatePlayer(dt) {
           const player = world.player;
           const move = (input.right ? 1 : 0) - (input.left ? 1 : 0);
           const speed = input.slide ? world.tuning.slideSpeed : world.tuning.walkSpeed;
@@ -245,21 +268,81 @@
             input.jump = false;
           }
 
-          player.x = Math.max(22, Math.min(1024 - player.width - 22, player.x + player.vx * dt));
+          player.x = Math.max(22, Math.min(DESIGN_WIDTH - player.width - 22, player.x + player.vx * dt));
           player.vy += world.tuning.gravity * dt;
           player.y += player.vy * dt;
-          if (player.y + player.height >= 576 * 0.82) {
-            player.y = 576 * 0.82 - player.height;
+          if (player.y + player.height >= GROUND_Y) {
+            player.y = GROUND_Y - player.height;
             player.vy = 0;
             player.grounded = true;
           }
+        }
 
-          world.elapsed += dt;
-          if (world.phase === World.PHASES.COUNTDOWN) {
-            world.countdownRemaining = Math.max(0, world.countdownRemaining - dt);
-            world.message = `Dev countdown: ${Math.ceil(world.countdownRemaining)} seconds.`;
-            if (world.countdownRemaining <= 0) World.advancePhase(world, World.PHASES.SALMON_RUN);
+        function updateSalmonLoop(dt) {
+          if (world.phase !== World.PHASES.SALMON_RUN) return;
+
+          world.timers.salmon -= dt;
+          if (world.timers.salmon <= 0) {
+            spawnHarnessSalmon();
+            world.timers.salmon = Math.max(0.25, world.tuning.salmonSpawnSeconds + Math.random() * 0.22 - 0.08);
           }
+
+          const playerBox = hitbox(world.player, 10);
+          world.entities.forEach((entity) => {
+            if (!entity || entity.dead || entity.type !== 'salmon') return;
+            entity.age += dt;
+            entity.x += entity.vx * dt;
+            entity.y += entity.vy * dt;
+            entity.vy += 820 * dt;
+
+            if (rectsOverlap(playerBox, hitbox(entity, 4))) collectSalmon(entity);
+            if (entity.y > DESIGN_HEIGHT + 70) entity.dead = true;
+          });
+
+          world.entities = world.entities.filter((entity) => entity && !entity.dead);
+          world.message = `Salmon Run: catch ${world.salmonCaught}/${world.salmonTarget}.`;
+        }
+
+        function spawnHarnessSalmon() {
+          const salmon = World.createSalmon(world, {
+            x: 36 + Math.random() * (DESIGN_WIDTH - 108),
+            y: -70 - Math.random() * 90,
+            vx: -75 + Math.random() * 150,
+            vy: 560 + Math.random() * 140,
+          });
+          world.entities.push(salmon);
+        }
+
+        function collectSalmon(entity) {
+          entity.dead = true;
+          world.salmonCaught += 1;
+          world.effects.push({
+            x: entity.x + entity.width / 2,
+            y: Math.max(40, entity.y - 10),
+            text: '+SALMON',
+            life: 0.6,
+          });
+        }
+
+        function updateEffects(dt) {
+          world.effects.forEach((effect) => {
+            effect.life -= dt;
+            effect.y -= 24 * dt;
+          });
+          world.effects = world.effects.filter((effect) => effect.life > 0);
+        }
+
+        function hitbox(entity, inset) {
+          return {
+            x: entity.x + inset,
+            y: entity.y + inset,
+            width: Math.max(1, entity.width - inset * 2),
+            height: Math.max(1, entity.height - inset * 2),
+          };
+        }
+
+        function rectsOverlap(a, b) {
+          return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
         }
 
         function updateReadout() {
@@ -269,6 +352,8 @@
             `<span>character: <strong>${world.player.character}</strong></span>`,
             `<span>player: <strong>${Math.round(world.player.x)}, ${Math.round(world.player.y)}</strong></span>`,
             `<span>grounded: <strong>${world.player.grounded ? 'yes' : 'no'}</strong></span>`,
+            `<span>salmon: <strong>${world.salmonCaught}/${world.salmonTarget}</strong></span>`,
+            `<span>entities: <strong>${world.entities.length}</strong></span>`,
             `<span>message: <strong>${world.message}</strong></span>`,
           ].join('');
         }
