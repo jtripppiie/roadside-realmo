@@ -110,6 +110,7 @@ A / Left Arrow  -> left
 D / Right Arrow -> right
 W / Up / Space  -> jump
 S / Shift       -> slide
+F / Enter       -> shoot
 ```
 
 Important safety notes:
@@ -124,41 +125,203 @@ Status:
 complete, development-only
 ```
 
+### Step 5: V2 salmon update loop inside the isolated harness
+
+Added inside:
+
+```text
+dev/hockey-smash-v2.html
+```
+
+Purpose:
+
+- spawn salmon only after the v2 dev countdown reaches `salmonRun`
+- move salmon in canvas world coordinates
+- apply falling acceleration to salmon
+- collect salmon when the v2 player overlaps the salmon hitbox
+- increment `world.salmonCaught` once per collected salmon
+- show salmon count and active entity count in the readout
+- show a `+SALMON` canvas effect on collection
+
+Important safety notes:
+
+- no live game file was touched for salmon behavior
+- no live salmon-run logic was changed
+- no current-game state is read or patched
+- salmon loop exists only in the dev harness page
+
+Status:
+
+```text
+complete, development-only
+```
+
+### Step 6: Prove 20-salmon gate in v2
+
+Added inside:
+
+```text
+dev/hockey-smash-v2.html
+```
+
+Purpose:
+
+- keep v2 in `countdown` first
+- enter `salmonRun` after countdown
+- keep encounter spawning locked during the salmon run
+- switch to `encounters` only after `world.salmonCaught >= world.salmonTarget`
+- show a `20 SALMON!` canvas effect when the gate opens
+
+Important safety notes:
+
+- the live stage-flow file was not changed
+- the live salmon-run gate was not changed
+- the v2 gate is development-only
+
+Status:
+
+```text
+complete, development-only
+```
+
+### Step 7: V2 family/cast entity previews
+
+Added inside:
+
+```text
+dev/hockey-smash-v2.html
+```
+
+Purpose:
+
+- preview Mom as a timed, non-contact world entity
+- preview Dad as a moving world entity
+- preview dance instructor in Sofie mode
+- preview a Daniel/brother helper as a non-contact support entity
+- render speech bubbles through the v2 canvas renderer
+
+Rules represented:
+
+- Mom is stationary
+- Mom expires by timer
+- Mom is non-contact
+- Mom says `[Name], clean your room!`
+- dance instructor is Sofie-specific in the harness
+
+Status:
+
+```text
+complete, development-only
+```
+
+### Step 8: V2 wildlife previews
+
+Added inside:
+
+```text
+dev/hockey-smash-v2.html
+```
+
+Purpose:
+
+- preview bear as a canvas/world entity
+- preview moose as a canvas/world entity
+- give wildlife health values
+- allow v2 projectiles to clear wildlife
+- keep wildlife movement in canvas world coordinates
+
+Status:
+
+```text
+complete, development-only
+```
+
+### Step 9: V2 Alaska cameo previews
+
+Added inside:
+
+```text
+dev/hockey-smash-v2.html
+```
+
+Purpose:
+
+- preview Alaska boy/girl cameos as canvas/world entities
+- keep cameos non-contact
+- keep cameos timed with a lifetime
+- avoid DOM overlay cameos in v2
+
+Current mapping:
+
+```text
+Daniel mode -> Alaskan girl cameo
+Sofie mode  -> Alaskan boy cameo
+```
+
+This mapping can still be changed before any live integration.
+
+Status:
+
+```text
+complete, development-only
+```
+
+### Step 10: V2 projectile preview
+
+Added inside:
+
+```text
+dev/hockey-smash-v2.html
+```
+
+Purpose:
+
+- preview a simple projectile as a world entity
+- use `F`, `Enter`, or the Shoot button to fire
+- use canvas/world coordinates for projectile movement
+- collide projectiles with damageable v2 entities
+- clear targets when health reaches zero
+
+Important safety notes:
+
+- live projectile files were not changed
+- no DOM projectile collision bridge was added
+- projectile preview exists only in the dev harness page
+
+Status:
+
+```text
+complete, development-only
+```
+
 ## Current Live Game Impact
 
 None intended.
 
 The v2 world and renderer are passive files. They only expose future helper objects on `window` if a page explicitly loads them. The real game page does not currently load them.
 
-The new dev harness is a separate page under `dev/`. It is not loaded by the live game.
+The dev harness is a separate page under `dev/`. It is not loaded by the live game.
 
-## Next Step
+## Remaining Before Live Integration
 
-### Step 5: Add v2 salmon update loop inside the isolated harness
+Before any v2 code is loaded into the real page, verify the dev harness manually:
 
-Recommended work:
-
-- spawn salmon inside the v2 dev harness
-- update salmon positions using v2 world units
-- collect salmon when the player overlaps them
-- show salmon count in the dev readout
-- keep all logic inside the v2 harness/world path
-
-Rules for Step 5:
-
-- do not modify `index.html`
-- do not replace the real game
-- do not load current-game patch layers
-- do not touch the live salmon-run implementation
-
-## Later Steps
-
-1. Add v2 salmon update loop inside the isolated harness.
-2. Prove 20-salmon gate in v2.
-3. Add v2 Mom/Dad/family entity previews.
-4. Add v2 wildlife entity previews.
-5. Add v2 cameos as canvas/world entities.
-6. Only then discuss wiring a v2 piece into the real game.
+- Daniel renders and moves
+- Sofie renders and moves
+- jump works
+- slide changes the player sprite key
+- shoot creates a projectile
+- countdown starts first
+- salmon spawn only after countdown
+- salmon collection increments once per salmon
+- 20 salmon opens the encounter phase
+- Mom appears as non-contact and expires
+- Dad appears as a world entity
+- dance instructor appears for Sofie
+- brother helper appears as non-contact support
+- bear and moose appear as world entities
+- projectiles can clear damageable entities
+- cameos are canvas/world entities, not DOM overlays
 
 ## Do Not Do Yet
 
@@ -172,4 +335,4 @@ Do not migrate these into the current game yet:
 - current projectile system
 - current stage-flow file
 
-Those changes should wait until the v2 harness proves the isolated model works.
+Those changes should wait until the v2 harness is manually tested and approved.
