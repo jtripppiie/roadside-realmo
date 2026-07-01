@@ -282,6 +282,28 @@ Implemented:
 - hitboxes render in canvas through the v2 renderer
 - gameplay entities remain in world/canvas state
 
+### 13. Add centralized difficulty state
+
+Done in:
+
+```text
+js/games/hockey-smash-world-v2.js
+dev/hockey-smash-v2.html
+scripts/verify-hockey-smash.js
+```
+
+Implemented:
+
+- `world.difficulty` is created with the world
+- `updateDifficulty(world, dt)` only ramps during `encounters`
+- level starts at 1 and increases every 45 encounter seconds
+- speed multiplier ramps slowly and is capped
+- encounter spawn windows shrink gently over time
+- active threat cap starts at 1
+- active wildlife cap stays at 1
+- bear, moose, eagle, Dad, and dance instructor spawns consult active caps
+- post-gate salmon timing reads from difficulty state
+
 Current tuning values:
 
 ```text

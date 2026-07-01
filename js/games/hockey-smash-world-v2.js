@@ -71,6 +71,7 @@
         encounter: tuning.encounterSpawnSeconds,
       },
       debug: createDebugState(options.debug),
+      difficulty: createDifficulty(options.difficulty || {}),
       environment: createEnvironment(options.environment || {}),
       entities: [],
       effects: [],
@@ -88,6 +89,43 @@
       fps: 0,
       visible: Boolean(enabled),
     };
+  }
+
+  function createDifficulty(options = {}) {
+    return {
+      level: 1,
+      elapsedInEncounters: 0,
+      baseSpawnMin: 1.8,
+      baseSpawnMax: 3.2,
+      currentSpawnMin: 1.8,
+      currentSpawnMax: 3.2,
+      maxActiveThreats: 1,
+      maxActiveWildlife: 1,
+      speedMultiplier: 1,
+      threatSpeedRampPerSecond: 0.0008,
+      salmonPostGateSpawnMin: 1.3,
+      salmonPostGateSpawnMax: 2.0,
+      ...options,
+    };
+  }
+
+  function updateDifficulty(world, dt) {
+    if (!world || world.phase !== PHASES.ENCOUNTERS) return world;
+
+    const difficulty = world.difficulty || createDifficulty();
+    world.difficulty = difficulty;
+    difficulty.elapsedInEncounters += dt;
+    difficulty.level = 1 + Math.floor(difficulty.elapsedInEncounters / 45);
+
+    const ramp = difficulty.elapsedInEncounters * difficulty.threatSpeedRampPerSecond;
+    difficulty.speedMultiplier = Math.min(1.75, 1 + ramp);
+
+    difficulty.currentSpawnMin = Math.max(1.05, difficulty.baseSpawnMin - difficulty.level * 0.08);
+    difficulty.currentSpawnMax = Math.max(1.65, difficulty.baseSpawnMax - difficulty.level * 0.12);
+
+    difficulty.maxActiveThreats = difficulty.level >= 4 ? 2 : 1;
+    difficulty.maxActiveWildlife = 1;
+    return world;
   }
 
   function createEnvironment(options = {}) {
@@ -220,6 +258,8 @@
     DEFAULT_TUNING,
     createWorld,
     createDebugState,
+    createDifficulty,
+    updateDifficulty,
     createEnvironment,
     createPlayer,
     createEntity,

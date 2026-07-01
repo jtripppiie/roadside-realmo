@@ -112,6 +112,10 @@ requireText('v2 harness', harness, 'new URLSearchParams(window.location.search).
 requireText('v2 harness', harness, 'handleDebugKey', 'V2 debug keyboard toggles are missing.');
 requireText('v2 harness', harness, 'showHitboxes', 'V2 debug hitbox toggle is missing.');
 requireText('v2 harness', harness, 'godMode', 'V2 debug god mode toggle is missing.');
+requireText('v2 harness', harness, 'World.updateDifficulty(world, dt)', 'V2 harness should use centralized difficulty updates.');
+requireText('v2 harness', harness, 'canSpawnEncounter', 'V2 encounter pacing should consult spawn caps.');
+requireText('v2 harness', harness, 'countActiveWildlife', 'V2 wildlife cap helper is missing.');
+requireText('v2 harness', harness, 'countActiveThreats', 'V2 active threat cap helper is missing.');
 requireText('v2 harness', harness, 'HOCKEY_SMASH_WORLD_V2', 'V2 world script usage is missing.');
 requireText('v2 harness', harness, 'HOCKEY_SMASH_RENDERER_V2', 'V2 renderer script usage is missing.');
 requireText('v2 world', worldSource, 'salmonSpawnSeconds: 1.12', 'V2 salmon spawn tuning is missing.');
@@ -123,6 +127,11 @@ requireText('v2 world', worldSource, 'salmonFallGravity: 275', 'V2 salmon fall t
 requireText('v2 world', worldSource, 'createEnvironment', 'V2 environment state is missing.');
 requireText('v2 world', worldSource, 'createDebugState', 'V2 world debug state factory is missing.');
 requireText('v2 world', worldSource, 'lastCollision', 'V2 debug collision readout is missing.');
+requireText('v2 world', worldSource, 'createDifficulty', 'V2 world difficulty state factory is missing.');
+requireText('v2 world', worldSource, 'updateDifficulty', 'V2 world centralized difficulty updater is missing.');
+requireText('v2 world', worldSource, 'maxActiveWildlife: 1', 'V2 difficulty should cap active wildlife at 1.');
+requireText('v2 world', worldSource, 'maxActiveThreats: 1', 'V2 difficulty should start with 1 active threat.');
+requireText('v2 world', worldSource, 'salmonPostGateSpawnMin: 1.3', 'V2 post-gate salmon difficulty tuning is missing.');
 requireText('v2 world', worldSource, 'const height = 132', 'Proportional Mom height is missing.');
 requireText('v2 world', worldSource, 'const width = 49', 'Proportional Mom width is missing.');
 requireText('v2 world', worldSource, 'bear-1.webp', 'V2 bear sprite should use the numbered encounter art.');
@@ -161,6 +170,11 @@ if (!World) {
   if (world.player.name !== 'Jamie') errors.push('V2 world should preserve player name.');
   if (world.player.character !== 'sofie') errors.push('V2 world should preserve selected character.');
   if (world.salmonTarget !== 20) errors.push('V2 salmon target should be 20.');
+  if (!world.difficulty || world.difficulty.level !== 1) errors.push('V2 difficulty state should start at level 1.');
+  if (world.difficulty.maxActiveWildlife !== 1) errors.push('V2 active wildlife should start capped at 1.');
+  World.advancePhase(world, World.PHASES.ENCOUNTERS);
+  World.updateDifficulty(world, 46);
+  if (world.difficulty.level < 2) errors.push('V2 difficulty level should ramp during encounters.');
   if (!world.environment || world.environment.cycleSeconds !== 96) errors.push('V2 environment cycle state is missing.');
   if (mom.width !== 49 || mom.height !== 132) errors.push('V2 Mom dimensions are not proportional.');
   if (!mom.nonContact) errors.push('V2 Mom should be non-contact.');

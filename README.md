@@ -40,6 +40,7 @@ Implemented now:
 - salmon run
 - animated ground landing markers for falling salmon
 - catch 20 salmon to unlock encounters
+- centralized difficulty controller with gentle encounter ramping
 - Mom, Dad, dance instructor, bear, moose, Alaska cameo previews
 - simple stick/throw projectile preview
 - responsive phone and landscape layouts
@@ -83,6 +84,18 @@ height: 132
 ```
 
 Bear and moose do not show speech bubbles.
+
+Encounter difficulty is centralized in the v2 world state. It starts gently:
+
+```text
+level: 1
+maxActiveThreats: 1
+maxActiveWildlife: 1
+spawn window: 1.8s-3.2s
+speedMultiplier: 1
+```
+
+During encounters, the difficulty level increases every 45 seconds and speed/spawn pacing ramp slowly. Wildlife remains capped at one active wildlife entity.
 
 ## Background Asset Targets
 

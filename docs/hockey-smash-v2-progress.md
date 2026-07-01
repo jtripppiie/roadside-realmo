@@ -37,6 +37,34 @@ Known issues:
 Next:
 - Add centralized difficulty state and use it for encounter pacing.
 
+### 2026-07-01: Stage 2 Centralized Difficulty Controller
+
+Changed:
+- `dev/hockey-smash-v2.html`
+- `js/games/hockey-smash-world-v2.js`
+- `scripts/verify-hockey-smash.js`
+- `README.md`
+- `docs/hockey-smash-v2-progress.md`
+- `docs/hockey-smash-v2-migration-checklist.md`
+
+Gameplay impact:
+- Encounter pacing now reads from `world.difficulty` instead of hard-coded harness-only timers.
+- Encounters start with one active threat and one active wildlife limit.
+- Bear, moose, eagle, Dad, and dance instructor speeds use the centralized speed multiplier.
+- Post-gate salmon timing now uses difficulty fields.
+- Difficulty ramps gently only during the encounters phase.
+
+Verification:
+- `npm run verify`: passed
+- `npm run test:browser`: not run
+- manual browser check: not run
+
+Known issues:
+- Manual browser QA still needs a free local port.
+
+Next:
+- Continue with Soldotna parallax asset inventory and final layer wiring.
+
 ### Step 1: Isolated v2 world scaffold
 
 Added:
