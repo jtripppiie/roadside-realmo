@@ -30,6 +30,8 @@ test('v2 start screen applies name, character, controls, and movement', async ({
 
   await expect(page.locator('#v2-game-frame')).toHaveClass(/is-playing/);
   await expect(page.locator('.v2-controls')).toBeVisible();
+  await expect(page.locator('#v2-hud-score')).toContainText('Salmon');
+  await expect(page.locator('#v2-health-label')).toHaveText('HP 100');
 
   const before = await page.locator('#v2-readout').textContent();
   expect(before).toContain('character: sofie');
@@ -87,6 +89,37 @@ test('v2 start screen applies name, character, controls, and movement', async ({
   expect(projectileState.facing).toBe(-1);
   expect(projectileState.vx).toBeGreaterThan(0);
   expect(projectileState.x).toBeGreaterThanOrEqual(projectileState.playerRight - 20);
+
+  const damageState = await page.evaluate(() => {
+    const World = window.HOCKEY_SMASH_WORLD_V2;
+    const world = window.HOCKEY_SMASH_V2_DEV.getWorld();
+    World.advancePhase(world, World.PHASES.ENCOUNTERS);
+    world.entities.push(World.createEntity(world, 'bear', {
+      sprite: 'bear',
+      x: world.player.x + 18,
+      y: World.GROUND_Y - 84,
+      width: 96,
+      height: 84,
+      hp: 2,
+      maxHp: 2,
+      damage: 12,
+      bubble: '',
+    }));
+    return {
+      before: world.player.health,
+    };
+  });
+  expect(damageState.before).toBe(100);
+  await page.waitForTimeout(120);
+  const afterDamage = await page.evaluate(() => {
+    const world = window.HOCKEY_SMASH_V2_DEV.getWorld();
+    return {
+      health: world.player.health,
+      hud: document.querySelector('#v2-health-label').textContent,
+    };
+  });
+  expect(afterDamage.health).toBeLessThan(100);
+  expect(afterDamage.hud).toContain(`HP ${afterDamage.health}`);
 });
 
 test('v2 mobile splash and controls stay inside the play frame', async ({ page }) => {
@@ -261,9 +294,12 @@ test('v2 encounters gate dance instructor to Sofie and Daniel can duck eagles', 
     };
   });
   expect(danielState.spawned.map((entity) => entity.type)).toContain('eagle');
+  expect(danielState.spawned.map((entity) => entity.type)).toContain('dad');
+  expect(danielState.spawned.map((entity) => entity.type)).toContain('sister');
   expect(danielState.spawned.map((entity) => entity.type)).not.toContain('danceInstructor');
   expect(danielState.spawned.some((entity) => entity.type === 'eagle' && entity.duckable)).toBe(true);
   expect(danielState.spawned.some((entity) => entity.bubble === 'Hi, you\'re cute')).toBe(true);
+  expect(danielState.spawned.some((entity) => entity.type === 'sister' && entity.bubble === 'Go Daniel!')).toBe(true);
   expect(danielState.duckSprite).toBe('danielDuck');
 
   await page.goto('/dev/hockey-smash-v2.html');
@@ -281,4 +317,57 @@ test('v2 encounters gate dance instructor to Sofie and Daniel can duck eagles', 
     return spawned;
   });
   expect(sofieTypes).toContain('danceInstructor');
+});
+
+test('v2 Alaska kid cameos are once-only, timed, and dismissible', async ({ page }) => {
+  await page.goto('/dev/hockey-smash-v2.html');
+  await page.click('#v2-start');
+
+  const cameoState = await page.evaluate(() => {
+    const World = window.HOCKEY_SMASH_WORLD_V2;
+    const world = window.HOCKEY_SMASH_V2_DEV.getWorld();
+    World.advancePhase(world, World.PHASES.ENCOUNTERS);
+    const first = window.HOCKEY_SMASH_V2_DEV.spawnCameo();
+    const second = window.HOCKEY_SMASH_V2_DEV.spawnCameo();
+    return {
+      firstType: first?.type,
+      secondType: second?.type || null,
+      ttl: first?.ttl,
+      nonContact: Boolean(first?.nonContact),
+      dismissOnProjectile: Boolean(first?.dismissOnProjectile),
+    };
+  });
+
+  expect(['alaskanBoy', 'alaskanGirl']).toContain(cameoState.firstType);
+  expect(cameoState.secondType).toBe(null);
+  expect(cameoState.ttl).toBeGreaterThanOrEqual(10);
+  expect(cameoState.ttl).toBeLessThanOrEqual(15);
+  expect(cameoState.nonContact).toBe(true);
+  expect(cameoState.dismissOnProjectile).toBe(true);
+
+  const dismissed = await page.evaluate(() => {
+    const world = window.HOCKEY_SMASH_V2_DEV.getWorld();
+    const cameo = world.entities.find((entity) => entity.type === 'alaskanGirl' || entity.type === 'alaskanBoy');
+    world.entities.push({
+      id: 'test-projectile',
+      type: 'projectile',
+      x: cameo.x,
+      y: cameo.y,
+      width: cameo.width,
+      height: cameo.height,
+      vx: 0,
+      vy: 0,
+      ttl: 1,
+      age: 0,
+      nonContact: true,
+    });
+    return true;
+  });
+  expect(dismissed).toBe(true);
+  await page.waitForTimeout(80);
+  const cameoRemaining = await page.evaluate(() => {
+    const world = window.HOCKEY_SMASH_V2_DEV.getWorld();
+    return world.entities.some((entity) => !entity.dead && (entity.type === 'alaskanGirl' || entity.type === 'alaskanBoy'));
+  });
+  expect(cameoRemaining).toBe(false);
 });

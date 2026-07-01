@@ -62,6 +62,8 @@ Canvas/world state should own:
 - sun/moon sky objects and night-sky filter state
 - lifetimes and timers for game-world objects
 - object-to-object overlap checks
+- player health, damage, invulnerability, and game-over phase
+- cast appearance flags such as once-only Alaska kid cameos
 
 ## Why This Matters
 
@@ -93,6 +95,7 @@ GameWorld
   entities[]
   effects[]
   timers
+  cast
   input
   messages
 ```
@@ -175,6 +178,22 @@ After 20 salmon are caught:
 - Mom can appear briefly and say `[Name], clean your room!`
 - Sofie mode can use the dance instructor
 - cameos can appear as world entities
+
+### Health And Game Over
+
+Player health belongs to world state:
+
+```js
+player.health
+player.maxHealth
+player.invulnerable
+```
+
+The DOM may display the health bar and retry button, but it should not own damage, invulnerability timing, collision outcomes, or the `gameOver` phase.
+
+### Cast Appearance Rules
+
+One-off cast rules belong to world state. For example, Alaska kid cameos are tracked with cast flags so they appear at most once per run and then expire through world lifetimes or projectile dismissal.
 
 ## Migration Plan
 

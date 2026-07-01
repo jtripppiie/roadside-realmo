@@ -33,6 +33,7 @@ Implemented now:
 - Daniel/Sofie character selection
 - version overlay badge sourced from `package.json`
 - in-frame salmon score HUD for mobile/fullscreen play
+- player health bar, damage, invulnerability flash, game-over retry
 - fullscreen toggle
 - keyboard and touch controls
 - `?debug=1` debug mode with FPS, hitbox, and god-mode toggles
@@ -43,7 +44,7 @@ Implemented now:
 - animated ground landing markers for falling salmon
 - catch 20 salmon to unlock encounters
 - centralized difficulty controller with gentle encounter ramping
-- Mom, Dad, dance instructor, bear, moose, Alaska cameo previews
+- Mom, Dad, Daniel sister support, Sofie dance instructor, bear, moose, and once-only Alaska kid cameos
 - simple stick/throw projectile preview
 - responsive phone and landscape layouts
 
@@ -86,6 +87,17 @@ height: 132
 ```
 
 Bear and moose do not show speech bubbles.
+
+Player health starts at:
+
+```text
+health: 100
+maxHealth: 100
+```
+
+Contact with damageable threats reduces health and briefly makes the player invulnerable. At zero health, the game enters `gameOver` and shows a retry overlay.
+
+Alaska kid cameos are non-contact flavor. They appear at most once per run, last 10-15 seconds, and can be dismissed by a projectile. Daniel mode can also get a non-contact sister support cameo using the Sofie sprite; Sofie mode can get the dance instructor as a damageable teacher encounter.
 
 Encounter difficulty is centralized in the v2 world state. It starts gently:
 
@@ -162,5 +174,6 @@ Maintained docs:
 - `docs/hockey-smash-v2-architecture.md`
 - `docs/hockey-smash-v2-migration-checklist.md`
 - `docs/hockey-smash-v2-progress.md`
+- `docs/hockey-smash-v1.3-polish-notes.md`
 
 Old dungeon and v1 layered-runtime docs were removed during the v2 cleanup.

@@ -304,6 +304,34 @@ Implemented:
 - bear, moose, eagle, Dad, and dance instructor spawns consult active caps
 - post-gate salmon timing reads from difficulty state
 
+### 14. Add v1.3 health, cast, and readability polish
+
+Done in:
+
+```text
+dev/hockey-smash-v2.html
+js/games/hockey-smash-world-v2.js
+js/games/hockey-smash-renderer-v2.js
+scripts/verify-hockey-smash.js
+tests/hockey-smash-launch.spec.js
+docs/hockey-smash-v1.3-polish-notes.md
+```
+
+Implemented:
+
+- player health lives on `world.player`
+- the HUD displays salmon, phase/level, and HP
+- damageable encounters subtract health instead of only showing a bump effect
+- player invulnerability prevents repeated overlap damage
+- zero health advances to `gameOver`
+- retry is DOM UI while game-over phase remains world state
+- Alaska kid cameos are non-contact, once per run, timed for 10-15 seconds, and projectile-dismissible
+- Daniel mode can spawn a non-contact sister support cameo
+- Sofie mode can spawn the dance instructor as the teacher encounter
+- Dad appears early in the encounter rotation
+- entity shadows and target health pips render through canvas
+- browser tests cover health, cast visibility, and cameo limits
+
 Current tuning values:
 
 ```text

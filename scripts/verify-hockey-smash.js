@@ -9,6 +9,7 @@ const requiredFiles = [
   'docs/hockey-smash-v2-architecture.md',
   'docs/hockey-smash-v2-migration-checklist.md',
   'docs/hockey-smash-v2-progress.md',
+  'docs/hockey-smash-v1.3-polish-notes.md',
   'assets/hockey-smash/backgrounds/soldotna_cityscape_background_01_1280x720.webp',
   'assets/hockey-smash/backgrounds/sun.webp',
   'assets/hockey-smash/backgrounds/moon.webp',
@@ -84,6 +85,7 @@ const rendererSource = read('js/games/hockey-smash-renderer-v2.js');
 const progress = read('docs/hockey-smash-v2-progress.md');
 const checklist = read('docs/hockey-smash-v2-migration-checklist.md');
 const architecture = read('docs/hockey-smash-v2-architecture.md');
+const polishNotes = read('docs/hockey-smash-v1.3-polish-notes.md');
 const parallaxPlaceholders = read('assets/hockey-smash/backgrounds/parallax/PLACEHOLDER_ASSETS.md');
 
 requireText('index.html', html, 'dev/hockey-smash-v2.html', 'Root page should route to v2.');
@@ -97,8 +99,11 @@ requireText('v2 harness', harness, 'id="v2-version-badge"', 'V2 version overlay 
 requireText('v2 harness', harness, 'loadVersionBadge', 'V2 version badge loader is missing.');
 requireText('v2 harness', harness, 'fetch(\'../package.json\'', 'V2 version badge should read package.json when available.');
 requireText('v2 harness', harness, 'id="v2-hud-score"', 'V2 mobile scoring HUD is missing.');
+requireText('v2 harness', harness, 'id="v2-health-fill"', 'V2 player health bar is missing.');
+requireText('v2 harness', harness, 'id="v2-retry"', 'V2 retry button is missing.');
 requireText('v2 harness', harness, 'updateHud', 'V2 HUD update loop is missing.');
 requireText('v2 harness', harness, 'Salmon ${world.salmonCaught', 'V2 HUD should show salmon score.');
+requireText('v2 harness', harness, 'HP ${Math.round(health)}', 'V2 HUD should show player health.');
 requireText('v2 harness', harness, 'height: 100vh', 'V2 fullscreen landscape should fill the viewport.');
 requireText('v2 harness', harness, 'gameStarted', 'V2 harness should gate updates behind Start.');
 requireText('v2 harness', harness, 'bubble: \'\'', 'Bear/moose speech bubbles should remain disabled.');
@@ -120,6 +125,11 @@ requireText('v2 harness', harness, 'handleDebugKey', 'V2 debug keyboard toggles 
 requireText('v2 harness', harness, 'showHitboxes', 'V2 debug hitbox toggle is missing.');
 requireText('v2 harness', harness, 'godMode', 'V2 debug god mode toggle is missing.');
 requireText('v2 harness', harness, 'World.updateDifficulty(world, dt)', 'V2 harness should use centralized difficulty updates.');
+requireText('v2 harness', harness, 'damagePlayer', 'V2 player damage handler is missing.');
+requireText('v2 harness', harness, 'spawnCastSupport', 'V2 cast support spawn helper is missing.');
+requireText('v2 harness', harness, 'Go Daniel!', 'V2 Daniel sister support cameo is missing.');
+requireText('v2 harness', harness, 'Point those toes!', 'V2 Sofie dance teacher encounter is missing.');
+requireText('v2 harness', harness, 'dismissOnProjectile', 'V2 dismissible non-contact entities are missing.');
 requireText('v2 harness', harness, 'canSpawnEncounter', 'V2 encounter pacing should consult spawn caps.');
 requireText('v2 harness', harness, 'countActiveWildlife', 'V2 wildlife cap helper is missing.');
 requireText('v2 harness', harness, 'countActiveThreats', 'V2 active threat cap helper is missing.');
@@ -132,6 +142,9 @@ requireText('v2 world', worldSource, 'salmonFallVelocity: 235', 'V2 salmon fall 
 requireText('v2 world', worldSource, 'salmonFallVelocityRange: 45', 'V2 salmon fall range tuning is missing.');
 requireText('v2 world', worldSource, 'salmonFallGravity: 275', 'V2 salmon fall tuning is missing.');
 requireText('v2 world', worldSource, 'createEnvironment', 'V2 environment state is missing.');
+requireText('v2 world', worldSource, 'createCastState', 'V2 cast appearance state is missing.');
+requireText('v2 world', worldSource, 'maxHealth: 100', 'V2 player max health is missing.');
+requireText('v2 world', worldSource, 'health: 100', 'V2 player starting health is missing.');
 requireText('v2 world', worldSource, 'createDebugState', 'V2 world debug state factory is missing.');
 requireText('v2 world', worldSource, 'lastCollision', 'V2 debug collision readout is missing.');
 requireText('v2 world', worldSource, 'createDifficulty', 'V2 world difficulty state factory is missing.');
@@ -144,6 +157,7 @@ requireText('v2 world', worldSource, 'const width = 49', 'Proportional Mom width
 requireText('v2 world', worldSource, 'bear-1.webp', 'V2 bear sprite should use the numbered encounter art.');
 requireText('v2 world', worldSource, 'moose-1.webp', 'V2 moose sprite should use the numbered encounter art.');
 requireText('v2 world', worldSource, 'Hi, you\\\'re cute', 'V2 Alaska kid cameo line is stale.');
+requireText('v2 world', worldSource, 'ttl: 10 + Math.random() * 5', 'V2 Alaska kid cameos should last 10-15 seconds.');
 requireText('v2 renderer', rendererSource, 'renderWorld', 'V2 renderer API is missing.');
 requireText('v2 renderer', rendererSource, 'renderParallaxBackground', 'V2 parallax renderer is missing.');
 requireText('v2 renderer', rendererSource, 'renderNightFilter', 'V2 night sky filter is missing.');
@@ -152,12 +166,19 @@ requireText('v2 renderer', rendererSource, 'getEntitySpriteKey', 'V2 animated en
 requireText('v2 renderer', rendererSource, 'renderSalmonMarker', 'V2 salmon landing marker renderer is missing.');
 requireText('v2 renderer', rendererSource, 'ripple', 'V2 animated salmon marker ripple is missing.');
 requireText('v2 renderer', rendererSource, 'renderHitboxes', 'V2 debug hitbox renderer is missing.');
+requireText('v2 renderer', rendererSource, 'renderShadow', 'V2 readable entity shadow renderer is missing.');
+requireText('v2 renderer', rendererSource, 'renderEntityHealth', 'V2 target health pip renderer is missing.');
 requireText('v2 progress docs', progress, 'V2 harness play shell and tuning pass', 'V2 progress docs are missing latest harness update.');
 requireText('v2 progress docs', progress, 'salmon landing markers', 'V2 progress docs are missing salmon marker update.');
+requireText('v2 progress docs', progress, 'v1.3 Health, Cast, and Readability Polish', 'V2 progress docs are missing v1.3 polish entry.');
 requireText('v2 checklist docs', checklist, 'Add v2 harness splash, mobile layout, fullscreen, and tuning', 'V2 checklist is missing latest harness update.');
+requireText('v2 checklist docs', checklist, 'Add v1.3 health, cast, and readability polish', 'V2 checklist is missing v1.3 polish entry.');
 requireText('v2 checklist docs', checklist, 'salmon landing markers', 'V2 checklist is missing salmon marker update.');
 requireText('v2 architecture docs', architecture, 'width: 49', 'V2 architecture Mom dimensions are stale.');
+requireText('v2 architecture docs', architecture, 'player.health', 'V2 architecture docs are missing player health ownership.');
 requireText('v2 architecture docs', architecture, 'V2 is now the active Hockey Smash path', 'V2 architecture docs still describe the old isolated-only plan.');
+requireText('v1.3 polish notes', polishNotes, 'Alaska kid cameo', 'V1.3 polish notes are missing cameo detail.');
+requireText('v1.3 polish notes', polishNotes, 'Daniel Sister Support', 'V1.3 polish notes are missing sister support detail.');
 requireText('parallax placeholders', parallaxPlaceholders, 'hockey-smash-parallax-skyline-far-1536x576.svg', 'Far parallax placeholder spec is missing.');
 requireText('parallax placeholders', parallaxPlaceholders, 'hockey-smash-parallax-trees-mid-1536x320.svg', 'Mid parallax placeholder spec is missing.');
 requireText('parallax placeholders', parallaxPlaceholders, 'hockey-smash-parallax-snowbank-front-1536x170.svg', 'Front parallax placeholder spec is missing.');
@@ -173,9 +194,12 @@ if (!World) {
   const world = World.createWorld({ character: 'sofie', name: 'Jamie' });
   const mom = World.createMom(world);
   const salmon = World.createSalmon(world);
+  const cameo = World.createCameo(world, 'alaskanBoy');
   if (world.phase !== World.PHASES.COUNTDOWN) errors.push('V2 world should start in countdown.');
   if (world.player.name !== 'Jamie') errors.push('V2 world should preserve player name.');
   if (world.player.character !== 'sofie') errors.push('V2 world should preserve selected character.');
+  if (world.player.health !== 100 || world.player.maxHealth !== 100) errors.push('V2 player health should start at 100/100.');
+  if (!world.cast || world.cast.cameoSpawned !== false) errors.push('V2 cast appearance state should start clean.');
   if (world.salmonTarget !== 20) errors.push('V2 salmon target should be 20.');
   if (!world.difficulty || world.difficulty.level !== 1) errors.push('V2 difficulty state should start at level 1.');
   if (world.difficulty.maxActiveWildlife !== 1) errors.push('V2 active wildlife should start capped at 1.');
@@ -185,6 +209,8 @@ if (!World) {
   if (!world.environment || world.environment.cycleSeconds !== 96) errors.push('V2 environment cycle state is missing.');
   if (mom.width !== 49 || mom.height !== 132) errors.push('V2 Mom dimensions are not proportional.');
   if (!mom.nonContact) errors.push('V2 Mom should be non-contact.');
+  if (!cameo.nonContact || !cameo.dismissOnProjectile) errors.push('V2 Alaska kid cameos should be non-contact and dismissible.');
+  if (cameo.ttl < 10 || cameo.ttl > 15) errors.push('V2 Alaska kid cameos should last between 10 and 15 seconds.');
   if (salmon.width !== 54 || salmon.height !== 31) errors.push('V2 salmon dimensions changed unexpectedly.');
 }
 

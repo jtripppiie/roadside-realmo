@@ -73,6 +73,7 @@
       debug: createDebugState(options.debug),
       difficulty: createDifficulty(options.difficulty || {}),
       environment: createEnvironment(options.environment || {}),
+      cast: createCastState(),
       entities: [],
       effects: [],
       message: `Get ready, ${name}!`,
@@ -138,6 +139,15 @@
     };
   }
 
+  function createCastState() {
+    return {
+      cameoSpawned: false,
+      dadSpawned: false,
+      sisterSpawned: false,
+      teacherSpawned: false,
+    };
+  }
+
   function createPlayer({ character, name }) {
     return {
       id: 'player',
@@ -157,6 +167,9 @@
       duckActive: false,
       safeWindow: 0,
       score: 0,
+      maxHealth: 100,
+      health: 100,
+      invulnerable: 0,
     };
   }
 
@@ -217,8 +230,11 @@
       width: 74,
       height: 92,
       y: GROUND_Y - 92,
-      ttl: 6,
+      ttl: 10 + Math.random() * 5,
       nonContact: true,
+      dismissOnProjectile: true,
+      hp: 1,
+      maxHp: 1,
       bubble: 'Hi, you\'re cute',
       ...values,
     });
@@ -261,6 +277,7 @@
     createDifficulty,
     updateDifficulty,
     createEnvironment,
+    createCastState,
     createPlayer,
     createEntity,
     createSalmon,

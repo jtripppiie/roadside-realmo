@@ -134,6 +134,17 @@
         pointer-events: none;
         white-space: nowrap;
       }
+      .v2-hud__stack {
+        display: grid;
+        gap: 0.28rem;
+        min-width: min(15rem, 40vw);
+      }
+      .v2-hud__row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.42rem;
+      }
       .v2-hud__score {
         color: #fff27a;
       }
@@ -143,6 +154,64 @@
         color: rgba(255, 248, 223, 0.84);
         text-overflow: ellipsis;
         text-transform: uppercase;
+      }
+      .v2-health {
+        display: grid;
+        grid-template-columns: auto minmax(5rem, 1fr);
+        align-items: center;
+        gap: 0.38rem;
+        color: rgba(255, 248, 223, 0.9);
+        font-size: 0.64rem;
+      }
+      .v2-health__track {
+        height: 0.42rem;
+        overflow: hidden;
+        border: 1px solid rgba(255, 248, 223, 0.42);
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.32);
+      }
+      .v2-health__fill {
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #62df88, #fff27a);
+        transform-origin: left center;
+        transition: transform 160ms ease, background 160ms ease;
+      }
+      .v2-health__fill.is-low {
+        background: linear-gradient(90deg, #ff5d5d, #ffb347);
+      }
+      .v2-game-over {
+        position: absolute;
+        inset: 0;
+        z-index: 9;
+        display: none;
+        place-items: center;
+        padding: 1rem;
+        background: rgba(5, 8, 13, 0.68);
+      }
+      .dev-game-frame.is-game-over .v2-game-over {
+        display: grid;
+      }
+      .v2-game-over__panel {
+        width: min(23rem, 92vw);
+        display: grid;
+        justify-items: center;
+        gap: 0.7rem;
+        padding: 1rem;
+        border: 2px solid rgba(255, 242, 122, 0.58);
+        border-radius: 8px;
+        background: rgba(5, 8, 13, 0.86);
+        text-align: center;
+      }
+      .v2-game-over__panel h2 {
+        margin: 0;
+        color: #fff27a;
+        font-size: 1.45rem;
+      }
+      .v2-game-over__panel p {
+        margin: 0;
+        color: rgba(255, 248, 223, 0.86);
       }
       .v2-debug-panel {
         position: absolute;
@@ -354,6 +423,12 @@
           max-width: 42vw;
           font-size: 0.68rem;
         }
+        .v2-hud__stack {
+          min-width: min(13rem, 42vw);
+        }
+        .v2-health {
+          grid-template-columns: auto minmax(3.8rem, 1fr);
+        }
         .v2-splash {
           overflow: auto;
         }
@@ -460,12 +535,27 @@
         <section id="v2-game-frame" class="dev-game-frame" aria-label="Hockey Smash v2 gameplay frame">
           <canvas id="v2-canvas" width="1024" height="576" aria-label="Hockey Smash v2 canvas preview"></canvas>
           <button id="v2-fullscreen" class="v2-fullscreen" type="button" aria-label="Toggle fullscreen">Fullscreen</button>
-          <div id="v2-version-badge" class="v2-version-badge" aria-label="Hockey Smash version">v0.14.57</div>
+          <div id="v2-version-badge" class="v2-version-badge" aria-label="Hockey Smash version">v1.3.0</div>
           <div id="v2-hud" class="v2-hud" aria-live="polite">
-            <span id="v2-hud-score" class="v2-hud__score">Salmon 0/20</span>
-            <span id="v2-hud-phase" class="v2-hud__phase">Countdown</span>
+            <div class="v2-hud__stack">
+              <div class="v2-hud__row">
+                <span id="v2-hud-score" class="v2-hud__score">Salmon 0/20</span>
+                <span id="v2-hud-phase" class="v2-hud__phase">Countdown</span>
+              </div>
+              <div class="v2-health" aria-label="Player health">
+                <span id="v2-health-label">HP 100</span>
+                <span class="v2-health__track" aria-hidden="true"><span id="v2-health-fill" class="v2-health__fill"></span></span>
+              </div>
+            </div>
           </div>
           <div id="v2-debug-panel" class="v2-debug-panel" aria-live="polite"></div>
+          <section id="v2-game-over" class="v2-game-over" aria-labelledby="v2-game-over-title">
+            <div class="v2-game-over__panel">
+              <h2 id="v2-game-over-title">Sidewalk Survived?</h2>
+              <p id="v2-game-over-copy">Take a breath, then run it back.</p>
+              <button id="v2-retry" type="button">Retry</button>
+            </div>
+          </section>
 
           <section id="v2-splash" class="v2-splash" aria-labelledby="v2-title">
             <div class="v2-splash__content">
@@ -531,7 +621,7 @@
         const DESIGN_WIDTH = 1024;
         const DESIGN_HEIGHT = 576;
         const GROUND_Y = DESIGN_HEIGHT * 0.82;
-        const ENCOUNTER_TYPES = ['bear', 'eagle', 'moose', 'dad', 'mom', 'danceInstructor', 'cameo'];
+        const ENCOUNTER_TYPES = ['dad', 'castSupport', 'bear', 'mom', 'eagle', 'moose', 'cameo'];
         const DEFAULT_NAMES = ['Daniel', 'Sofie'];
         const PARALLAX_LAYERS = [
           {
@@ -562,12 +652,15 @@
         const versionBadge = document.getElementById('v2-version-badge');
         const hudScore = document.getElementById('v2-hud-score');
         const hudPhase = document.getElementById('v2-hud-phase');
+        const healthLabel = document.getElementById('v2-health-label');
+        const healthFill = document.getElementById('v2-health-fill');
+        const retryButton = document.getElementById('v2-retry');
         const debugPanel = document.getElementById('v2-debug-panel');
         const splashHero = document.getElementById('v2-splash-hero');
         const readout = document.getElementById('v2-readout');
         const World = window.HOCKEY_SMASH_WORLD_V2;
         const Renderer = window.HOCKEY_SMASH_RENDERER_V2;
-        const VERSION_FALLBACK = '0.14.57';
+        const VERSION_FALLBACK = '1.3.0';
         const debugEnabled = new URLSearchParams(window.location.search).has('debug');
         const input = {
           left: false,
@@ -603,6 +696,7 @@
           world.timers.projectile = 0;
           world.timers.postGateSalmon = 1.15;
           encounterIndex = 0;
+          gameFrame.classList.remove('is-game-over');
           imageCache = Renderer.createImageCache({
             ...prefixSprites(World.SPRITES),
             sun: '../assets/hockey-smash/backgrounds/sun.webp',
@@ -646,6 +740,13 @@
 
           startButton?.addEventListener('click', () => {
             resetWorld(selection.character, nameInput?.value || selection.name);
+            gameStarted = true;
+            gameFrame.classList.add('is-playing');
+            canvas.focus?.();
+          });
+
+          retryButton?.addEventListener('click', () => {
+            resetWorld(selection.character, selection.name);
             gameStarted = true;
             gameFrame.classList.add('is-playing');
             canvas.focus?.();
@@ -780,6 +881,13 @@
         function updateHarnessWorld(dt) {
           if (!world?.player) return;
           if (!gameStarted) return;
+          if (world.phase === World.PHASES.GAME_OVER) {
+            updateEffects(dt);
+            updateEnvironment(dt);
+            updateDebugState(dt);
+            world.elapsed += dt;
+            return;
+          }
           updatePlayer(dt);
           updatePhase(dt);
           World.updateDifficulty(world, dt);
@@ -806,6 +914,14 @@
         }
 
         function updatePhase(dt) {
+          if ((world.player.health || 0) <= 0 && world.phase !== World.PHASES.GAME_OVER) {
+            World.advancePhase(world, World.PHASES.GAME_OVER);
+            world.message = `${world.player.name} needs cocoa and a rematch.`;
+            gameFrame.classList.add('is-game-over');
+            world.effects.push({ x: world.player.x, y: world.player.y - 18, text: 'OOF!', life: 1.0 });
+            return;
+          }
+
           if (world.phase === World.PHASES.COUNTDOWN) {
             world.countdownRemaining = Math.max(0, world.countdownRemaining - dt);
             world.message = `Dev countdown: ${Math.ceil(world.countdownRemaining)} seconds.`;
@@ -827,6 +943,7 @@
 
         function updatePlayer(dt) {
           const player = world.player;
+          player.invulnerable = Math.max(0, (player.invulnerable || 0) - dt);
           const move = (input.right ? 1 : 0) - (input.left ? 1 : 0);
           const speed = input.slide ? world.tuning.slideSpeed : world.tuning.walkSpeed;
           player.duckActive = Boolean(input.slide && player.character === 'daniel' && player.grounded);
@@ -924,15 +1041,24 @@
                 return;
               }
               entity.dead = true;
-              world.effects.push({
-                x: world.player.x,
-                y: world.player.y - 16,
-                text: label,
-                life: 0.55,
-              });
+              damagePlayer(entity.damage || 10, label, entity.type);
             }
           });
           world.entities = world.entities.filter((entity) => entity && !entity.dead);
+        }
+
+        function damagePlayer(amount, label, source) {
+          const player = world.player;
+          if (!player || player.invulnerable > 0) return;
+          player.health = Math.max(0, (player.health ?? player.maxHealth ?? 100) - amount);
+          player.invulnerable = 1.05;
+          world.effects.push({
+            x: player.x,
+            y: player.y - 16,
+            text: `${label} -${amount}`,
+            life: 0.7,
+          });
+          if (world.debug) world.debug.lastCollision = `${source || 'hit'} damage ${amount}`;
         }
 
         function updateProjectiles(dt) {
@@ -951,8 +1077,16 @@
         function collideProjectile(projectile) {
           const projectileBox = hitbox(projectile, 2);
           for (const target of world.entities) {
-            if (!target || target.dead || target.type === 'projectile' || target.type === 'salmon' || target.nonContact) continue;
+            if (!target || target.dead || target.type === 'projectile' || target.type === 'salmon') continue;
             if (!rectsOverlap(projectileBox, hitbox(target, 8))) continue;
+            if (target.dismissOnProjectile) {
+              projectile.dead = true;
+              target.dead = true;
+              if (world.debug) world.debug.lastCollision = `projectile dismissed ${target.type}`;
+              world.effects.push({ x: target.x + target.width / 2, y: target.y - 10, text: 'BYE!', life: 0.55 });
+              break;
+            }
+            if (target.nonContact) continue;
             projectile.dead = true;
             target.hp = Math.max(0, (target.hp || 1) - 1);
             if (world.debug) world.debug.lastCollision = `projectile -> ${target.type}`;
@@ -1016,21 +1150,29 @@
               break;
             }
           }
-          if (!type) return spawnCameo();
+          if (!type) return null;
           if (type === 'bear') return spawnWildlife('bear');
           if (type === 'eagle') return spawnEagle();
           if (type === 'moose') return spawnWildlife('moose');
-          if (type === 'dad') return spawnPerson('dad', `${world.player.name}, do your homework!`, 4, 6);
-          if (type === 'mom') return world.entities.push(World.createMom(world));
-          if (type === 'danceInstructor') {
-            if (world.player.character !== 'sofie') return spawnCameo();
-            return spawnPerson('danceInstructor', 'Point those toes!', 3, 7);
+          if (type === 'dad') {
+            world.cast.dadSpawned = true;
+            return spawnPerson('dad', `${world.player.name}, do your homework!`, 4, 6);
           }
+          if (type === 'mom') {
+            const mom = World.createMom(world);
+            world.entities.push(mom);
+            return mom;
+          }
+          if (type === 'castSupport') return spawnCastSupport();
           return spawnCameo();
         }
 
         function canSpawnEncounter(type) {
           const difficulty = world.difficulty || {};
+          if (type === 'cameo' && world.cast?.cameoSpawned) return false;
+          if (type === 'castSupport' && world.player.character === 'daniel' && world.cast?.sisterSpawned) return false;
+          if (type === 'castSupport' && world.player.character === 'sofie' && world.cast?.teacherSpawned) return false;
+          if (type === 'castSupport' && world.player.character === 'sofie' && countActiveThreats() >= (difficulty.maxActiveThreats || 1)) return false;
           if (['bear', 'moose', 'eagle'].includes(type) && countActiveWildlife() >= (difficulty.maxActiveWildlife || 1)) return false;
           if (['bear', 'moose', 'eagle', 'dad', 'danceInstructor'].includes(type) && countActiveThreats() >= (difficulty.maxActiveThreats || 1)) return false;
           return true;
@@ -1051,7 +1193,7 @@
 
         function spawnEagle() {
           const speed = (world.difficulty?.speedMultiplier || 1);
-          world.entities.push(World.createEntity(world, 'eagle', {
+          const eagle = World.createEntity(world, 'eagle', {
             sprite: 'eagle',
             x: DESIGN_WIDTH + 80,
             y: GROUND_Y - 126,
@@ -1059,16 +1201,19 @@
             height: 58,
             vx: -245 * speed,
             hp: 1,
+            maxHp: 1,
             damage: 10,
             duckable: true,
             bubble: '',
-          }));
+          });
+          world.entities.push(eagle);
+          return eagle;
         }
 
         function spawnWildlife(type) {
           const isMoose = type === 'moose';
           const speed = (world.difficulty?.speedMultiplier || 1);
-          world.entities.push(World.createEntity(world, type, {
+          const wildlife = World.createEntity(world, type, {
             sprite: type,
             x: DESIGN_WIDTH + 52,
             y: GROUND_Y - (isMoose ? 92 : 84),
@@ -1076,14 +1221,17 @@
             height: isMoose ? 92 : 84,
             vx: (isMoose ? -145 : -170) * speed,
             hp: isMoose ? 3 : 2,
+            maxHp: isMoose ? 3 : 2,
             damage: isMoose ? 16 : 12,
             bubble: '',
-          }));
+          });
+          world.entities.push(wildlife);
+          return wildlife;
         }
 
         function spawnPerson(type, bubble, hp, damage, nonContact = false) {
           const speed = (world.difficulty?.speedMultiplier || 1);
-          world.entities.push(World.createEntity(world, type, {
+          const person = World.createEntity(world, type, {
             sprite: type,
             x: DESIGN_WIDTH + 64,
             y: GROUND_Y - 100,
@@ -1091,20 +1239,48 @@
             height: 100,
             vx: (nonContact ? -55 : -92) * speed,
             hp,
+            maxHp: hp,
             damage,
             bubble,
             nonContact,
             ttl: nonContact ? 5.2 : null,
-          }));
+          });
+          world.entities.push(person);
+          return person;
+        }
+
+        function spawnCastSupport() {
+          if (world.player.character === 'sofie') {
+            world.cast.teacherSpawned = true;
+            return spawnPerson('danceInstructor', 'Point those toes!', 3, 7);
+          }
+          world.cast.sisterSpawned = true;
+          const sister = World.createEntity(world, 'sister', {
+            sprite: 'sofie',
+            x: DESIGN_WIDTH + 44,
+            y: GROUND_Y - 108,
+            width: 86,
+            height: 108,
+            vx: -50,
+            ttl: 12,
+            nonContact: true,
+            dismissOnProjectile: true,
+            bubble: 'Go Daniel!',
+          });
+          world.entities.push(sister);
+          return sister;
         }
 
         function spawnCameo() {
+          if (world.cast?.cameoSpawned) return null;
+          world.cast.cameoSpawned = true;
           const cameoType = world.player.character === 'sofie' ? 'alaskanBoy' : 'alaskanGirl';
           const cameo = World.createCameo(world, cameoType, {
             x: DESIGN_WIDTH + 44,
             vx: -42,
           });
           world.entities.push(cameo);
+          return cameo;
         }
 
         function spawnProjectile() {
@@ -1168,6 +1344,7 @@
             `<span>name: <strong>${world.player.name}</strong></span>`,
             `<span>player: <strong>${Math.round(world.player.x)}, ${Math.round(world.player.y)}</strong></span>`,
             `<span>grounded: <strong>${world.player.grounded ? 'yes' : 'no'}</strong></span>`,
+            `<span>health: <strong>${Math.round(world.player.health ?? 0)}/${Math.round(world.player.maxHealth ?? 100)}</strong></span>`,
             `<span>salmon: <strong>${world.salmonCaught}/${world.salmonTarget}</strong></span>`,
             `<span>entities: <strong>${world.entities.length}</strong></span>`,
             `<span>active threats: <strong>${threats}</strong></span>`,
@@ -1179,6 +1356,14 @@
           if (!world) return;
           if (hudScore) hudScore.textContent = `Salmon ${world.salmonCaught || 0}/${world.salmonTarget || 0}`;
           if (hudPhase) hudPhase.textContent = formatPhase(world.phase);
+          const maxHealth = Math.max(1, world.player.maxHealth || 100);
+          const health = Math.max(0, Math.min(maxHealth, world.player.health ?? maxHealth));
+          const healthPct = health / maxHealth;
+          if (healthLabel) healthLabel.textContent = `HP ${Math.round(health)}`;
+          if (healthFill) {
+            healthFill.style.transform = `scaleX(${healthPct})`;
+            healthFill.classList.toggle('is-low', healthPct <= 0.35);
+          }
         }
 
         function formatPhase(phase) {
@@ -1208,6 +1393,7 @@
             `player ${Math.round(world.player.x)},${Math.round(world.player.y)}`,
             `velocity ${Math.round(world.player.vx)},${Math.round(world.player.vy)}`,
             `grounded ${world.player.grounded ? 'yes' : 'no'}`,
+            `health ${Math.round(world.player.health ?? 0)}/${Math.round(world.player.maxHealth ?? 100)}`,
             `projectile ${(world.timers.projectile || 0).toFixed(2)}s`,
             `hitboxes ${debug.showHitboxes ? 'on' : 'off'}`,
             `god ${debug.godMode ? 'on' : 'off'}`,
@@ -1270,8 +1456,11 @@
           },
           spawnEncounter: () => {
             if (!world) return null;
-            spawnNextEncounter({ ignoreCaps: true });
-            return [...world.entities].reverse().find((entity) => entity && entity.type !== 'salmonMarker') || null;
+            return spawnNextEncounter({ ignoreCaps: true });
+          },
+          spawnCameo: () => {
+            if (!world) return null;
+            return spawnCameo();
           },
         };
         window.requestAnimationFrame(loop);

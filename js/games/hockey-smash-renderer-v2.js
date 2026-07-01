@@ -159,7 +159,11 @@
     const player = world.player;
     if (!player) return;
     const spriteKey = getPlayerSpriteKey(player);
+    renderShadow(ctx, player, 'rgba(5, 8, 13, 0.26)');
+    ctx.save();
+    if (player.invulnerable > 0 && Math.floor(player.invulnerable * 16) % 2 === 0) ctx.globalAlpha = 0.56;
     drawSpriteOrPlaceholder(ctx, imageCache, spriteKey, player, player.name || player.character || 'PLAYER');
+    ctx.restore();
   }
 
   function renderEntities(ctx, world, imageCache) {
@@ -169,9 +173,41 @@
         renderSalmonMarker(ctx, entity);
         return;
       }
+      renderShadow(ctx, entity, entity.nonContact ? 'rgba(90, 214, 255, 0.16)' : 'rgba(5, 8, 13, 0.24)');
       drawSpriteOrPlaceholder(ctx, imageCache, getEntitySpriteKey(entity), entity, entity.type || 'ENTITY');
+      renderEntityHealth(ctx, entity);
       if (entity.bubble) renderBubble(ctx, entity, entity.bubble);
     });
+  }
+
+  function renderShadow(ctx, entity, color) {
+    if (!entity || entity.type === 'salmon') return;
+    const width = Math.max(24, (entity.width || 48) * 0.72);
+    const x = (entity.x || 0) + ((entity.width || 48) - width) / 2;
+    const y = (entity.y || 0) + (entity.height || 48) - 7;
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.ellipse(x + width / 2, y, width / 2, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function renderEntityHealth(ctx, entity) {
+    if (!entity || entity.nonContact || !entity.maxHp || entity.maxHp <= 1 || entity.hp >= entity.maxHp) return;
+    const x = (entity.x || 0) + 6;
+    const y = Math.max(8, (entity.y || 0) - 10);
+    const width = Math.max(34, (entity.width || 48) - 12);
+    const pct = Math.max(0, Math.min(1, (entity.hp || 0) / entity.maxHp));
+    ctx.save();
+    ctx.fillStyle = 'rgba(5, 8, 13, 0.74)';
+    ctx.fillRect(x, y, width, 6);
+    ctx.fillStyle = pct > 0.4 ? '#fff27a' : '#ff6b6b';
+    ctx.fillRect(x, y, width * pct, 6);
+    ctx.strokeStyle = 'rgba(255, 248, 223, 0.74)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, width, 6);
+    ctx.restore();
   }
 
   function renderSalmonMarker(ctx, entity) {
@@ -261,7 +297,7 @@
     )).length;
     ctx.save();
     ctx.fillStyle = 'rgba(5, 8, 13, 0.72)';
-    ctx.fillRect(12, 12, 386, 178);
+    ctx.fillRect(12, 12, 386, 194);
     ctx.fillStyle = '#fff8df';
     ctx.font = '700 13px system-ui, sans-serif';
     [
@@ -274,6 +310,7 @@
       `player: ${Math.round(player.x || 0)}, ${Math.round(player.y || 0)}`,
       `velocity: ${Math.round(player.vx || 0)}, ${Math.round(player.vy || 0)}`,
       `grounded: ${player.grounded ? 'yes' : 'no'}`,
+      `health: ${Math.round(player.health ?? 0)}/${Math.round(player.maxHealth ?? 100)}`,
       `projectile: ${((world.timers || {}).projectile || 0).toFixed(2)}s`,
       `last: ${debug.lastCollision || 'none'}`,
     ].forEach((line, index) => {

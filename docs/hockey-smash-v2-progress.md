@@ -8,6 +8,39 @@ V2 is now the active Hockey Smash path. Keep gameplay in world state and canvas 
 
 ## Completed
 
+### 2026-07-01: v1.3 Health, Cast, and Readability Polish
+
+Changed:
+- `dev/hockey-smash-v2.html`
+- `js/games/hockey-smash-world-v2.js`
+- `js/games/hockey-smash-renderer-v2.js`
+- `scripts/verify-hockey-smash.js`
+- `tests/hockey-smash-launch.spec.js`
+- `README.md`
+- `docs/hockey-smash-v1.3-polish-notes.md`
+- `docs/hockey-smash-v2-progress.md`
+
+Gameplay impact:
+- Player health now starts at 100/100 and is shown in the in-frame HUD.
+- Damageable encounters subtract health and trigger a short invulnerability flash.
+- Zero health advances to `gameOver` and shows a retry overlay.
+- Alaska kid cameos are non-contact, spawn once per run, last 10-15 seconds, and can be dismissed by projectile.
+- Daniel gets a non-contact sister support cameo using the Sofie sprite.
+- Sofie gets a clearer early dance instructor/teacher encounter.
+- Dad appears earlier in the encounter rotation.
+- Canvas rendering now adds subtle entity shadows and hit-point pips for damaged multi-HP targets.
+
+Verification:
+- `npm run verify`: passed
+- `npm run test:browser`: passed
+- manual browser check: not run
+
+Known issues:
+- The sister support cameo reuses Sofie player art until dedicated support art exists.
+
+Next:
+- Add warning markers for wildlife and dedicated audio feedback.
+
 ### 2026-07-01: Version Badge and Mobile HUD
 
 Changed:
